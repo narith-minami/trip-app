@@ -19,11 +19,11 @@ import type { TripMemberContext } from "../middleware/requireMember";
 // Schemas for schedule items
 const CreateScheduleItemSchema = z.object({
   date: z.string().date(),
-  startTime: z.string().optional(),
+  startTime: z.string().nullable().optional(),
   title: z.string().min(1),
-  placeName: z.string().optional(),
-  placeUrl: z.string().url().optional(),
-  memo: z.string().optional(),
+  placeName: z.string().nullable().optional(),
+  placeUrl: z.string().url().nullable().optional(),
+  memo: z.string().nullable().optional(),
   orderIndex: z.number().int().default(0),
 });
 
@@ -116,7 +116,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
 
     const updateData: any = {};
     if (validated.date) updateData.date = validated.date;
-    if (validated.startTime) updateData.startTime = validated.startTime;
+    if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
     if (validated.title) updateData.title = validated.title;
     if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
     if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;

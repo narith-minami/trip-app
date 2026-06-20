@@ -16,13 +16,16 @@ export interface MemoEditorProps {
 
 export function MemoEditor({ content, isSaving = false, onSave }: MemoEditorProps) {
   const [value, setValue] = useState(content);
-
-  // Keep the local draft in sync when the persisted content changes.
-  useEffect(() => {
-    setValue(content);
-  }, [content]);
-
   const dirty = value !== content;
+
+  // Keep the local draft in sync when the persisted content changes,
+  // but avoid overwriting active unsaved edits (e.g. a background refetch
+  // while the user is typing).
+  useEffect(() => {
+    if (!dirty) {
+      setValue(content);
+    }
+  }, [content, dirty]);
 
   return (
     <div className="space-y-3">

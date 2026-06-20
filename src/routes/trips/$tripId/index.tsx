@@ -235,7 +235,7 @@ export function TripDetailPage() {
         <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
 
         {/* Tab Content */}
-        <div className="mt-6 bg-white rounded-lg shadow p-6">
+        <div className="mt-6">
           {activeTab === "schedule" && (
             <ScheduleSection tripId={tripId} canEdit defaultDate={trip.startDate} />
           )}

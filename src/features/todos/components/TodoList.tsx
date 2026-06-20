@@ -12,10 +12,10 @@ export interface TodoListProps {
   todos: Todo[];
   onToggle: (todo: Todo) => void;
   onDelete: (todo: Todo) => void;
-  pendingId?: string;
+  pendingIds?: ReadonlySet<string>;
 }
 
-export function TodoList({ todos, onToggle, onDelete, pendingId }: TodoListProps) {
+export function TodoList({ todos, onToggle, onDelete, pendingIds }: TodoListProps) {
   if (todos.length === 0) {
     return (
       <EmptyState
@@ -34,7 +34,7 @@ export function TodoList({ todos, onToggle, onDelete, pendingId }: TodoListProps
           todo={todo}
           onToggle={onToggle}
           onDelete={onDelete}
-          disabled={pendingId === todo.id}
+          disabled={pendingIds?.has(todo.id)}
         />
       ))}
     </div>

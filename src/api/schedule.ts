@@ -26,11 +26,11 @@ export async function createScheduleItem(
   tripId: string,
   data: {
     date: string;
-    startTime?: string;
+    startTime?: string | null;
     title: string;
-    placeName?: string;
-    placeUrl?: string;
-    memo?: string;
+    placeName?: string | null;
+    placeUrl?: string | null;
+    memo?: string | null;
     orderIndex?: number;
   }
 ) {
@@ -52,11 +52,11 @@ export async function updateScheduleItem(
   itemId: string,
   data: Partial<{
     date: string;
-    startTime: string;
+    startTime: string | null;
     title: string;
-    placeName: string;
-    placeUrl: string;
-    memo: string;
+    placeName: string | null;
+    placeUrl: string | null;
+    memo: string | null;
     orderIndex: number;
   }>
 ) {

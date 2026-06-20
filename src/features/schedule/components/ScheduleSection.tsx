@@ -28,11 +28,13 @@ export interface ScheduleSectionProps {
 function toPayload(values: ScheduleFormValues) {
   return {
     date: values.date,
-    startTime: values.startTime || undefined,
+    // Use null (not undefined) so cleared fields are persisted as empty,
+    // since the server PUT handler skips undefined values.
+    startTime: values.startTime || null,
     title: values.title,
-    placeName: values.placeName || undefined,
-    placeUrl: values.placeUrl || undefined,
-    memo: values.memo || undefined,
+    placeName: values.placeName || null,
+    placeUrl: values.placeUrl || null,
+    memo: values.memo || null,
   };
 }
 

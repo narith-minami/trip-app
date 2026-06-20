@@ -21,7 +21,18 @@ export interface TodosSectionProps {
 export function TodosSection({ tripId, members }: TodosSectionProps) {
   const { data: todos, isLoading, error } = useTodos(tripId);
   const { create, update, remove } = useTodoMutations(tripId);
-  const [pendingId, setPendingId] = useState<string | undefined>();
+  // Track every in-flight todo id so rapid toggles don't clear each other's
+  // pending state (a single string would race).
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
+
+  const addPending = (id: string) =>
+    setPendingIds((prev) => new Set(prev).add(id));
+  const clearPending = (id: string) =>
+    setPendingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
 
   const handleCreate = async (values: TodoFormValues) => {
     try {
@@ -32,7 +43,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
   };
 
   const handleToggle = async (todo: Todo) => {
-    setPendingId(todo.id);
+    addPending(todo.id);
     try {
       await update.mutateAsync({
         todoId: todo.id,
@@ -41,18 +52,18 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
     } catch {
       toast.error("Failed to update todo");
     } finally {
-      setPendingId(undefined);
+      clearPending(todo.id);
     }
   };
 
   const handleDelete = async (todo: Todo) => {
-    setPendingId(todo.id);
+    addPending(todo.id);
     try {
       await remove.mutateAsync(todo.id);
     } catch {
       toast.error("Failed to delete todo");
     } finally {
-      setPendingId(undefined);
+      clearPending(todo.id);
     }
   };
 
@@ -70,7 +81,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
         todos={todos ?? []}
         onToggle={handleToggle}
         onDelete={handleDelete}
-        pendingId={pendingId}
+        pendingIds={pendingIds}
       />
     </div>
   );
