@@ -1,0 +1,197 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.css"],
+    "ignore": [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "docs/**",
+      ".dependency-cruiser.cjs",
+      "*.config.cjs"
+    ]
+  },
+
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+
+  "organizeImports": {
+    "enabled": true
+  },
+
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "arrowParentheses": "always"
+    }
+  },
+
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "correctness": {
+        "recommended": true,
+        "noUnusedVariables":        "error",
+        "noUnusedImports":          "error",
+        "noUnusedFunctionParameters":"warn",
+        "useExhaustiveDependencies": "warn",
+        "noVoidTypeReturn":          "error"
+      },
+
+      "suspicious": {
+        "recommended": true,
+        "noConsole":              "warn",
+        "noExplicitAny":          "error",
+        "noDoubleEquals":         "error",
+        "noAssignInExpressions":  "error",
+        "noConfusingVoidType":    "error",
+        "noEmptyBlockStatements": "warn",
+        "noSkippedTests":         "warn"
+      },
+
+      "style": {
+        "recommended": true,
+        "noVar":              "error",
+        "useConst":           "error",
+        "useTemplate":        "error",
+        "noNonNullAssertion":  "warn",
+        "useNamingConvention": {
+          "level": "warn",
+          "options": {
+            "strictCase": false,
+            "conventions": [
+              {
+                "selector": { "kind": "function" },
+                "formats": ["camelCase", "PascalCase"]
+              },
+              {
+                "selector": { "kind": "typeLike" },
+                "formats": ["PascalCase"]
+              },
+              {
+                "selector": { "kind": "variable" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              }
+            ]
+          }
+        }
+      },
+
+      "performance": {
+        "recommended": true,
+        "noDelete":            "warn",
+        "noBarrelFile":        "warn",
+        "noReExportAll":       "warn"
+      },
+
+      "security": {
+        "recommended": true,
+        "noDangerouslySetInnerHtml": "error"
+      },
+
+      "complexity": {
+        "recommended": true,
+        "noBannedTypes":      "error",
+        "noUselessFragments": "error",
+        "noForEach":          "warn",
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 10
+          }
+        }
+      },
+
+      "a11y": {
+        "recommended": true,
+        "noSvgWithoutTitle":     "warn",
+        "useAltText":            "error",
+        "useButtonType":         "error",
+        "useKeyWithClickEvents": "warn",
+        "noAriaHiddenOnFocusable": "error",
+        "useAriaPropsForRole":   "error"
+      },
+
+      "nursery": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": [
+              {
+                "name": "lodash",
+                "message": "lodash は個別 import にしてください: import debounce from 'lodash/debounce'"
+              },
+              {
+                "name": "moment",
+                "message": "moment は date-fns または dayjs に置き換えてください"
+              },
+              {
+                "name": "react",
+                "importNames": ["default"],
+                "message": "React の default import は不要です (React 17+ JSX transform)"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole":          "off",
+            "noExplicitAny":      "off",
+            "noSkippedTests":     "error"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": {
+              "level": "warn",
+              "options": { "maxAllowedComplexity": 15 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "*.config.ts", "*.config.mts",
+        "vite.config.ts", "vitest.config.ts", "playwright.config.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": { "noDefaultExport": "off" },
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    },
+    {
+      "includes": ["src/api/**/*.ts"],
+      "linter": {
+        "rules": {
+          "performance": { "noBarrelFile": "off" }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+/**
+ * src/server/app.ts
+ *
+ * Main Hono application server.
+ * Assembles all routers and middleware.
+ * Serves as the entry point for the Cloudflare Pages/Workers runtime.
+ */
+
+import { Hono } from "hono";
+import type { Env } from "./env";
+import { createAuth } from "./routes/auth";
+import tripsRouter from "./routes/trips";
+import usersRouter from "./routes/users";
+import scheduleRouter from "./routes/schedule";
+import todosRouter from "./routes/todos";
+import memoRouter from "./routes/memo";
+import membersRouter from "./routes/members";
+import coverRouter from "./routes/cover";
+
+/**
+ * Main Hono application with type annotations
+ */
+const app = new Hono<{ Bindings: Env }>();
+
+/**
+ * Health check endpoint
+ */
+app.get("/api/health", (c) => {
+  return c.json({ status: "ok" });
+});
+
+/**
+ * Mount Better Auth routes
+ * All auth routes are available at /api/auth/*
+ */
+app.use("/api/auth/*", async (c) => {
+  // Create auth instance with current env
+  const auth = createAuth(c.env);
+  // Mount auth routes
+  return auth.handler(c.req.raw);
+});
+
+/**
+ * Mount API route groups
+ */
+app.route("/api/trips", tripsRouter);
+app.route("/api/users", usersRouter);
+app.route("/api/trips/:tripId/schedule", scheduleRouter);
+app.route("/api/trips/:tripId/todos", todosRouter);
+app.route("/api/trips/:tripId/memo", memoRouter);
+app.route("/api/trips/:tripId/members", membersRouter);
+app.route("/api/trips", coverRouter);
+
+/**
+ * 404 handler
+ */
+app.notFound((c) => {
+  return c.json({ error: "Not Found" }, 404);
+});
+
+/**
+ * Error handler
+ */
+app.onError((err, c) => {
+  console.error("Unhandled error:", err);
+  return c.json({ error: "Internal Server Error" }, 500);
+});
+
+/**
+ * Export the app for Cloudflare Pages/Workers
+ */
+export default app;
+
+/**
+ * Export Hono app type for RPC client typing
+ * Allows type-safe API calls from the client
+ */
+export type AppType = typeof app;

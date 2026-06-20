@@ -1,0 +1,41 @@
+name = "trip-app"
+main = "dist/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# ============================================================================
+# D1 Database Binding
+# ============================================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "trip-app-db"
+# database_id will be set during deployment or via wrangler commands
+# database_id = "<YOUR_D1_ID>"
+
+# ============================================================================
+# R2 Bucket Binding
+# ============================================================================
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "trip-app-photos"
+# account_id will be auto-detected or can be set explicitly
+
+# ============================================================================
+# Environment Variables (public)
+# ============================================================================
+[vars]
+BETTER_AUTH_URL = "https://trip-app.pages.dev"
+
+# Note: Sensitive environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET)
+# should be set via Cloudflare Dashboard or wrangler secret commands:
+# - wrangler secret put GOOGLE_CLIENT_ID
+# - wrangler secret put GOOGLE_CLIENT_SECRET
+# - wrangler secret put AUTH_SECRET
+
+# ============================================================================
+# Service Bindings (optional, for inter-service communication)
+# ============================================================================
+# [[services]]
+# binding = "AUTH_SERVICE"
+# service = "auth-worker"

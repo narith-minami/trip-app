@@ -1,0 +1,89 @@
+/**
+ * src/lib/schemas/trip.ts
+ *
+ * Zod schemas for trip-related data validation.
+ * Isomorphic schemas used by both server and client.
+ */
+
+import { z } from "zod";
+
+/**
+ * Schema for creating a new trip
+ */
+export const CreateTripSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
+  description: z
+    .string()
+    .max(500, "Description must be 500 characters or less")
+    .optional(),
+  startDate: z.string().date("Invalid date format, expected YYYY-MM-DD"),
+  endDate: z.string().date("Invalid date format, expected YYYY-MM-DD"),
+  location: z.string().max(200, "Location must be 200 characters or less").optional(),
+});
+
+export type CreateTrip = z.infer<typeof CreateTripSchema>;
+
+/**
+ * Schema for updating an existing trip
+ */
+export const UpdateTripSchema = z.object({
+  id: z.string().min(1, "Trip ID is required"),
+  title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less").optional(),
+  description: z
+    .string()
+    .max(500, "Description must be 500 characters or less")
+    .optional(),
+  startDate: z.string().date("Invalid date format, expected YYYY-MM-DD").optional(),
+  endDate: z.string().date("Invalid date format, expected YYYY-MM-DD").optional(),
+  location: z.string().max(200, "Location must be 200 characters or less").optional(),
+});
+
+export type UpdateTrip = z.infer<typeof UpdateTripSchema>;
+
+/**
+ * Schema for trip query parameters (pagination, sorting)
+ */
+export const TripQueryParamsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  sortBy: z
+    .enum(["createdAt", "updatedAt", "startDate", "title"])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export type TripQueryParams = z.infer<typeof TripQueryParamsSchema>;
+
+/**
+ * Schema for trip response (includes metadata)
+ */
+export const TripResponseSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  destination: z.string().optional(),
+  startDate: z.string().date(),
+  endDate: z.string().date(),
+  coverImageUrl: z.string().optional(),
+  ownerId: z.string(),
+  inviteToken: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export type TripResponse = z.infer<typeof TripResponseSchema>;
+
+/**
+ * Schema for trip list response with pagination
+ */
+export const TripListResponseSchema = z.object({
+  data: z.array(TripResponseSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+    pages: z.number(),
+  }),
+});
+
+export type TripListResponse = z.infer<typeof TripListResponseSchema>;
