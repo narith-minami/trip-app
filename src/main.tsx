@@ -1,0 +1,28 @@
+/**
+ * src/main.tsx
+ *
+ * Client entry point. Creates the TanStack Router instance from the
+ * hand-authored route tree and mounts the React application.
+ */
+
+import { routeTree } from "@/routeTree";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "@/styles/globals.css";
+
+const router = createRouter({ routeTree });
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error('Root element with id "root" was not found in index.html');
+}
+
+if (!rootElement.innerHTML) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>
+  );
+}

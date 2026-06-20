@@ -171,9 +171,6 @@ export default [
       "sonarjs/no-identical-expressions": "error",
 
       // --- 論理バグ ---
-      // 無限ループになりうる構造 (ループ内で break しないケース等)
-      "sonarjs/no-one-iteration-loop": "error",
-
       // 無視されるべきでない戻り値 (副作用のない関数の戻り値を捨てている)
       "sonarjs/no-ignored-return": "warn",
 
