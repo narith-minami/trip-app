@@ -1,0 +1,212 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ------------------------------------------------------------------
+  # 1. 型チェック
+  # ------------------------------------------------------------------
+  typecheck:
+    name: TypeCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  # ------------------------------------------------------------------
+  # 2. Biome (format + lint)
+  #    Cognitive Complexity(≤10 error) / 命名規則 / セキュリティ 等
+  # ------------------------------------------------------------------
+  biome:
+    name: Biome
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint:biome
+      - run: pnpm format:check
+
+  # ------------------------------------------------------------------
+  # 3. ESLint
+  #    react-hooks / boundaries / tanstack-query /
+  #    SonarJS (コードスメル・重複・論理バグ) /
+  #    肥大化メトリクス (行数・引数・ネスト・依存数)
+  #
+  #    ※ 旧 Lizard job を ESLint (SonarJS) に統合済み
+  #       Python 依存・別途セットアップ不要
+  # ------------------------------------------------------------------
+  eslint:
+    name: ESLint + SonarJS
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      # ESLint 実行 (SonarJS ルール含む)
+      - name: Run ESLint
+        run: pnpm lint:eslint
+
+      # PR コメント: 閾値サマリーを投稿
+      - name: Post thresholds comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 🔬 ESLint + SonarJS 品質閾値
+
+            | メトリクス | 閾値 | ルール | レベル |
+            |---|---|---|---|
+            | Cognitive Complexity | ≤ 10 | `sonarjs/cognitive-complexity` + Biome | error |
+            | 関数行数 (実行行) | ≤ 60 | `max-lines-per-function` | warn |
+            | ファイル行数 | ≤ 300 | `max-lines` | warn |
+            | 引数数 | ≤ 4 | `max-params` | warn |
+            | ネスト深さ | ≤ 3 | `max-depth` | warn |
+            | 依存モジュール数 | ≤ 10 | `import/max-dependencies` | warn |
+            | 重複関数 | ≥ 3行の同実装 | `sonarjs/no-identical-functions` | warn |
+            | 重複文字列 | ≥ 3回 | `sonarjs/no-duplicate-string` | warn |
+            | 条件分岐重複 | — | `sonarjs/no-duplicated-branches` | error |
+            | 循環参照 | — | `import/no-cycle` | error |
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ------------------------------------------------------------------
+  # 4. dependency-cruiser (依存グラフ lint + PR コメント)
+  # ------------------------------------------------------------------
+  deps:
+    name: DepCruiser
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run (JSON)
+        run: pnpm depcruise --config .dependency-cruiser.cjs src -T json > dep-result.json
+
+      - name: Fail on errors
+        run: pnpm depcruise-fmt -T err dep-result.json
+
+      - name: Generate markdown
+        run: |
+          echo '## 🔍 dependency-cruiser 結果' > dep-comment.md
+          pnpm depcruise-fmt -T markdown dep-result.json >> dep-comment.md
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: dep-comment.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ------------------------------------------------------------------
+  # 5. react-doctor (React アンチパターン + ヘルスコア)
+  # ------------------------------------------------------------------
+  react-doctor:
+    name: ReactDoctor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint:doctor
+
+  # ------------------------------------------------------------------
+  # 6. bundle size ゲート (JS ≤ 150kB)
+  # ------------------------------------------------------------------
+  bundle-size:
+    name: BundleSize
+    runs-on: ubuntu-latest
+    needs: [typecheck, biome]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm dlx bundlesize
+
+  # ------------------------------------------------------------------
+  # 7. knip (デッドコード検出)
+  # ------------------------------------------------------------------
+  knip:
+    name: DeadCode (knip)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm knip
+
+  # ------------------------------------------------------------------
+  # 8. テスト + カバレッジ (閾値: 70%)
+  # ------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  # ------------------------------------------------------------------
+  # 9. ビルド (typecheck + biome + eslint が通ってから実行)
+  # ------------------------------------------------------------------
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [typecheck, biome, eslint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
