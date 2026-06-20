@@ -13,13 +13,12 @@ import { requireMember } from "../middleware/requireMember";
 import type { AuthContext } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 
-const membersRouter = new Hono<TripMemberContext>();
-
 /**
  * GET /api/trips/:tripId/members
  * List trip members
  */
-membersRouter.get("/", requireSession(), requireMember, async (c) => {
+const membersRouter = new Hono<TripMemberContext>()
+  .get("/", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
@@ -36,17 +35,19 @@ membersRouter.get("/", requireSession(), requireMember, async (c) => {
     console.error("Error fetching members:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * DELETE /api/trips/:tripId/members/:memberId
- * Remove member (owner only)
- */
-membersRouter.delete("/:memberId", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * DELETE /api/trips/:tripId/members/:memberId
+   * Remove member (owner only)
+   */
+  .delete("/:memberId", requireSession(), requireMember, async (c) => {
   try {
     const userId = getUserId(c as any);
     const tripId = c.get("tripId");
     const memberId = c.req.param("memberId");
+    if (!memberId) {
+      return c.json({ error: "Member ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Get trip to check ownership

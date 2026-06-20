@@ -11,6 +11,7 @@ import { getDb, scheduleItems } from "../db";
 import { requireSession, getUserId } from "../middleware/auth";
 import { requireMember } from "../middleware/requireMember";
 import { generateId } from "@/lib/utils";
+import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { AuthContext } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
@@ -28,13 +29,12 @@ const CreateScheduleItemSchema = z.object({
 
 const UpdateScheduleItemSchema = CreateScheduleItemSchema.partial();
 
-const scheduleRouter = new Hono<TripMemberContext>();
-
 /**
  * GET /api/trips/:tripId/schedule
  * List schedule items for a trip
  */
-scheduleRouter.get("/", requireSession(), requireMember, async (c) => {
+const scheduleRouter = new Hono<TripMemberContext>()
+  .get("/", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
@@ -49,18 +49,16 @@ scheduleRouter.get("/", requireSession(), requireMember, async (c) => {
     console.error("Error fetching schedule items:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * POST /api/trips/:tripId/schedule
- * Create a schedule item
- */
-scheduleRouter.post("/", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * POST /api/trips/:tripId/schedule
+   * Create a schedule item
+   */
+  .post("/", requireSession(), requireMember, zValidator("json", CreateScheduleItemSchema), async (c) => {
   try {
     const userId = getUserId(c as any);
     const tripId = c.get("tripId");
-    const body = await c.req.json();
-    const validated = CreateScheduleItemSchema.parse(body);
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
     const itemId = generateId("schedule");
@@ -90,19 +88,20 @@ scheduleRouter.post("/", requireSession(), requireMember, async (c) => {
     console.error("Error creating schedule item:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * PUT /api/trips/:tripId/schedule/:itemId
- * Update a schedule item
- */
-scheduleRouter.put("/:itemId", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * PUT /api/trips/:tripId/schedule/:itemId
+   * Update a schedule item
+   */
+  .put("/:itemId", requireSession(), requireMember, zValidator("json", UpdateScheduleItemSchema), async (c) => {
   try {
     const userId = getUserId(c as any);
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
-    const body = await c.req.json();
-    const validated = UpdateScheduleItemSchema.parse(body);
+    if (!itemId) {
+      return c.json({ error: "Item ID is required" }, 400);
+    }
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
 
@@ -140,16 +139,18 @@ scheduleRouter.put("/:itemId", requireSession(), requireMember, async (c) => {
     console.error("Error updating schedule item:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * DELETE /api/trips/:tripId/schedule/:itemId
- * Delete a schedule item
- */
-scheduleRouter.delete("/:itemId", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * DELETE /api/trips/:tripId/schedule/:itemId
+   * Delete a schedule item
+   */
+  .delete("/:itemId", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
+    if (!itemId) {
+      return c.json({ error: "Item ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Verify item belongs to trip

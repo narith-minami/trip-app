@@ -10,22 +10,21 @@ import { eq, and, desc } from "drizzle-orm";
 import { getDb, trips, tripMembers } from "../db";
 import { requireSession, getUserId } from "../middleware/auth";
 import { requireMember } from "../middleware/requireMember";
+import { zValidator } from "@hono/zod-validator";
 import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
 import { generateId } from "@/lib/utils";
-import type { AuthContext, TripMemberContext } from "../middleware/auth";
 
 // Type for non-auth routes
 type TripContext = {
   Bindings: import("../env").Env;
 };
 
-const tripsRouter = new Hono<TripContext>();
-
 /**
  * GET /api/trips
  * List trips for the current user
  */
-tripsRouter.get("/", requireSession(), async (c) => {
+const tripsRouter = new Hono<TripContext>()
+  .get("/", requireSession(), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
@@ -91,21 +90,19 @@ tripsRouter.get("/", requireSession(), async (c) => {
     console.error("Error fetching trips:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * POST /api/trips
- * Create a new trip
- */
-tripsRouter.post("/", requireSession(), async (c) => {
+})
+  /**
+   * POST /api/trips
+   * Create a new trip
+   */
+  .post("/", requireSession(), zValidator("json", CreateTripSchema), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const body = await c.req.json();
-    const validated = CreateTripSchema.parse(body);
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
     const tripId = generateId("trip");
@@ -150,13 +147,12 @@ tripsRouter.post("/", requireSession(), async (c) => {
     console.error("Error creating trip:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * GET /api/trips/:tripId
- * Get trip detail
- */
-tripsRouter.get("/:tripId", requireSession(), async (c) => {
+})
+  /**
+   * GET /api/trips/:tripId
+   * Get trip detail
+   */
+  .get("/:tripId", requireSession(), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
@@ -164,6 +160,9 @@ tripsRouter.get("/:tripId", requireSession(), async (c) => {
     }
 
     const tripId = c.req.param("tripId");
+    if (!tripId) {
+      return c.json({ error: "Trip ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Check membership
@@ -196,13 +195,12 @@ tripsRouter.get("/:tripId", requireSession(), async (c) => {
     console.error("Error fetching trip:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * PUT /api/trips/:tripId
- * Update trip
- */
-tripsRouter.put("/:tripId", requireSession(), async (c) => {
+})
+  /**
+   * PUT /api/trips/:tripId
+   * Update trip
+   */
+  .put("/:tripId", requireSession(), zValidator("json", UpdateTripSchema.omit({ id: true })), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
@@ -210,8 +208,10 @@ tripsRouter.put("/:tripId", requireSession(), async (c) => {
     }
 
     const tripId = c.req.param("tripId");
-    const body = await c.req.json();
-    const validated = UpdateTripSchema.parse({ id: tripId, ...body });
+    if (!tripId) {
+      return c.json({ error: "Trip ID is required" }, 400);
+    }
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
 
@@ -254,13 +254,12 @@ tripsRouter.put("/:tripId", requireSession(), async (c) => {
     console.error("Error updating trip:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * DELETE /api/trips/:tripId
- * Delete trip (owner only)
- */
-tripsRouter.delete("/:tripId", requireSession(), async (c) => {
+})
+  /**
+   * DELETE /api/trips/:tripId
+   * Delete trip (owner only)
+   */
+  .delete("/:tripId", requireSession(), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
@@ -268,6 +267,9 @@ tripsRouter.delete("/:tripId", requireSession(), async (c) => {
     }
 
     const tripId = c.req.param("tripId");
+    if (!tripId) {
+      return c.json({ error: "Trip ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Get trip

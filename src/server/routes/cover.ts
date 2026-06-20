@@ -12,13 +12,11 @@ import { requireSession, getUserId } from "../middleware/auth";
 import { generateId } from "@/lib/utils";
 import type { AuthContext } from "../middleware/auth";
 
-const coverRouter = new Hono<AuthContext>();
-
 /**
  * POST /api/trips/:tripId/cover
  * Upload cover photo to R2 and update trip
  */
-coverRouter.post("/:tripId", requireSession(), async (c) => {
+const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), async (c) => {
   try {
     const userId = getUserId(c as any);
     if (!userId) {
@@ -26,6 +24,9 @@ coverRouter.post("/:tripId", requireSession(), async (c) => {
     }
 
     const tripId = c.req.param("tripId");
+    if (!tripId) {
+      return c.json({ error: "Trip ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Get trip
