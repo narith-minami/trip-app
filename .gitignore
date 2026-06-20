@@ -8,6 +8,7 @@ build/
 .output/
 .vinxi/
 .tanstack/
+*.tsbuildinfo
 
 # Coverage & test artifacts
 coverage/

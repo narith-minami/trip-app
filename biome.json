@@ -9,7 +9,7 @@
 
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.css"],
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.css"],
     "ignore": [
       "dist/**",
       "build/**",
@@ -133,21 +133,10 @@
         "noRestrictedImports": {
           "level": "error",
           "options": {
-            "paths": [
-              {
-                "name": "lodash",
-                "message": "lodash は個別 import にしてください: import debounce from 'lodash/debounce'"
-              },
-              {
-                "name": "moment",
-                "message": "moment は date-fns または dayjs に置き換えてください"
-              },
-              {
-                "name": "react",
-                "importNames": ["default"],
-                "message": "React の default import は不要です (React 17+ JSX transform)"
-              }
-            ]
+            "paths": {
+              "lodash": "lodash は個別 import にしてください: import debounce from 'lodash/debounce'",
+              "moment": "moment は date-fns または dayjs に置き換えてください"
+            }
           }
         }
       }
@@ -156,7 +145,7 @@
 
   "overrides": [
     {
-      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "include": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -174,7 +163,7 @@
       }
     },
     {
-      "includes": [
+      "include": [
         "*.config.ts", "*.config.mts",
         "vite.config.ts", "vitest.config.ts", "playwright.config.ts"
       ],
@@ -186,7 +175,7 @@
       }
     },
     {
-      "includes": ["src/api/**/*.ts"],
+      "include": ["src/api/**/*.ts"],
       "linter": {
         "rules": {
           "performance": { "noBarrelFile": "off" }

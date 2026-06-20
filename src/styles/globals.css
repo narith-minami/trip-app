@@ -1,0 +1,40 @@
+/**
+ * src/styles/globals.css
+ *
+ * Global base styles for the application.
+ *
+ * NOTE: The components in this project are authored with Tailwind utility
+ * classes, but Tailwind is not yet wired into the build. Adding Tailwind
+ * (tailwindcss + a Vite plugin and an `@import "tailwindcss";` here) is a
+ * recommended follow-up to make those utility classes take effect.
+ */
+
+:root {
+  color-scheme: light;
+  --color-bg: #f9fafb;
+  --color-fg: #111827;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
