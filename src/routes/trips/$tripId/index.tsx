@@ -9,7 +9,19 @@ import { useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
 import { useUpdateTrip, useDeleteTrip } from "@/features/trips/hooks/useTripMutations";
+import { ScheduleSection } from "@/features/schedule/components/ScheduleSection";
+import { TodosSection } from "@/features/todos/components/TodosSection";
+import { MemoSection } from "@/features/memo/components/MemoSection";
+import { MembersSection } from "@/features/members/components/MembersSection";
+import { Tabs } from "@/components/ui/tabs";
 import { toast } from "sonner";
+
+const TRIP_TABS = [
+  { value: "schedule", label: "Schedule" },
+  { value: "todos", label: "Todos" },
+  { value: "memo", label: "Memo" },
+  { value: "members", label: "Members" },
+];
 
 export function TripDetailPage() {
   const { tripId } = useParams({ from: "/trips/$tripId/" });
@@ -220,75 +232,26 @@ export function TripDetailPage() {
 
       {/* Tabs */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex border-b border-gray-200">
-          {["schedule", "todos", "memo", "members"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-medium transition ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
+        <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
 
         {/* Tab Content */}
         <div className="mt-6">
           {activeTab === "schedule" && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Schedule</h2>
-              <p className="text-gray-600">Schedule feature coming soon...</p>
-            </div>
+            <ScheduleSection tripId={tripId} canEdit defaultDate={trip.startDate} />
           )}
 
           {activeTab === "todos" && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Todos</h2>
-              <p className="text-gray-600">Todos feature coming soon...</p>
-            </div>
+            <TodosSection tripId={tripId} members={trip.members} />
           )}
 
-          {activeTab === "memo" && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Memo</h2>
-              <p className="text-gray-600">Memo feature coming soon...</p>
-            </div>
-          )}
+          {activeTab === "memo" && <MemoSection tripId={tripId} />}
 
           {activeTab === "members" && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Members</h2>
-              <div className="space-y-2">
-                {trip.members?.map((member: any) => (
-                  <div
-                    key={member.userId}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {member.user?.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {member.user?.email}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        member.role === "owner"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {member.role === "owner" ? "Owner" : "Member"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <MembersSection
+              tripId={tripId}
+              inviteToken={trip.inviteToken}
+              canManage={isOwner}
+            />
           )}
         </div>
       </div>

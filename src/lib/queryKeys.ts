@@ -65,3 +65,9 @@ export const queryKeys = {
     user: () => [...queryKeys.auth.all(), "user"] as const,
   },
 } as const;
+
+/**
+ * Uppercase alias kept for call sites that import `QUERY_KEYS`.
+ * Both names point at the same factory object.
+ */
+export const QUERY_KEYS = queryKeys;

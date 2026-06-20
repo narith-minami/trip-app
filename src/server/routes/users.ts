@@ -9,13 +9,11 @@ import { Hono } from "hono";
 import { requireSession, getUser } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
 
-const usersRouter = new Hono<AuthContext>();
-
 /**
  * GET /api/users/me
  * Get current user session info
  */
-usersRouter.get("/me", requireSession(), async (c) => {
+const usersRouter = new Hono<AuthContext>().get("/me", requireSession(), async (c) => {
   try {
     const user = getUser(c);
 

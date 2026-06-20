@@ -41,15 +41,20 @@ app.use("/api/auth/*", async (c) => {
 });
 
 /**
- * Mount API route groups
+ * Mount API route groups.
+ *
+ * Routes are chained so that `typeof routes` captures the full endpoint
+ * shape, which is what the Hono RPC client (`hc<AppType>`) relies on for
+ * end-to-end type inference.
  */
-app.route("/api/trips", tripsRouter);
-app.route("/api/users", usersRouter);
-app.route("/api/trips/:tripId/schedule", scheduleRouter);
-app.route("/api/trips/:tripId/todos", todosRouter);
-app.route("/api/trips/:tripId/memo", memoRouter);
-app.route("/api/trips/:tripId/members", membersRouter);
-app.route("/api/trips", coverRouter);
+const routes = app
+  .route("/api/trips", tripsRouter)
+  .route("/api/users", usersRouter)
+  .route("/api/trips/:tripId/schedule", scheduleRouter)
+  .route("/api/trips/:tripId/todos", todosRouter)
+  .route("/api/trips/:tripId/memo", memoRouter)
+  .route("/api/trips/:tripId/members", membersRouter)
+  .route("/api/trips", coverRouter);
 
 /**
  * 404 handler
@@ -75,4 +80,4 @@ export default app;
  * Export Hono app type for RPC client typing
  * Allows type-safe API calls from the client
  */
-export type AppType = typeof app;
+export type AppType = typeof routes;

@@ -11,6 +11,7 @@ import { getDb, todos } from "../db";
 import { requireSession, getUserId } from "../middleware/auth";
 import { requireMember } from "../middleware/requireMember";
 import { generateId } from "@/lib/utils";
+import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { AuthContext } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
@@ -27,13 +28,12 @@ const UpdateTodoSchema = z.object({
   assigneeId: z.string().optional().nullable(),
 });
 
-const todosRouter = new Hono<TripMemberContext>();
-
 /**
  * GET /api/trips/:tripId/todos
  * List todos for a trip
  */
-todosRouter.get("/", requireSession(), requireMember, async (c) => {
+const todosRouter = new Hono<TripMemberContext>()
+  .get("/", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
@@ -50,17 +50,15 @@ todosRouter.get("/", requireSession(), requireMember, async (c) => {
     console.error("Error fetching todos:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * POST /api/trips/:tripId/todos
- * Create a todo
- */
-todosRouter.post("/", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * POST /api/trips/:tripId/todos
+   * Create a todo
+   */
+  .post("/", requireSession(), requireMember, zValidator("json", CreateTodoSchema), async (c) => {
   try {
     const tripId = c.get("tripId");
-    const body = await c.req.json();
-    const validated = CreateTodoSchema.parse(body);
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
     const todoId = generateId("todo");
@@ -87,18 +85,19 @@ todosRouter.post("/", requireSession(), requireMember, async (c) => {
     console.error("Error creating todo:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * PUT /api/trips/:tripId/todos/:todoId
- * Update a todo (checkbox toggle)
- */
-todosRouter.put("/:todoId", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * PUT /api/trips/:tripId/todos/:todoId
+   * Update a todo (checkbox toggle)
+   */
+  .put("/:todoId", requireSession(), requireMember, zValidator("json", UpdateTodoSchema), async (c) => {
   try {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
-    const body = await c.req.json();
-    const validated = UpdateTodoSchema.parse(body);
+    if (!todoId) {
+      return c.json({ error: "Todo ID is required" }, 400);
+    }
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
 
@@ -134,16 +133,18 @@ todosRouter.put("/:todoId", requireSession(), requireMember, async (c) => {
     console.error("Error updating todo:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * DELETE /api/trips/:tripId/todos/:todoId
- * Delete a todo
- */
-todosRouter.delete("/:todoId", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * DELETE /api/trips/:tripId/todos/:todoId
+   * Delete a todo
+   */
+  .delete("/:todoId", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
+    if (!todoId) {
+      return c.json({ error: "Todo ID is required" }, 400);
+    }
     const db = getDb(c.env.DB);
 
     // Verify todo belongs to trip

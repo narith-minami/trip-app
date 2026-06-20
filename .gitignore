@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.output/
+.vinxi/
+.tanstack/
+
+# Coverage & test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Env & local
+.env
+.env.*
+.dev.vars
+.wrangler/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { getDb, tripMemos } from "../db";
 import { requireSession, getUserId } from "../middleware/auth";
 import { requireMember } from "../middleware/requireMember";
+import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { AuthContext } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
@@ -19,13 +20,12 @@ const MemoSchema = z.object({
   content: z.string(),
 });
 
-const memoRouter = new Hono<TripMemberContext>();
-
 /**
  * GET /api/trips/:tripId/memo
  * Get trip memo (upsert pattern - creates empty if doesn't exist)
  */
-memoRouter.get("/", requireSession(), requireMember, async (c) => {
+const memoRouter = new Hono<TripMemberContext>()
+  .get("/", requireSession(), requireMember, async (c) => {
   try {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
@@ -51,18 +51,16 @@ memoRouter.get("/", requireSession(), requireMember, async (c) => {
     console.error("Error fetching memo:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
-});
-
-/**
- * PUT /api/trips/:tripId/memo
- * Update memo
- */
-memoRouter.put("/", requireSession(), requireMember, async (c) => {
+})
+  /**
+   * PUT /api/trips/:tripId/memo
+   * Update memo
+   */
+  .put("/", requireSession(), requireMember, zValidator("json", MemoSchema), async (c) => {
   try {
     const userId = getUserId(c as any);
     const tripId = c.get("tripId");
-    const body = await c.req.json();
-    const validated = MemoSchema.parse(body);
+    const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
 
