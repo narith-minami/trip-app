@@ -63,29 +63,24 @@ const memoRouter = new Hono<TripMemberContext>()
 
       const db = getDb(c.env.DB);
 
-      // Get existing memo
-      const memo = await db.query.tripMemos.findFirst({
-        where: eq(tripMemos.tripId, tripId),
-      });
-
-      if (!memo) {
-        // Create if doesn't exist
-        await db.insert(tripMemos).values({
+      // Atomic upsert: insert the memo or update it if one already exists
+      // for this trip. Avoids a read-then-write race under concurrency.
+      await db
+        .insert(tripMemos)
+        .values({
           tripId,
           content: validated.content,
           updatedBy: userId,
-        });
-      } else {
-        // Update if exists
-        await db
-          .update(tripMemos)
-          .set({
+          updatedAt: new Date().getTime(),
+        })
+        .onConflictDoUpdate({
+          target: tripMemos.tripId,
+          set: {
             content: validated.content,
             updatedBy: userId,
             updatedAt: new Date().getTime(),
-          })
-          .where(eq(tripMemos.tripId, tripId));
-      }
+          },
+        });
 
       const updated = await db.query.tripMemos.findFirst({
         where: eq(tripMemos.tripId, tripId),

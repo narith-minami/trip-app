@@ -22,26 +22,26 @@ export function TripCard({ trip, onClick }: TripCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full overflow-hidden rounded-lg bg-white text-left shadow transition hover:shadow-lg"
+      className="block w-full overflow-hidden rounded-lg bg-white text-left shadow transition hover:shadow-lg"
     >
       {trip.coverImageUrl && (
-        <div className="h-48 w-full bg-gray-200">
+        <span className="block h-48 w-full bg-gray-200">
           <img src={trip.coverImageUrl} alt={trip.title} className="h-full w-full object-cover" />
-        </div>
+        </span>
       )}
-      <div className="p-4">
-        <h2 className="mb-2 text-xl font-semibold text-gray-900">{trip.title}</h2>
-        {trip.destination && <p className="mb-2 text-gray-600">{trip.destination}</p>}
-        <p className="mb-4 text-sm text-gray-500">
+      <span className="block p-4">
+        <span className="mb-2 block text-xl font-semibold text-gray-900">{trip.title}</span>
+        {trip.destination && <span className="mb-2 block text-gray-600">{trip.destination}</span>}
+        <span className="mb-4 block text-sm text-gray-500">
           {trip.startDate} to {trip.endDate}
-        </p>
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">{trip.members?.length ?? 0} members</div>
+        </span>
+        <span className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">{trip.members?.length ?? 0} members</span>
           <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
             {isOwner ? "Owner" : "Member"}
           </span>
-        </div>
-      </div>
+        </span>
+      </span>
     </button>
   );
 }

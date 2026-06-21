@@ -12,13 +12,18 @@ const INVALID_DATE_MSG = "Invalid date format, expected YYYY-MM-DD";
 /**
  * Schema for creating a new trip
  */
-export const CreateTripSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
-  description: z.string().max(500, "Description must be 500 characters or less").optional(),
-  startDate: z.string().date(INVALID_DATE_MSG),
-  endDate: z.string().date(INVALID_DATE_MSG),
-  location: z.string().max(200, "Location must be 200 characters or less").optional(),
-});
+export const CreateTripSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
+    description: z.string().max(500, "Description must be 500 characters or less").optional(),
+    startDate: z.string().date(INVALID_DATE_MSG),
+    endDate: z.string().date(INVALID_DATE_MSG),
+    location: z.string().max(200, "Location must be 200 characters or less").optional(),
+  })
+  .refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
+    message: "End date must be on or after start date",
+    path: ["endDate"],
+  });
 
 export type CreateTrip = z.infer<typeof CreateTripSchema>;
 

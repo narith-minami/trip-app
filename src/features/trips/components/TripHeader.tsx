@@ -102,6 +102,7 @@ export function TripHeader({ trip, isOwner, editor, onBack }: TripHeaderProps) {
                 value={editor.editData.title}
                 onChange={(e) => editor.setField("title", e.target.value)}
                 className="border-b-2 border-blue-500 text-3xl font-bold text-gray-900 focus:outline-none"
+                aria-label="Trip Title"
               />
             ) : (
               <h1 className="text-3xl font-bold text-gray-900">{trip.title}</h1>

@@ -24,6 +24,10 @@ type TripUpdateInput = Partial<typeof trips.$inferInsert>;
 /**
  * Build the set of fields to update from validated input, skipping
  * undefined values so untouched columns are left unchanged.
+ *
+ * Note: `description` has no column on the `trips` table (it maps to
+ * `destination` via `location`), so it is intentionally not persisted.
+ * `location` uses an explicit `!== undefined` check so it can be cleared.
  */
 function buildTripUpdate(validated: {
   title?: string;
@@ -35,7 +39,7 @@ function buildTripUpdate(validated: {
   if (validated.title) updateData.title = validated.title;
   if (validated.startDate) updateData.startDate = validated.startDate;
   if (validated.endDate) updateData.endDate = validated.endDate;
-  if (validated.location) updateData.destination = validated.location;
+  if (validated.location !== undefined) updateData.destination = validated.location;
   return updateData;
 }
 
