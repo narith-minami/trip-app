@@ -4,15 +4,15 @@
  * Container for the trip detail "Members" tab.
  */
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { removeMember } from "@/api/members";
-import { Card, CardBody } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { Card, CardBody } from "@/components/ui/card";
 import { useMembers } from "@/features/members/hooks/useMembers";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { TripMember } from "@/types/entities";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { InviteLinkBox } from "./InviteLinkBox";
 import { MemberAvatarList } from "./MemberAvatarList";
 
@@ -22,19 +22,14 @@ export interface MembersSectionProps {
   canManage?: boolean;
 }
 
-export function MembersSection({
-  tripId,
-  inviteToken,
-  canManage = false,
-}: MembersSectionProps) {
+export function MembersSection({ tripId, inviteToken, canManage = false }: MembersSectionProps) {
   const { data: members, isLoading, error } = useMembers(tripId);
   const queryClient = useQueryClient();
   const [pendingId, setPendingId] = useState<string | undefined>();
 
   const removeMutation = useMutation({
     mutationFn: (memberId: string) => removeMember(tripId, memberId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members.all(tripId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members.all(tripId) }),
   });
 
   const handleRemove = async (member: TripMember) => {

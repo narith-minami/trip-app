@@ -5,18 +5,15 @@
  * for the trip detail "Schedule" tab.
  */
 
-import { useState } from "react";
-import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { useScheduleItems, groupByDate } from "@/features/schedule/hooks/useScheduleItems";
+import { groupByDate, useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
 import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
 import type { ScheduleItem } from "@/types/entities";
-import {
-  ScheduleItemForm,
-  type ScheduleFormValues,
-} from "./ScheduleItemForm";
+import { useState } from "react";
+import { toast } from "sonner";
+import { type ScheduleFormValues, ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
 
 export interface ScheduleSectionProps {

@@ -4,9 +4,9 @@
  * Shows the trip invite link with a copy-to-clipboard button.
  */
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export interface InviteLinkBoxProps {
   inviteToken: string;

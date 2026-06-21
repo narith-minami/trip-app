@@ -4,11 +4,11 @@
  * Controlled form for creating or editing a schedule item.
  */
 
-import { useState } from "react";
-import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import type { ScheduleItem } from "@/types/entities";
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 export interface ScheduleFormValues {
   date: string;
@@ -45,9 +45,7 @@ export function ScheduleItemForm({
   onSubmit,
   onCancel,
 }: ScheduleItemFormProps) {
-  const [values, setValues] = useState<ScheduleFormValues>(() =>
-    toValues(initial, defaultDate)
-  );
+  const [values, setValues] = useState<ScheduleFormValues>(() => toValues(initial, defaultDate));
 
   const set = (key: keyof ScheduleFormValues, value: string) =>
     setValues((prev) => ({ ...prev, [key]: value }));

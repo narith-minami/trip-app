@@ -8,8 +8,8 @@
  * This file provides Drizzle type definitions for interoperability.
  */
 
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // ============================================================================
 // Users Table (Better Auth)

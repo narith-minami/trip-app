@@ -5,11 +5,11 @@
  * Handles cover image uploads to R2 and database updates.
  */
 
-import { Hono } from "hono";
-import { eq } from "drizzle-orm";
-import { getDb, trips } from "../db";
-import { requireSession, getUserId } from "../middleware/auth";
 import { generateId } from "@/lib/utils";
+import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { getDb, trips } from "../db";
+import { getUserId, requireSession } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
 
 /**
@@ -18,7 +18,7 @@ import type { AuthContext } from "../middleware/auth";
  */
 const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), async (c) => {
   try {
-    const userId = getUserId(c as any);
+    const userId = getUserId(c);
     if (!userId) {
       return c.json({ error: "Unauthorized" }, 401);
     }
@@ -66,8 +66,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
           contentType: file.type,
         },
       });
-    } catch (error) {
-      console.error("Error uploading to R2:", error);
+    } catch (_error) {
       return c.json({ error: "Failed to upload image" }, 500);
     }
 
@@ -79,8 +78,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     });
 
     return c.json(updated);
-  } catch (error) {
-    console.error("Error uploading cover:", error);
+  } catch (_error) {
     return c.json({ error: "Internal server error" }, 500);
   }
 });

@@ -26,6 +26,7 @@ import boundaries    from "eslint-plugin-boundaries";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import importPlugin  from "eslint-plugin-import";
 import sonarjs       from "eslint-plugin-sonarjs";
+import tseslint      from "typescript-eslint";
 
 // ================================================================
 // 閾値定数 — ここを変えれば全ルールに反映
@@ -54,6 +55,27 @@ export default [
       "*.config.cjs",
       ".dependency-cruiser.cjs",
     ],
+  },
+
+  // ----------------------------------------------------------------
+  // TypeScript パーサ設定 (全 .ts/.tsx 共通)
+  // ----------------------------------------------------------------
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tseslint.parser,
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    settings: {
+      "import/resolver": {
+        typescript: { project: "./tsconfig.json" },
+        node: true,
+      },
+    },
   },
 
   // ================================================================

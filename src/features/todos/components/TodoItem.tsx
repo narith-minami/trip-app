@@ -29,12 +29,7 @@ export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoIte
           onChange={() => onToggle(todo)}
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        <span
-          className={cn(
-            "truncate",
-            done ? "text-gray-400 line-through" : "text-gray-900"
-          )}
-        >
+        <span className={cn("truncate", done ? "text-gray-400 line-through" : "text-gray-900")}>
           {todo.title}
         </span>
       </label>
@@ -47,12 +42,7 @@ export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoIte
             className="h-7 w-7 text-xs"
           />
         )}
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={disabled}
-          onClick={() => onDelete(todo)}
-        >
+        <Button size="sm" variant="ghost" disabled={disabled} onClick={() => onDelete(todo)}>
           Delete
         </Button>
       </div>

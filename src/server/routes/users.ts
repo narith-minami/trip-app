@@ -6,7 +6,7 @@
  */
 
 import { Hono } from "hono";
-import { requireSession, getUser } from "../middleware/auth";
+import { getUser, requireSession } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
 
 /**
@@ -30,8 +30,7 @@ const usersRouter = new Hono<AuthContext>().get("/me", requireSession(), async (
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
-  } catch (error) {
-    console.error("Error fetching user:", error);
+  } catch (_error) {
     return c.json({ error: "Internal server error" }, 500);
   }
 });

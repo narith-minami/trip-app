@@ -52,7 +52,7 @@ export type AuthContext = {
  * @returns Hono middleware function
  */
 export function requireSession() {
-  return async (c: Context<AuthContext>, next: Next): Promise<Response | void> => {
+  return async (c: Context<AuthContext>, next: Next): Promise<Response | undefined> => {
     // Extract Bearer token from Authorization header
     const authHeader = c.req.header("Authorization");
     const token = authHeader?.replace(/^Bearer\s+/, "");
@@ -80,23 +80,25 @@ export function requireSession() {
 }
 
 /**
- * Get session from context (requires requireSession middleware)
+ * Get session from context (requires requireSession middleware).
+ * Generic over the context env so contexts that extend AuthContext
+ * (e.g. TripMemberContext) can be passed without casting.
  */
-export function getSession(c: Context<AuthContext>): Session | null {
+export function getSession<E extends AuthContext>(c: Context<E>): Session | null {
   return c.get("session") ?? null;
 }
 
 /**
  * Get user from context (requires requireSession middleware)
  */
-export function getUser(c: Context<AuthContext>): Session["user"] | null {
+export function getUser<E extends AuthContext>(c: Context<E>): Session["user"] | null {
   return c.get("user") ?? null;
 }
 
 /**
  * Get user ID from context (requires requireSession middleware)
  */
-export function getUserId(c: Context<AuthContext>): string | null {
+export function getUserId<E extends AuthContext>(c: Context<E>): string | null {
   const user = c.get("user");
   return user?.id ?? null;
 }

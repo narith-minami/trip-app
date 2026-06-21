@@ -64,6 +64,7 @@
     "dependency-cruiser": "^16.0.0",
     "drizzle-kit": "^0.31.0",
     "eslint": "^9.0.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-boundaries": "^5.0.0",
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-react-compiler": "19.0.0-beta-af1b7da-20250417",
@@ -75,16 +76,13 @@
     "npm-run-all2": "^7.0.0",
     "react-doctor": "^0.5.0",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.61.1",
     "vite": "^6.0.0",
     "vitest": "^3.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,css}": [
-      "biome check --write --no-errors-on-unmatched"
-    ],
-    "*.{ts,tsx}": [
-      "eslint --max-warnings 0 --fix"
-    ]
+    "*.{ts,tsx,js,jsx,json,css}": ["biome check --write --no-errors-on-unmatched"],
+    "*.{ts,tsx}": ["eslint --max-warnings 0 --fix"]
   },
   "bundlesize": [
     {
@@ -97,8 +95,6 @@
     }
   ],
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome"]
   }
 }
