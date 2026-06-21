@@ -13,6 +13,19 @@ export interface UserSummary {
   image?: string | null;
 }
 
+export interface Trip {
+  id: string;
+  title: string;
+  destination?: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  ownerId: string;
+  inviteToken: string;
+  coverImageUrl?: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface ScheduleItem {
   id: string;
   tripId: string;

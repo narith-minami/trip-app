@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React 技術負債ゼロ設計 v3 — SonarJS 統合版</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f7f4;--surface:#fff;--border:#e5e2dc;--text:#1a1916;--muted:#6b6760;--dim:#a8a49e;--accent:#2563eb;--al:#93c5fd;--green:#16a34a;--amber:#d97706;--red:#dc2626;--purple:#7c3aed;--mono:'IBM Plex Mono',monospace;--sans:'Noto Sans JP',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.7}
+header{background:#0a0a0a;border-bottom:3px solid var(--accent);padding:44px 56px 36px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--al);margin-bottom:12px;text-transform:uppercase}
+header h1{font-size:27px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px}
+header h1 span{color:var(--al)}
+.hmeta{font-family:var(--mono);font-size:11px;color:#6b7280;margin-top:8px}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-bottom:1px solid var(--border)}
+.stat{padding:16px 20px;border-right:1px solid var(--border)}.stat:last-child{border-right:none}
+.stat-num{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1;margin-bottom:4px}
+.stat-label{font-size:11px;color:var(--muted)}
+.cb{color:var(--accent)}.cg{color:var(--green)}.ca{color:var(--amber)}.cp{color:var(--purple)}.cr{color:var(--red)}
+.layout{display:grid;grid-template-columns:220px 1fr;max-width:1200px;margin:0 auto}
+nav{position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 0;border-right:1px solid var(--border);background:var(--surface)}
+.nlabel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);padding:0 20px 6px;text-transform:uppercase}
+nav a{display:block;padding:6px 20px;font-size:12.5px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all .15s;line-height:1.4}
+nav a:hover{color:var(--text);background:var(--bg)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:#eff6ff;font-weight:500}
+.ndiv{height:1px;background:var(--border);margin:8px 16px}
+.content{padding:32px 44px 60px}
+.sumbox{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:20px 24px;margin-bottom:32px;border-radius:0 4px 4px 0}
+.sumbox .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--accent);margin-bottom:10px;text-transform:uppercase}
+.sumbox p{color:var(--muted);font-size:13.5px;line-height:1.75;margin-bottom:10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{font-family:var(--mono);font-size:10px;background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:2px}
+section{margin-bottom:44px}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.si{font-size:17px}.st{font-size:15px;font-weight:700;flex:1}
+.sc{font-family:var(--mono);font-size:10px;color:var(--dim);background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.card.hi{border-left:3px solid var(--accent)}.card.new{border-left:3px solid var(--green)}.card.warn{border-left:3px solid var(--amber)}.card.dep{border-left:3px solid var(--purple)}
+.ct{display:flex;align-items:baseline;gap:10px;padding:12px 18px 0}
+.cstep{font-family:var(--mono);font-size:11px;color:var(--accent);background:#eff6ff;border:1px solid #bfdbfe;padding:1px 7px;border-radius:2px;white-space:nowrap;font-weight:500}
+.ctitle{font-size:13.5px;font-weight:700;line-height:1.4;flex:1}
+.cb2{padding:7px 18px 12px;color:var(--muted);font-size:13px}.cb2 p{margin-bottom:6px}
+.cf{display:flex;align-items:center;gap:8px;padding:7px 18px 11px;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:9px;font-weight:500;padding:2px 7px;border-radius:2px;letter-spacing:.05em;text-transform:uppercase}
+.bt{background:#eff6ff;color:var(--accent);border:1px solid #bfdbfe}
+.ba{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.bw{background:#fffbeb;color:var(--amber);border:1px solid #fde68a}
+.bci{background:#1a1916;color:#e5e7eb;border:1px solid #374151}
+.bm{background:var(--accent);color:#fff;border:none}
+.bn{background:var(--green);color:#fff;border:none}
+.bs{background:var(--purple);color:#fff;border:none}
+code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:2px;color:var(--text)}
+.cb3{background:#0f1117;border-radius:4px;padding:14px 18px;margin:10px 0 6px;overflow-x:auto}
+.cb3 pre{font-family:var(--mono);font-size:11.5px;color:#e2e8f0;line-height:1.7;white-space:pre}
+.cm{color:#6b7280}.ck{color:#93c5fd}.cv{color:#86efac}.cs{color:#fca5a5}.cn{color:#c4b5fd}.co{color:#fdba74}
+.dl{margin:8px 0 4px 16px}.dl li{margin-bottom:4px;font-size:12.5px;color:var(--muted)}.dl li b{color:var(--text)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+.tbl th{font-family:var(--mono);font-size:10px;font-weight:500;text-align:left;padding:8px 12px;background:var(--bg);border:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tbl td{padding:9px 12px;border:1px solid var(--border);vertical-align:top;color:var(--muted);line-height:1.5}
+.tbl td:first-child{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:500}
+.tbl tr:hover td{background:var(--bg)}
+.tbl .val{font-family:var(--mono);color:var(--text);font-weight:700;white-space:nowrap}
+.tbl .ok{color:var(--green);font-weight:700}.tbl .ng{color:var(--red);font-weight:700}.tbl .par{color:var(--amber);font-weight:700}
+.chip{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 8px;border-radius:12px;margin:0 2px}
+.chb{background:#eff6ff;color:var(--accent);border:1px solid #bfdbfe}
+.chg{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.cha{background:#fffbeb;color:var(--amber);border:1px solid #fde68a}
+.chp{background:#faf5ff;color:var(--purple);border:1px solid #e9d5ff}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px 16px}
+.rc.t1{border-top:3px solid var(--accent)}.rc.t2{border-top:3px solid var(--purple)}.rc.t3{border-top:3px solid var(--green)}.rc.t4{border-top:3px solid var(--amber)}
+.rn{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);margin-bottom:8px}
+.ri{list-style:none}.ri li{font-size:12px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:6px}
+.ri li:last-child{border-bottom:none}.ri li::before{content:"→";color:var(--dim);font-family:var(--mono);font-size:10px;margin-top:2px;flex-shrink:0}
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.ic{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px}
+.in{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:.1em;margin-bottom:8px;text-transform:uppercase}
+.it{font-size:13px;font-weight:700;margin-bottom:7px}
+.ib{font-size:12px;color:var(--muted);line-height:1.6}
+.flow{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin:14px 0}
+.fi{flex:1;padding:12px 14px;border-right:1px solid var(--border)}.fi:last-child{border-right:none}
+.fl{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.ft{font-size:12px;font-weight:700;color:var(--text)}
+.fd{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.callout{background:#eff6ff;border:1px solid #bfdbfe;border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:10px 14px;margin:10px 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+.callout b{color:var(--accent)}
+.callout.warn{background:#fffbeb;border-color:#fde68a;border-left-color:var(--amber)}.callout.warn b{color:var(--amber)}
+.callout.green{background:#f0fdf4;border-color:#bbf7d0;border-left-color:var(--green)}.callout.green b{color:var(--green)}
+.callout.purple{background:#faf5ff;border-color:#e9d5ff;border-left-color:var(--purple)}.callout.purple b{color:var(--purple)}
+footer{background:#0a0a0a;padding:24px 56px;display:flex;align-items:center;justify-content:space-between}
+footer .fl2{font-family:var(--mono);font-size:11px;color:#6b7280}
+footer .fr{font-family:var(--mono);font-size:10px;color:#4b5563;text-align:right}
+@media(max-width:720px){
+  header,.content,footer{padding:24px 20px}
+  .layout{grid-template-columns:1fr}
+  nav{display:none}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .ig,.rg{grid-template-columns:1fr}
+  .flow{flex-direction:column}
+  .fi{border-right:none;border-bottom:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">lbose, inc. / React DX / 2026 — v3.0 SonarJS統合版</div>
+  <h1>React <span>技術負債ゼロ</span> 設計<br><span>— Biome + ESLint(SonarJS) 完全統合 導入ガイド —</span></h1>
+  <div class="hmeta">Biome + ESLint(SonarJS+minimal) + dependency-cruiser + react-doctor + pnpm · v3.0.0 · 2026-06-20</div>
+</header>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-num cb">CCN≤10</div><div class="stat-label">Cognitive 閾値 (Biome+SonarJS)</div></div>
+  <div class="stat"><div class="stat-num cg">≤60行</div><div class="stat-label">関数最大行数 (実行行)</div></div>
+  <div class="stat"><div class="stat-num ca">≥70%</div><div class="stat-label">カバレッジ最低ライン</div></div>
+  <div class="stat"><div class="stat-num cp">9 jobs</div><div class="stat-label">CI防衛ゲート数</div></div>
+  <div class="stat"><div class="stat-num cr">0</div><div class="stat-label">Python依存 (Lizard廃止)</div></div>
+</div>
+
+<div class="layout">
+<nav id="main-nav">
+  <div class="nlabel">設計思想</div>
+  <a href="#summary" class="active">概要・v3変更点</a>
+  <a href="#why-sonarjs">なぜSonarJSか</a>
+  <a href="#division">ツール分担</a>
+  <a href="#thresholds">閾値一覧</a>
+  <div class="ndiv"></div>
+  <div class="nlabel">設定ファイル</div>
+  <a href="#tsconfig">tsconfig.json</a>
+  <a href="#biome">biome.json</a>
+  <a href="#eslint">eslint.config.mjs</a>
+  <a href="#depcruiser">.dependency-cruiser</a>
+  <a href="#vitest">vitest.config.ts</a>
+  <a href="#pkg">package.json</a>
+  <a href="#ci">ci.yml</a>
+  <div class="ndiv"></div>
+  <a href="#matrix">検知対照表</a>
+  <a href="#insights">設計原則</a>
+</nav>
+
+<div class="content">
+
+<!-- SUMMARY -->
+<div class="sumbox" id="summary">
+  <div class="lbl">EXECUTIVE SUMMARY — v3.0 変更点</div>
+  <p>
+    v2.0 では <b>Lizard</b>（Python CLI）を使って Cyclomatic Complexity / 関数行数 / 引数数を検知していた。
+    v3.0 では Lizard を廃止し、<b>eslint-plugin-sonarjs</b> に完全移行した。
+    SonarJS は ESLint プラグインとして動作するため Python のセットアップが不要になり、
+    CI の job 数も 10 → 9 に削減。IDE でのリアルタイム検知も同時に実現する。
+  </p>
+  <p>
+    <b>追加検知能力:</b> SonarJS は Lizard が持たなかった
+    <code>no-identical-functions</code>（コードクローン）・
+    <code>no-duplicate-string</code>（マジックストリング）・
+    <code>no-duplicated-branches</code>（条件分岐の重複実装）・
+    <code>no-ignored-return</code>（副作用なし関数の戻り値無視）等を追加検知できる。
+  </p>
+  <div class="tags">
+    <span class="tag">Biome</span>
+    <span class="tag">ESLint(SonarJS統合)</span>
+    <span class="tag">eslint-plugin-sonarjs</span>
+    <span class="tag">dependency-cruiser</span>
+    <span class="tag">react-doctor</span>
+    <span class="tag">knip</span>
+    <span class="tag">bundlesize</span>
+    <span class="tag">vitest coverage</span>
+    <span class="tag">pnpm</span>
+  </div>
+</div>
+
+<!-- WHY SONARJS -->
+<section id="why-sonarjs">
+  <div class="sh"><div class="si">🔬</div><h2 class="st">なぜ Lizard → SonarJS か</h2></div>
+
+  <div class="card hi">
+    <div class="cb2" style="padding:14px 18px">
+      <table class="tbl">
+        <thead><tr><th>観点</th><th>Lizard (廃止)</th><th>SonarJS (採用)</th></tr></thead>
+        <tbody>
+          <tr><td>実行環境</td><td>Python CLI (pip install)</td><td class="ok">ESLintプラグイン (pnpm add)</td></tr>
+          <tr><td>CI セットアップ</td><td>setup-python + pip が必要</td><td class="ok">pnpm install だけで完結</td></tr>
+          <tr><td>IDE リアルタイム検知</td><td class="ng">✗ CLIのみ</td><td class="ok">✓ VS Code 等で即時エラー</td></tr>
+          <tr><td>Cognitive Complexity</td><td class="ng">✗ Cyclomatic のみ</td><td class="ok">✓ SonarSource 公式アルゴリズム</td></tr>
+          <tr><td>コードクローン検出</td><td>✓ --CPD (行単位)</td><td class="ok">✓ no-identical-functions (関数単位・より正確)</td></tr>
+          <tr><td>重複文字列検出</td><td class="ng">✗</td><td class="ok">✓ no-duplicate-string</td></tr>
+          <tr><td>条件分岐の重複実装</td><td class="ng">✗</td><td class="ok">✓ no-duplicated-branches</td></tr>
+          <tr><td>論理バグ検出</td><td class="ng">✗</td><td class="ok">✓ no-identical-expressions 等</td></tr>
+          <tr><td>関数行数制限</td><td>✓ -L 60</td><td class="par">→ ESLint max-lines-per-function で継続</td></tr>
+          <tr><td>引数数制限</td><td>✓ -a 4</td><td class="par">→ ESLint max-params で継続</td></tr>
+          <tr><td>週間DL数</td><td>少</td><td class="ok">約193万/週 (成熟OSS)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card new">
+    <div class="ct"><span class="ctitle">Biome と SonarJS の役割分担 — Cognitive Complexity の二重チェック</span></div>
+    <div class="cb2">
+      <p>Cognitive Complexity は <b>Biome</b> と <b>SonarJS</b> の両方が同じ SonarSource アルゴリズムで測定する。意図的な二重チェック。</p>
+      <ul class="dl">
+        <li><b>Biome:</b> CI での高速チェック。<code>noExcessiveCognitiveComplexity</code> が違反を error にする</li>
+        <li><b>SonarJS:</b> IDE (VS Code) でのリアルタイム表示。コードを書いた瞬間に赤線が出る</li>
+      </ul>
+      <p style="margin-top:8px;">どちらも閾値 10 で統一。片方をすり抜けてももう片方が必ず検知する。</p>
+    </div>
+    <div class="cf"><span class="badge bn">DUAL CHECK</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><span class="ctitle">SonarJS recommended を使わずピンポイント指定する理由</span></div>
+    <div class="cb2">
+      <p>SonarJS v2 以降は <code>recommended</code> に大量のルールが追加され、Biome / typescript-eslint との重複が発生する。本構成では <b>Biome が担わない領域だけ</b>を SonarJS でカバーするため、ルールをピンポイントで指定する。</p>
+      <ul class="dl">
+        <li><b>使わない:</b> <code>sonarjs/recommended</code> 全体 — Biome重複・ノイズが多い</li>
+        <li><b>使う:</b> コードクローン / 重複文字列 / 条件分岐重複 / 論理バグ / Cognitive Complexity の13ルール</li>
+      </ul>
+    </div>
+    <div class="cf"><span class="badge bt">DESIGN DECISION</span></div>
+  </div>
+</section>
+
+<!-- DIVISION -->
+<section id="division">
+  <div class="sh"><div class="si">🗺️</div><h2 class="st">ツール分担マップ — v3.0</h2></div>
+
+  <div class="flow">
+    <div class="fi">
+      <div class="fl">Format + General Lint</div>
+      <div class="ft">Biome</div>
+      <div class="fd">400+ルール / Cognitive≤10(error) / 命名 / a11y</div>
+    </div>
+    <div class="fi">
+      <div class="fl">Hooks / Arch / SonarJS / Size</div>
+      <div class="ft">ESLint</div>
+      <div class="fd">react-hooks / boundaries / SonarJS13ルール / 行数・引数</div>
+    </div>
+    <div class="fi">
+      <div class="fl">依存グラフ</div>
+      <div class="ft">dep-cruiser</div>
+      <div class="fd">12ルール / 循環参照 / SVG可視化</div>
+    </div>
+    <div class="fi">
+      <div class="fl">Reactスコア</div>
+      <div class="ft">react-doctor</div>
+      <div class="fd">60+ルール / 0-100点</div>
+    </div>
+    <div class="fi">
+      <div class="fl">デッドコード</div>
+      <div class="ft">knip</div>
+      <div class="fd">未使用ファイル / export</div>
+    </div>
+  </div>
+
+  <div class="rg">
+    <div class="rc t1">
+      <div class="rn">Biome — Format + 一般Lint + Cognitive Complexity</div>
+      <ul class="ri">
+        <li>フォーマット (Prettier完全代替)</li>
+        <li>import 自動整理</li>
+        <li><b>Cognitive Complexity ≤ 10 (error)</b> ← CI ゲート</li>
+        <li>命名規則 (camelCase / PascalCase / CONSTANT_CASE)</li>
+        <li>noUnusedVariables / noUnusedImports (error)</li>
+        <li>noExplicitAny / noDangerouslySetInnerHtml (error)</li>
+        <li>noBarrelFile / noReExportAll (warn)</li>
+        <li>a11y 基本ルール全般</li>
+      </ul>
+    </div>
+    <div class="rc t2">
+      <div class="rn">ESLint — Hooks / Architecture / <b>SonarJS</b> / Metrics</div>
+      <ul class="ri">
+        <li>react-hooks/rules-of-hooks (error)</li>
+        <li>react-hooks/exhaustive-deps (warn)</li>
+        <li>react-compiler/react-compiler (error)</li>
+        <li>boundaries/element-types — 層間制約 (error)</li>
+        <li>@tanstack/query ベストプラクティス</li>
+        <li><b>sonarjs/cognitive-complexity ≤10 (IDE表示)</b></li>
+        <li><b>sonarjs/no-identical-functions (コードクローン)</b></li>
+        <li><b>sonarjs/no-duplicate-string (重複文字列)</b></li>
+        <li><b>sonarjs/no-duplicated-branches (条件重複)</b></li>
+        <li><b>sonarjs/no-identical-expressions (同一条件)</b></li>
+        <li><b>sonarjs/no-one-iteration-loop 他 (論理バグ)</b></li>
+        <li>max-lines-per-function ≤60 / max-lines ≤300 (warn)</li>
+        <li>max-params ≤4 / max-depth ≤3 (warn)</li>
+        <li>import/max-dependencies ≤10 / import/no-cycle (warn/error)</li>
+        <li>fetch 直書き禁止 (error)</li>
+      </ul>
+    </div>
+    <div class="rc t3">
+      <div class="rn">dependency-cruiser — 依存グラフ (12ルール)</div>
+      <ul class="ri">
+        <li>no-circular (循環参照 error)</li>
+        <li>no-orphans (孤立ファイル warn)</li>
+        <li>features-not-to-features (error)</li>
+        <li>components-not-to-api (error)</li>
+        <li>api-not-to-ui (error)</li>
+        <li>not-to-dev-dep (本番ビルド保護 error)</li>
+        <li>no-unshared-common (warn)</li>
+        <li>内部モジュール保護 (error)</li>
+        <li>SVGグラフ自動生成</li>
+      </ul>
+    </div>
+    <div class="rc t4">
+      <div class="rn">その他ゲート</div>
+      <ul class="ri">
+        <li>react-doctor: 60+ルール ヘルスコア</li>
+        <li>knip: デッドコード検出</li>
+        <li>bundlesize: JS ≤ 150kB</li>
+        <li>vitest coverage: ≥ 70% (全4軸)</li>
+        <li>tsconfig strict: 全オプション有効</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- THRESHOLDS -->
+<section id="thresholds">
+  <div class="sh"><div class="si">📐</div><h2 class="st">閾値一覧 — THRESHOLDS 定数で一元管理</h2></div>
+
+  <div class="callout purple">
+    <b>eslint.config.mjs の THRESHOLDS オブジェクト</b>を変えれば全ルールに反映される。
+    チームの議論も「<code>THRESHOLDS.MAX_FUNC_LINES を 60 → 50 にするか</code>」と具体的になる。
+  </div>
+
+  <div class="card hi">
+    <div class="cb2" style="padding:14px 18px">
+      <table class="tbl">
+        <thead>
+          <tr><th>定数名</th><th>値</th><th>適用ルール</th><th>レベル</th><th>根拠</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>COGNITIVE_COMPLEXITY</td>
+            <td class="val"><span class="chip chb">10</span></td>
+            <td><code>sonarjs/cognitive-complexity</code><br>+ Biome</td>
+            <td>error</td>
+            <td>SonarSource 推奨。10超=レビュアー5分以上。Biomeと同値で揃える</td>
+          </tr>
+          <tr>
+            <td>MAX_FUNC_LINES</td>
+            <td class="val"><span class="chip chg">60</span></td>
+            <td><code>max-lines-per-function</code></td>
+            <td>warn</td>
+            <td>スクリーン1.5画面。超えたら子コンポーネント / カスタムhook に分割</td>
+          </tr>
+          <tr>
+            <td>MAX_FILE_LINES</td>
+            <td class="val"><span class="chip chg">300</span></td>
+            <td><code>max-lines</code></td>
+            <td>warn</td>
+            <td>300行超=複数責務混在の可能性大</td>
+          </tr>
+          <tr>
+            <td>MAX_PARAMS</td>
+            <td class="val"><span class="chip cha">4</span></td>
+            <td><code>max-params</code></td>
+            <td>warn</td>
+            <td>4超→オブジェクト引数化のサイン。型安全性も上がる</td>
+          </tr>
+          <tr>
+            <td>MAX_DEPTH</td>
+            <td class="val"><span class="chip cha">3</span></td>
+            <td><code>max-depth</code></td>
+            <td>warn</td>
+            <td>3超→Early return / Extract Function で対応可能なケースがほぼ確実</td>
+          </tr>
+          <tr>
+            <td>MAX_DEPENDENCIES</td>
+            <td class="val"><span class="chip chb">10</span></td>
+            <td><code>import/max-dependencies</code></td>
+            <td>warn</td>
+            <td>10超=多重責務の間接シグナル。型importは除外してカウント</td>
+          </tr>
+          <tr>
+            <td>DUPLICATE_STRING_MIN</td>
+            <td class="val"><span class="chip chp">3</span></td>
+            <td><code>sonarjs/no-duplicate-string</code></td>
+            <td>warn</td>
+            <td>同一文字列が3回以上登場→定数に切り出すサイン</td>
+          </tr>
+          <tr>
+            <td>IDENTICAL_FUNC_LINES</td>
+            <td class="val"><span class="chip chp">3</span></td>
+            <td><code>sonarjs/no-identical-functions</code></td>
+            <td>warn</td>
+            <td>同一実装が3行以上の関数が複数→関数抽出のサイン (旧Lizard --CPD 相当)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TSCONFIG -->
+<section id="tsconfig">
+  <div class="sh"><div class="si">🔒</div><h2 class="st">tsconfig.json — strict 全有効 (変更なし)</h2></div>
+  <div class="callout green">
+    <b>v2.0 から変更なし。</b>
+    <code>strict: true</code> + <code>noUncheckedIndexedAccess</code> / <code>exactOptionalPropertyTypes</code> / <code>verbatimModuleSyntax</code> 等を維持。
+  </div>
+</section>
+
+<!-- BIOME -->
+<section id="biome">
+  <div class="sh"><div class="si">⚡</div><h2 class="st">biome.json — 変更なし (v2.0 設定を維持)</h2></div>
+  <div class="callout green">
+    <b>v2.0 から変更なし。</b>
+    Cognitive Complexity は <code>error</code> / 閾値 <code>10</code> を維持。
+    SonarJS の <code>cognitive-complexity</code> と同じ閾値・同じアルゴリズムで二重チェックする。
+  </div>
+</section>
+
+<!-- ESLINT -->
+<section id="eslint">
+  <div class="sh"><div class="si">🔬</div><h2 class="st">eslint.config.mjs — SonarJS ブロック追加</h2><span class="sc">v3 主要変更</span></div>
+
+  <div class="callout purple">
+    <b>v3 最大の変更点:</b> Lizard（外部CLI）を廃止し、④ SonarJS ブロックを追加。
+    コードクローン・重複文字列・論理バグを ESLint のエコシステム内で完結させる。
+  </div>
+
+  <div class="card hi">
+    <div class="ct"><span class="cstep">新規 ④</span><span class="ctitle">SonarJS ブロック — 13ルール ピンポイント指定</span></div>
+    <div class="cb2">
+      <div class="cb3"><pre><span class="cm">// import</span>
+import sonarjs from <span class="cv">"eslint-plugin-sonarjs"</span>;
+
+<span class="cm">// ブロック④: SonarJSルール (src/**/*.{ts,tsx})</span>
+{
+  plugins: { sonarjs },
+  rules: {
+    <span class="cm">// Cognitive Complexity (Biome と同閾値 → IDE でリアルタイム表示)</span>
+    <span class="ck">"sonarjs/cognitive-complexity"</span>: [<span class="cs">"error"</span>, THRESHOLDS.COGNITIVE_COMPLEXITY],
+
+    <span class="cm">// コードクローン (旧 Lizard --CPD 相当・関数単位でより正確)</span>
+    <span class="ck">"sonarjs/no-identical-functions"</span>: [<span class="cs">"warn"</span>, THRESHOLDS.IDENTICAL_FUNC_LINES],
+
+    <span class="cm">// マジックストリング → 定数化のサイン</span>
+    <span class="ck">"sonarjs/no-duplicate-string"</span>: [<span class="cs">"warn"</span>, { threshold: THRESHOLDS.DUPLICATE_STRING_MIN }],
+
+    <span class="cm">// 条件分岐の重複実装 → コピペバグの典型</span>
+    <span class="ck">"sonarjs/no-duplicated-branches"</span>:     <span class="cs">"error"</span>,
+    <span class="ck">"sonarjs/no-all-duplicated-branches"</span>:  <span class="cs">"error"</span>,
+
+    <span class="cm">// 同一条件式 / 恒真条件</span>
+    <span class="ck">"sonarjs/no-identical-conditions"</span>:   <span class="cs">"error"</span>,
+    <span class="ck">"sonarjs/no-identical-expressions"</span>:   <span class="cs">"error"</span>,
+
+    <span class="cm">// 論理バグ</span>
+    <span class="ck">"sonarjs/no-one-iteration-loop"</span>:      <span class="cs">"error"</span>,
+    <span class="ck">"sonarjs/no-ignored-return"</span>:          <span class="cs">"warn"</span>,
+    <span class="ck">"sonarjs/no-empty-collection"</span>:        <span class="cs">"error"</span>,
+
+    <span class="cm">// 冗長コード</span>
+    <span class="ck">"sonarjs/no-collapsible-if"</span>:          <span class="cs">"warn"</span>,
+    <span class="ck">"sonarjs/no-redundant-boolean"</span>:       <span class="cs">"error"</span>,
+    <span class="ck">"sonarjs/no-redundant-jump"</span>:          <span class="cs">"warn"</span>,
+    <span class="ck">"sonarjs/max-switch-cases"</span>:           [<span class="cs">"warn"</span>, <span class="cn">10</span>],
+  },
+}</pre></div>
+    </div>
+    <div class="cf"><span class="badge bs">SONARJS</span><span class="badge bn">NEW v3</span></div>
+  </div>
+
+  <div class="card warn">
+    <div class="ct"><span class="cstep">テスト例外</span><span class="ctitle">テストファイルは SonarJS ルールを緩める</span></div>
+    <div class="cb2">
+      <div class="cb3"><pre><span class="cm">// **/*.test.{ts,tsx} / **/*.spec.{ts,tsx}</span>
+<span class="ck">"sonarjs/no-identical-functions"</span>: <span class="cs">"off"</span>,  <span class="cm">// テストは同パターン繰り返しが正当</span>
+<span class="ck">"sonarjs/no-duplicate-string"</span>:    <span class="cs">"off"</span>,  <span class="cm">// テストIDや描画テキストは重複が自然</span></pre></div>
+    </div>
+    <div class="cf"><span class="badge bt">OVERRIDE</span></div>
+  </div>
+</section>
+
+<!-- DEPCRUISER -->
+<section id="depcruiser">
+  <div class="sh"><div class="si">🗂️</div><h2 class="st">.dependency-cruiser.cjs — 変更なし (12ルール継続)</h2></div>
+  <div class="callout green">
+    <b>v2.0 から変更なし。</b>
+    ESLintの <code>import/no-cycle</code> (SonarJS経由ではなくimport plugin) と二重チェックする形で循環参照を検知する。
+  </div>
+</section>
+
+<!-- VITEST -->
+<section id="vitest">
+  <div class="sh"><div class="si">🧪</div><h2 class="st">vitest.config.ts — 変更なし (カバレッジ閾値 70%)</h2></div>
+  <div class="callout green"><b>v2.0 から変更なし。</b> branches / functions / lines / statements すべて 70%。</div>
+</section>
+
+<!-- PACKAGE.JSON -->
+<section id="pkg">
+  <div class="sh"><div class="si">📦</div><h2 class="st">package.json — v3 変更点</h2></div>
+
+  <div class="card hi">
+    <div class="ct"><span class="cstep">変更</span><span class="ctitle">Lizard 削除 / SonarJS 追加 / scripts 整理</span></div>
+    <div class="cb2">
+      <div class="cb3"><pre><span class="cm">// devDependencies: lizard 削除 → sonarjs 追加</span>
+<span class="cs">- "lizard": Python CLI (pip install)</span>
+<span class="cv">+ "eslint-plugin-sonarjs": "^3.0.0"</span>
+
+<span class="cm">// scripts: lint:complexity / metrics:* を削除 (ESLintに統合)</span>
+<span class="cs">- "lint:complexity": "lizard src/ -l typescript -C 10 -L 60 -a 4 --warnings_only"</span>
+<span class="cs">- "metrics:complexity": "lizard src/ -l typescript --html -o docs/complexity-report.html"</span>
+<span class="cs">- "metrics:duplication": "lizard src/ -l typescript --CPD --duplicate_threshold 10"</span>
+
+<span class="cm">// lint スクリプトから lint:complexity を除去 (ESLint に統合済み)</span>
+<span class="cv">"lint": "run-s lint:biome lint:eslint lint:deps lint:doctor"</span></pre></div>
+      <div class="callout green"><b>効果:</b> Python環境不要になり、ローカル開発環境のセットアップが <code>pnpm install</code> だけで完結する。</div>
+    </div>
+    <div class="cf"><span class="badge bn">SIMPLIFIED</span></div>
+  </div>
+</section>
+
+<!-- CI -->
+<section id="ci">
+  <div class="sh"><div class="si">🚦</div><h2 class="st">ci.yml — v3 job構成 (9 jobs、Python不要)</h2></div>
+
+  <div class="card hi">
+    <div class="cb2" style="padding:14px 18px">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Job</th><th>役割</th><th>失敗条件</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>typecheck</td><td>tsc --noEmit</td><td>型エラー</td></tr>
+          <tr><td>2</td><td>biome</td><td>lint + format check + Cognitive≤10</td><td>違反 / フォーマット差分</td></tr>
+          <tr><td>3</td><td><b>ESLint + SonarJS</b></td><td>hooks / boundaries / <b>SonarJS 13ルール</b> / 行数・引数 + PRコメント</td><td>warn/error (--max-warnings 0)</td></tr>
+          <tr><td>4</td><td>deps</td><td>dependency-cruiser 12ルール + PRコメント</td><td>error レベル違反</td></tr>
+          <tr><td>5</td><td>react-doctor</td><td>React アンチパターン / ヘルスコア</td><td>warn 以上</td></tr>
+          <tr><td>6</td><td>bundle-size</td><td>bundlesize JS ≤ 150kB</td><td>サイズ超過</td></tr>
+          <tr><td>7</td><td>knip</td><td>デッドコード検出</td><td>continue-on-error (可視化優先)</td></tr>
+          <tr><td>8</td><td>test</td><td>vitest coverage ≥ 70%</td><td>カバレッジ閾値未達</td></tr>
+          <tr><td>9</td><td>build</td><td>本番ビルド確認</td><td>jobs 1,2,3 通過後に実行</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cf">
+      <span class="badge bn">v2: 10 jobs → v3: 9 jobs</span>
+      <span class="badge bt">Python依存 ゼロ</span>
+    </div>
+  </div>
+
+  <div class="card new">
+    <div class="ct"><span class="cstep">変更</span><span class="ctitle">ESLint job に閾値サマリーの PR コメントを統合</span></div>
+    <div class="cb2">
+      <p>旧 Lizard job の「PRコメントに閾値一覧を投稿する」機能を、ESLint job に統合した。</p>
+      <div class="cb3"><pre><span class="cm"># ESLint job 内の PRコメント投稿ステップ</span>
+- name: Post thresholds comment
+  if: github.event_name == 'pull_request'
+  uses: peter-evans/create-or-update-comment@v4
+  with:
+    body: |
+      ## 🔬 ESLint + SonarJS 品質閾値
+      | Cognitive Complexity | ≤ 10 | sonarjs/cognitive-complexity + Biome | error |
+      | 関数行数 (実行行)     | ≤ 60 | max-lines-per-function               | warn  |
+      | 重複関数             | ≥3行  | sonarjs/no-identical-functions        | warn  |
+      ...</pre></div>
+    </div>
+    <div class="cf"><span class="badge bn">INTEGRATED</span></div>
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section id="matrix">
+  <div class="sh"><div class="si">📊</div><h2 class="st">検知対照表 — v3 完全版</h2></div>
+
+  <div class="card">
+    <div class="cb2" style="padding:14px 18px">
+      <table class="tbl">
+        <thead>
+          <tr><th>検知したい問題</th><th>Biome</th><th>ESLint core</th><th>SonarJS</th><th>dep-cruiser</th><th>r-doctor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>フォーマット統一</td><td class="ok">✓</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>Cognitive Complexity &gt;10</td><td class="ok">✓ error</td><td class="ng">—</td><td class="ok">✓ error (IDE)</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>コードクローン (重複関数)</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ no-identical-functions</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>重複文字列 (マジック)</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ no-duplicate-string</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>条件分岐の重複実装</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ no-duplicated-branches</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>同一条件式 / 恒真条件</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ no-identical-expressions</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>論理バグ (無限ループ等)</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ no-one-iteration-loop</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>関数行数 &gt; 60行</td><td class="ng">—</td><td class="ok">✓ max-lines-per-function</td><td class="ng">—</td><td class="ng">—</td><td class="par">△ 補完</td></tr>
+          <tr><td>ファイル行数 &gt; 300行</td><td class="ng">—</td><td class="ok">✓ max-lines</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>引数数 &gt; 4個</td><td class="ng">—</td><td class="ok">✓ max-params</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>ネスト深さ &gt; 3</td><td class="ng">—</td><td class="ok">✓ max-depth</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>依存モジュール数 &gt; 10</td><td class="ng">—</td><td class="ok">✓ import/max-dependencies</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>命名規則違反</td><td class="ok">✓ warn</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>barrel file</td><td class="ok">✓ warn</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>react-hooks 違反</td><td class="par">△</td><td class="ok">✓ error</td><td class="ng">—</td><td class="ng">—</td><td class="par">△ 補完</td></tr>
+          <tr><td>アーキテクチャ境界違反</td><td class="ng">—</td><td class="ok">✓ IDE即時</td><td class="ng">—</td><td class="ok">✓ CI</td><td class="ng">—</td></tr>
+          <tr><td>TanStack Query ルール</td><td class="ng">—</td><td class="ok">✓</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>fetch 直書き</td><td class="ng">—</td><td class="ok">✓ error</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td></tr>
+          <tr><td>循環参照</td><td class="ng">—</td><td class="ok">✓ import/no-cycle</td><td class="ng">—</td><td class="ok">✓ error</td><td class="ng">—</td></tr>
+          <tr><td>孤立ファイル</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓ warn</td><td class="ng">—</td></tr>
+          <tr><td>prop drilling</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓</td></tr>
+          <tr><td>不要な useEffect</td><td class="ng">—</td><td class="par">△</td><td class="ng">—</td><td class="ng">—</td><td class="ok">✓</td></tr>
+          <tr><td>カバレッジ不足</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ok">vitest</td></tr>
+          <tr><td>bundle サイズ超過</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ng">—</td><td class="ok">bundlesize</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- INSIGHTS -->
+<section id="insights">
+  <div class="sh"><div class="si">💡</div><h2 class="st">設計原則</h2></div>
+  <div class="ig">
+    <div class="ic">
+      <div class="in">01 / ECOSYSTEM</div>
+      <div class="it">全ツールを Node.js エコシステムに統一</div>
+      <div class="ib">Lizard (Python) を廃止し、pnpm install だけでセットアップが完結する。CIの job 構成もシンプルになり、onboarding コストが下がる。</div>
+    </div>
+    <div class="ic">
+      <div class="in">02 / DUAL-CHECK</div>
+      <div class="it">Cognitive Complexity を IDE と CI で二重チェック</div>
+      <div class="ib">SonarJS が IDE でリアルタイム警告、Biome が CI でブロック。書いた瞬間と PR 時の両方で検知するため、複雑な関数がコードベースに入ることを二重に防ぐ。</div>
+    </div>
+    <div class="ic">
+      <div class="in">03 / PINPOINT</div>
+      <div class="it">recommended を使わずピンポイント指定</div>
+      <div class="ib">SonarJS recommended は Biome / ESLint との重複が多い。必要な13ルールだけを明示的に有効化することで、ノイズを排除しつつ最大の効果を得る。</div>
+    </div>
+    <div class="ic">
+      <div class="in">04 / CONSTANTS</div>
+      <div class="it">閾値は THRESHOLDS 定数で一元管理</div>
+      <div class="ib">eslint.config.mjs の THRESHOLDS を変えれば全ルールに反映。Biome の閾値と THRESHOLDS.COGNITIVE_COMPLEXITY を常に同値に保つことが重要。</div>
+    </div>
+    <div class="ic">
+      <div class="in">05 / TEST-EXCEPT</div>
+      <div class="it">テストファイルは SonarJS を適切に除外</div>
+      <div class="ib">テストは同じセットアップを繰り返すことが正当。no-identical-functions / no-duplicate-string をテストファイルで off にすることで誤検知を防ぐ。</div>
+    </div>
+    <div class="ic">
+      <div class="in">06 / LBOSE</div>
+      <div class="it">8人 × 80社でも機能する自動化</div>
+      <div class="ib">全ゲートが自動実行される。AIエージェントが生成したコードの品質問題を人間のレビュー前に機械が検知することで、8人のエンジニアが80社を安全に支援できる。</div>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<footer>
+  <div class="fl2">lbose, inc. / React Zero-Debt Architecture Guide v3.0 — SonarJS統合版</div>
+  <div class="fr">Biome + ESLint(SonarJS) + dep-cruiser + react-doctor + pnpm<br>CCN≤10 / Lines≤60 / Params≤4 / Coverage≥70% — 2026-06-20</div>
+</footer>
+
+<script>
+const sections = document.querySelectorAll('section[id], div[id="summary"]');
+const links = document.querySelectorAll('nav a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector('nav a[href="#' + e.target.id + '"]');
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sections.forEach(s => io.observe(s));
+links.forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+}));
+</script>
+</body>
+</html>
