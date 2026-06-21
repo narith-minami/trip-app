@@ -6,11 +6,11 @@
  * Should be used after requireSession middleware.
  */
 
+import { and, eq } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import type { TripMember } from "../db";
 import { getDb } from "../db";
 import { tripMembers } from "../db/schema";
-import { eq, and } from "drizzle-orm";
 import type { AuthContext } from "./auth";
 
 /**
@@ -30,7 +30,10 @@ export type TripMemberContext = AuthContext & {
  * @param next - Hono next function
  * @returns 403 if user is not a trip member, otherwise calls next
  */
-export async function requireMember(c: Context<TripMemberContext>, next: Next): Promise<Response | void> {
+export async function requireMember(
+  c: Context<TripMemberContext>,
+  next: Next
+): Promise<Response | undefined> {
   // Get user from context using type casting
   const user = c.get("user");
 

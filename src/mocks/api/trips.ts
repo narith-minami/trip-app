@@ -7,6 +7,9 @@
 
 const now = Date.now();
 
+const USER_ID = "user-1";
+const DEV_USER = { id: USER_ID, name: "Dev User", email: "dev@example.com", image: null };
+
 // In-memory mock data - matches the structure of src/types/entities.ts
 const mockTrips = [
   {
@@ -15,28 +18,28 @@ const mockTrips = [
     destination: "東京",
     startDate: "2025-07-01",
     endDate: "2025-07-05",
-    ownerId: "user-1",
+    ownerId: USER_ID,
     inviteToken: "mock-invite-token-1",
     coverImageUrl: null,
     createdAt: now - 7 * 24 * 60 * 60 * 1000,
     updatedAt: now - 7 * 24 * 60 * 60 * 1000,
-    owner: { id: "user-1", name: "Dev User", email: "dev@example.com", image: null },
+    owner: DEV_USER,
     members: [
       {
         tripId: "trip-1",
-        userId: "user-1",
+        userId: USER_ID,
         role: "owner" as const,
         joinedAt: now - 7 * 24 * 60 * 60 * 1000,
-        user: { id: "user-1", name: "Dev User", email: "dev@example.com", image: null },
+        user: DEV_USER,
       },
     ],
   },
 ];
 
-let trips = structuredClone(mockTrips);
+const trips = structuredClone(mockTrips);
 
 export async function fetchTrips() {
-  console.log('[Mock API] fetchTrips called');
+  console.log("[Mock API] fetchTrips called");
   try {
     const response = {
       data: trips,
@@ -47,10 +50,10 @@ export async function fetchTrips() {
         pages: 1,
       },
     };
-    console.log('[Mock API] fetchTrips response:', response);
+    console.log("[Mock API] fetchTrips response:", response);
     return response;
   } catch (err) {
-    console.error('[Mock API] fetchTrips error:', err);
+    console.error("[Mock API] fetchTrips error:", err);
     throw err;
   }
 }
@@ -74,19 +77,19 @@ export async function createTrip(data: {
     destination: data.location || "",
     startDate: data.startDate,
     endDate: data.endDate,
-    ownerId: "user-1",
+    ownerId: USER_ID,
     inviteToken: `invite-${Math.random().toString(36).substr(2, 9)}`,
     coverImageUrl: null,
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    owner: { id: "user-1", name: "Dev User", email: "dev@example.com", image: null },
+    owner: DEV_USER,
     members: [
       {
         tripId: `trip-${Date.now()}`,
-        userId: "user-1",
+        userId: USER_ID,
         role: "owner" as const,
         joinedAt: Date.now(),
-        user: { id: "user-1", name: "Dev User", email: "dev@example.com", image: null },
+        user: DEV_USER,
       },
     ],
   };

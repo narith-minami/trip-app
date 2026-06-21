@@ -20,6 +20,7 @@
 //   SonarJS の no-identical-functions      … コードクローン検出 (旧 Lizard --CPD 相当)
 //   SonarJS の no-duplicate-string        … マジックストリング検出
 
+import tsParser      from "@typescript-eslint/parser";
 import reactHooks    from "eslint-plugin-react-hooks";
 import reactCompiler from "eslint-plugin-react-compiler";
 import boundaries    from "eslint-plugin-boundaries";
@@ -54,6 +55,22 @@ export default [
       "*.config.cjs",
       ".dependency-cruiser.cjs",
     ],
+  },
+
+  // ================================================================
+  // ⓪ TypeScript パーサ
+  //    flat config では TS/TSX を解釈するため明示的にパーサを設定する
+  // ================================================================
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+      },
+    },
   },
 
   // ================================================================

@@ -52,7 +52,7 @@ export type AuthContext = {
  * @returns Hono middleware function
  */
 export function requireSession() {
-  return async (c: Context<AuthContext>, next: Next): Promise<Response | void> => {
+  return async (c: Context<AuthContext>, next: Next): Promise<Response | undefined> => {
     // Extract Bearer token from Authorization header
     const authHeader = c.req.header("Authorization");
     const token = authHeader?.replace(/^Bearer\s+/, "");

@@ -21,7 +21,11 @@ export interface Env {
  * Represents Cloudflare R2 bindings for object storage
  */
 export interface R2Bucket {
-  put(key: string, value: ReadableStream | ArrayBuffer | string, options?: R2PutOptions): Promise<R2Object>;
+  put(
+    key: string,
+    value: ReadableStream | ArrayBuffer | string,
+    options?: R2PutOptions
+  ): Promise<R2Object>;
   get(key: string): Promise<R2Object | null>;
   delete(key: string): Promise<void>;
   list(options?: R2ListOptions): Promise<R2ObjectList>;

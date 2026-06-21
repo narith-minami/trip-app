@@ -12,11 +12,5 @@ export default defineConfig({
   },
   // Better Auth manages its own tables (users, sessions, accounts, verifications).
   // Only migrate our app tables.
-  tablesFilter: [
-    "trips",
-    "trip_members",
-    "schedule_items",
-    "todos",
-    "trip_memos",
-  ],
+  tablesFilter: ["trips", "trip_members", "schedule_items", "todos", "trip_memos"],
 });

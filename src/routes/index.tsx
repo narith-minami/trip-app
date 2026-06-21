@@ -5,10 +5,10 @@
  * Redirects authenticated users to trips page, shows login for guests.
  */
 
-import { useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { fetchCurrentUser } from "@/api/users";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 export function IndexPage() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export function IndexPage() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
         <p className="text-gray-600">Loading...</p>
       </div>
     </div>

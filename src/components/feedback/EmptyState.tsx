@@ -4,8 +4,8 @@
  * Placeholder shown when a list or section has no content yet.
  */
 
-import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import type { ReactNode } from "react";
 
 export interface EmptyStateProps {
   title: string;
@@ -15,13 +15,7 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({
-  title,
-  description,
-  icon,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ title, description, icon, action, className }: EmptyStateProps) {
   return (
     <div className={cn("py-12 text-center", className)}>
       {icon && <div className="mb-3 text-4xl">{icon}</div>}

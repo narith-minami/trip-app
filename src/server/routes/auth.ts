@@ -8,9 +8,9 @@
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import type { Env } from "../env";
 import { getDb } from "../db";
 import * as schema from "../db/schema";
+import type { Env } from "../env";
 
 /**
  * Create and export Better Auth instance

@@ -1,5 +1,5 @@
-import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // ============================================================================
 // User (Better Auth managed)
@@ -38,7 +38,9 @@ export const tripMembers = sqliteTable(
   {
     tripId: text("tripId").notNull(),
     userId: text("userId").notNull(),
-    role: text("role", { enum: ["owner", "member"] }).notNull().default("member"),
+    role: text("role", { enum: ["owner", "member"] })
+      .notNull()
+      .default("member"),
     joinedAt: integer("joinedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   },
   (table) => ({

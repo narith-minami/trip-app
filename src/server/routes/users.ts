@@ -6,7 +6,7 @@
  */
 
 import { Hono } from "hono";
-import { requireSession, getUser } from "../middleware/auth";
+import { getUser, requireSession } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
 
 /**

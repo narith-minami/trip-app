@@ -5,13 +5,9 @@
  * Each mutation invalidates the schedule list cache on success.
  */
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createScheduleItem,
-  updateScheduleItem,
-  deleteScheduleItem,
-} from "@/api/schedule";
+import { createScheduleItem, deleteScheduleItem, updateScheduleItem } from "@/api/schedule";
 import { QUERY_KEYS } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type CreateInput = Parameters<typeof createScheduleItem>[1];
 type UpdateInput = Parameters<typeof updateScheduleItem>[2];

@@ -4,12 +4,12 @@
  * Container for the trip detail "Todos" tab.
  */
 
+import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { useTodoMutations } from "@/features/todos/hooks/useTodoMutations";
+import { useTodos } from "@/features/todos/hooks/useTodos";
+import type { Todo, TripMember } from "@/types/entities";
 import { useState } from "react";
 import { toast } from "sonner";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { useTodos } from "@/features/todos/hooks/useTodos";
-import { useTodoMutations } from "@/features/todos/hooks/useTodoMutations";
-import type { Todo, TripMember } from "@/types/entities";
 import { TodoForm, type TodoFormValues } from "./TodoForm";
 import { TodoList } from "./TodoList";
 
@@ -25,8 +25,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
   // pending state (a single string would race).
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
 
-  const addPending = (id: string) =>
-    setPendingIds((prev) => new Set(prev).add(id));
+  const addPending = (id: string) => setPendingIds((prev) => new Set(prev).add(id));
   const clearPending = (id: string) =>
     setPendingIds((prev) => {
       const next = new Set(prev);
@@ -72,11 +71,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
 
   return (
     <div className="space-y-4">
-      <TodoForm
-        members={members}
-        isSubmitting={create.isPending}
-        onSubmit={handleCreate}
-      />
+      <TodoForm members={members} isSubmitting={create.isPending} onSubmit={handleCreate} />
       <TodoList
         todos={todos ?? []}
         onToggle={handleToggle}

@@ -5,7 +5,7 @@
  * Resets on page reload.
  */
 
-import { MOCK_TRIPS, MOCK_SCHEDULE_ITEMS, MOCK_TODOS, MOCK_MEMO, MOCK_MEMBERS } from "./seed";
+import { MOCK_MEMBERS, MOCK_MEMO, MOCK_SCHEDULE_ITEMS, MOCK_TODOS, MOCK_TRIPS } from "./seed";
 
 export const store = {
   trips: structuredClone(MOCK_TRIPS),

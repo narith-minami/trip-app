@@ -9,7 +9,9 @@ import type { Todo } from "@/types/entities";
 const mockUser = { id: "user-1", name: "Dev User", email: "dev@example.com", image: null };
 const now = Date.now();
 
-const mockTodos = [
+type MockTodo = Todo & { assignee: typeof mockUser | null };
+
+const mockTodos: MockTodo[] = [
   {
     id: "todo-1",
     tripId: "trip-1",
@@ -42,7 +44,7 @@ const mockTodos = [
   },
 ];
 
-let todos = structuredClone(mockTodos);
+const todos = structuredClone(mockTodos);
 
 export async function fetchTodos(tripId: string) {
   const items = todos.filter((t) => t.tripId === tripId);
@@ -56,7 +58,7 @@ export async function createTodo(
     assigneeId?: string;
   }
 ) {
-  const newTodo: Todo & { assignee: any } = {
+  const newTodo: MockTodo = {
     id: `todo-${Date.now()}`,
     tripId,
     title: data.title,
@@ -83,7 +85,7 @@ export async function updateTodo(
   const todo = todos.find((t) => t.id === todoId && t.tripId === tripId);
   if (!todo) throw new Error(`Todo ${todoId} not found`);
 
-  const updates: any = { ...data };
+  const updates: Record<string, unknown> = { ...data };
   if ("isDone" in data) {
     updates.isDone = data.isDone ? 1 : 0;
   }
