@@ -5,11 +5,11 @@
  * Handles cover image uploads to R2 and database updates.
  */
 
-import { Hono } from "hono";
-import { eq } from "drizzle-orm";
-import { getDb, trips } from "../db";
-import { requireSession, getUserId } from "../middleware/auth";
 import { generateId } from "@/lib/utils";
+import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { getDb, trips } from "../db";
+import { requireSession } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
 
 /**
@@ -18,7 +18,7 @@ import type { AuthContext } from "../middleware/auth";
  */
 const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), async (c) => {
   try {
-    const userId = getUserId(c as any);
+    const userId = c.get("user")?.id ?? null;
     if (!userId) {
       return c.json({ error: "Unauthorized" }, 401);
     }

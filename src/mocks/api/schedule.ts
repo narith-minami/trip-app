@@ -8,7 +8,7 @@ import type { ScheduleItem } from "@/types/entities";
 
 const now = Date.now();
 
-const mockScheduleItems = [
+const mockScheduleItems: ScheduleItem[] = [
   {
     id: "schedule-1",
     tripId: "trip-1",
@@ -41,7 +41,7 @@ const mockScheduleItems = [
   },
 ];
 
-let scheduleItems = structuredClone(mockScheduleItems);
+const scheduleItems = structuredClone(mockScheduleItems);
 
 export async function fetchScheduleItems(tripId: string) {
   const items = scheduleItems

@@ -5,9 +5,11 @@
  * All data shapes conform to src/types/entities.ts and server response shapes.
  */
 
-import type { UserSummary, Trip, ScheduleItem, Todo, TripMemo, TripMember } from "@/types/entities";
+import type { ScheduleItem, Todo, Trip, TripMember, TripMemo, UserSummary } from "@/types/entities";
 
 const now = Date.now();
+
+const TRIP_START_DATE = "2025-07-01";
 
 export const MOCK_USER: UserSummary = {
   id: "user-1",
@@ -34,7 +36,7 @@ export const MOCK_TRIPS: TripWithOwnerAndMembers[] = [
     id: "trip-1",
     title: "東京旅行",
     destination: "東京",
-    startDate: "2025-07-01",
+    startDate: TRIP_START_DATE,
     endDate: "2025-07-05",
     ownerId: "user-1",
     inviteToken: "mock-invite-token-1",
@@ -58,7 +60,7 @@ export const MOCK_SCHEDULE_ITEMS: ScheduleItem[] = [
   {
     id: "schedule-1",
     tripId: "trip-1",
-    date: "2025-07-01",
+    date: TRIP_START_DATE,
     startTime: "09:00",
     title: "羽田空港到着",
     placeName: "羽田空港",
@@ -73,7 +75,7 @@ export const MOCK_SCHEDULE_ITEMS: ScheduleItem[] = [
   {
     id: "schedule-2",
     tripId: "trip-1",
-    date: "2025-07-01",
+    date: TRIP_START_DATE,
     startTime: "12:00",
     title: "渋谷で昼食",
     placeName: "渋谷スクランブル交差点周辺",
@@ -137,7 +139,8 @@ export const MOCK_TODOS: Array<Todo & { assignee: UserSummary | null }> = [
 
 export const MOCK_MEMO: TripMemo = {
   tripId: "trip-1",
-  content: "# 東京旅行メモ\n\n## 持ち物\n- カメラ\n- 防虫スプレー\n- 日焼け止め\n\n## 予算\n- 宿泊: 300,000円\n- 食事: 150,000円\n- 交通: 100,000円\n\n## 天気予報\n金土: 晴れ、日曜: 曇り、月: 降水確率 40%",
+  content:
+    "# 東京旅行メモ\n\n## 持ち物\n- カメラ\n- 防虫スプレー\n- 日焼け止め\n\n## 予算\n- 宿泊: 300,000円\n- 食事: 150,000円\n- 交通: 100,000円\n\n## 天気予報\n金土: 晴れ、日曜: 曇り、月: 降水確率 40%",
   updatedBy: null,
   updatedAt: now - 2 * 24 * 60 * 60 * 1000,
 };

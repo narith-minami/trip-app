@@ -12,7 +12,10 @@ import { createAuthClient } from "better-auth/react";
  * Points to /api/auth endpoints on the same origin
  */
 export const authClient = createAuthClient({
-  baseURL: typeof window !== "undefined" ? `${window.location.origin}/api/auth` : "http://localhost:5174/api/auth",
+  baseURL:
+    typeof window !== "undefined"
+      ? `${window.location.origin}/api/auth`
+      : "http://localhost:5174/api/auth",
 });
 
 /**

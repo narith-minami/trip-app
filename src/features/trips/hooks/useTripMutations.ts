@@ -4,9 +4,9 @@
  * Hooks for trip mutations (create, update, delete).
  */
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTrip, updateTrip, deleteTrip } from "@/api/trips";
+import { createTrip, deleteTrip, updateTrip } from "@/api/trips";
 import { QUERY_KEYS } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Hook for creating a new trip
@@ -31,8 +31,7 @@ export function useUpdateTrip(tripId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Parameters<typeof updateTrip>[1]) =>
-      updateTrip(tripId, data),
+    mutationFn: (data: Parameters<typeof updateTrip>[1]) => updateTrip(tripId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.trips.detail(tripId),

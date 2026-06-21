@@ -6,10 +6,10 @@
  * Sets up query client, router, error boundaries, and notifications.
  */
 
-import { Outlet } from "@tanstack/react-router";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "sonner";
 import { getQueryClient } from "@/lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Outlet } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 
 /**
  * Root layout component
@@ -24,12 +24,7 @@ export function RootLayout() {
       <Outlet />
 
       {/* Global toast notifications using sonner */}
-      <Toaster
-        position="top-center"
-        richColors
-        closeButton
-        duration={3000}
-      />
+      <Toaster position="top-center" richColors closeButton duration={3000} />
     </QueryClientProvider>
   );
 }

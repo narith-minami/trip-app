@@ -11,7 +11,7 @@ import { URL, fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const isMock = env.VITE_MOCK === "true";
 
@@ -31,7 +31,9 @@ export default defineConfig(({ command, mode }) => {
           "@/api/todos": fileURLToPath(new URL("./src/mocks/api/todos.ts", import.meta.url)),
           "@/api/memo": fileURLToPath(new URL("./src/mocks/api/memo.ts", import.meta.url)),
           "@/api/members": fileURLToPath(new URL("./src/mocks/api/members.ts", import.meta.url)),
-          "@/lib/auth-client": fileURLToPath(new URL("./src/mocks/auth-client.ts", import.meta.url)),
+          "@/lib/auth-client": fileURLToPath(
+            new URL("./src/mocks/auth-client.ts", import.meta.url)
+          ),
         }),
       },
     },

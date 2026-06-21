@@ -4,11 +4,11 @@
  * Controlled form for creating or editing a schedule item.
  */
 
-import { useState } from "react";
-import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import type { ScheduleItem } from "@/types/entities";
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 export interface ScheduleFormValues {
   date: string;
@@ -38,27 +38,16 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
   };
 }
 
-export function ScheduleItemForm({
-  initial,
-  defaultDate,
-  isSubmitting = false,
-  onSubmit,
-  onCancel,
-}: ScheduleItemFormProps) {
-  const [values, setValues] = useState<ScheduleFormValues>(() =>
-    toValues(initial, defaultDate)
-  );
+type SetField = (key: keyof ScheduleFormValues, value: string) => void;
 
-  const set = (key: keyof ScheduleFormValues, value: string) =>
-    setValues((prev) => ({ ...prev, [key]: value }));
+interface FieldsProps {
+  values: ScheduleFormValues;
+  set: SetField;
+}
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSubmit(values);
-  };
-
+function ScheduleDateTitleFields({ values, set }: FieldsProps) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>Date *</Label>
@@ -88,7 +77,13 @@ export function ScheduleItemForm({
           required
         />
       </div>
+    </>
+  );
+}
 
+function SchedulePlaceFields({ values, set }: FieldsProps) {
+  return (
+    <>
       <div>
         <Label>Place name</Label>
         <Input
@@ -117,6 +112,30 @@ export function ScheduleItemForm({
           placeholder="Notes..."
         />
       </div>
+    </>
+  );
+}
+
+export function ScheduleItemForm({
+  initial,
+  defaultDate,
+  isSubmitting = false,
+  onSubmit,
+  onCancel,
+}: ScheduleItemFormProps) {
+  const [values, setValues] = useState<ScheduleFormValues>(() => toValues(initial, defaultDate));
+
+  const set: SetField = (key, value) => setValues((prev) => ({ ...prev, [key]: value }));
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit(values);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <ScheduleDateTitleFields values={values} set={set} />
+      <SchedulePlaceFields values={values} set={set} />
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>

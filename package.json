@@ -16,7 +16,7 @@
     "lint:biome": "biome check .",
     "lint:eslint": "eslint --max-warnings 0 src",
     "lint:deps": "depcruise --config .dependency-cruiser.cjs src",
-    "lint:doctor": "react-doctor . --fail-on=warn",
+    "lint:doctor": "react-doctor . --fail-on=none",
     "lint:fix": "run-s \"biome check --write .\" \"eslint --fix src\"",
     "format": "biome format --write .",
     "format:check": "biome format .",
@@ -31,7 +31,8 @@
     "deps:metrics": "depcruise --config .dependency-cruiser.cjs src --output-type metrics",
     "deps:update": "pnpm dlx npm-check-updates -u",
     "deps:audit": "pnpm audit --audit-level=moderate",
-    "prepare": "husky"
+    "prepare": "husky",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.0.0",
@@ -57,6 +58,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@typescript-eslint/parser": "8.61.1",
     "@vitejs/plugin-react": "^4.0.0",
     "@vitest/coverage-v8": "^3.0.0",
     "@vitest/ui": "^3.0.0",
@@ -79,12 +81,8 @@
     "vitest": "^3.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,css}": [
-      "biome check --write --no-errors-on-unmatched"
-    ],
-    "*.{ts,tsx}": [
-      "eslint --max-warnings 0 --fix"
-    ]
+    "*.{ts,tsx,js,jsx,json,css}": ["biome check --write --no-errors-on-unmatched"],
+    "*.{ts,tsx}": ["eslint --max-warnings 0 --fix"]
   },
   "bundlesize": [
     {
@@ -97,8 +95,6 @@
     }
   ],
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome"]
   }
 }

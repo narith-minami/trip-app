@@ -5,7 +5,7 @@
  * Always returns authenticated session, skips login/signup.
  */
 
-import { MOCK_USER, MOCK_SESSION } from "./seed";
+import { MOCK_SESSION, MOCK_USER } from "./seed";
 
 export function useSession() {
   return {
@@ -21,13 +21,13 @@ export function useSession() {
 }
 
 export const signIn = {
-  email: async (_: any) => {
+  email: async (_: unknown) => {
     // no-op
   },
 };
 
 export const signUp = {
-  email: async (_: any) => {
+  email: async (_: unknown) => {
     // no-op
   },
 };

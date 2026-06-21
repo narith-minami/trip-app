@@ -27,16 +27,12 @@ export function ScheduleItemCard({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {item.startTime && (
-              <span className="text-sm font-semibold text-blue-600">
-                {item.startTime}
-              </span>
+              <span className="text-sm font-semibold text-blue-600">{item.startTime}</span>
             )}
             <h4 className="truncate font-medium text-gray-900">{item.title}</h4>
           </div>
 
-          {item.placeName && (
-            <p className="mt-1 text-sm text-gray-700">📍 {item.placeName}</p>
-          )}
+          {item.placeName && <p className="mt-1 text-sm text-gray-700">📍 {item.placeName}</p>}
           {item.placeUrl && (
             <a
               href={item.placeUrl}
@@ -48,9 +44,7 @@ export function ScheduleItemCard({
             </a>
           )}
           {item.memo && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">
-              {item.memo}
-            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{item.memo}</p>
           )}
         </div>
 

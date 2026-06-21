@@ -4,9 +4,9 @@
  * Text input and textarea primitives with shared styling.
  */
 
+import { cn } from "@/lib/cn";
 import { forwardRef } from "react";
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { cn } from "@/lib/cn";
 
 const FIELD_CLASSES =
   "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -28,14 +28,9 @@ export const Textarea = forwardRef<
 
 Textarea.displayName = "Textarea";
 
-export function Label({
-  className,
-  ...props
-}: React.LabelHTMLAttributes<HTMLLabelElement>) {
+export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
-    <label
-      className={cn("block text-sm font-medium text-gray-700 mb-1", className)}
-      {...props}
-    />
+    // biome-ignore lint/a11y/noLabelWithoutControl: generic label primitive; callers associate it with a control via the spread `htmlFor` prop
+    <label className={cn("block text-sm font-medium text-gray-700 mb-1", className)} {...props} />
   );
 }

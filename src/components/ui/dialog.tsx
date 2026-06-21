@@ -4,9 +4,9 @@
  * Simple modal dialog rendered as a centered overlay.
  */
 
+import { cn } from "@/lib/cn";
 import { useEffect, useId } from "react";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/cn";
 
 export interface DialogProps {
   open: boolean;
@@ -37,6 +37,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       onClick={onClose}
       role="presentation"
     >
+      {/* biome-ignore lint/a11y/useSemanticElements: custom overlay modal; native <dialog> is not used so its imperative API/backdrop behaviour can be controlled manually */}
       <div
         role="dialog"
         aria-modal="true"

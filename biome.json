@@ -48,30 +48,30 @@
 
       "correctness": {
         "recommended": true,
-        "noUnusedVariables":        "error",
-        "noUnusedImports":          "error",
-        "noUnusedFunctionParameters":"warn",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "warn",
         "useExhaustiveDependencies": "warn",
-        "noVoidTypeReturn":          "error"
+        "noVoidTypeReturn": "error"
       },
 
       "suspicious": {
         "recommended": true,
-        "noConsole":              "warn",
-        "noExplicitAny":          "error",
-        "noDoubleEquals":         "error",
-        "noAssignInExpressions":  "error",
-        "noConfusingVoidType":    "error",
+        "noConsole": "warn",
+        "noExplicitAny": "error",
+        "noDoubleEquals": "error",
+        "noAssignInExpressions": "error",
+        "noConfusingVoidType": "error",
         "noEmptyBlockStatements": "warn",
-        "noSkippedTests":         "warn"
+        "noSkippedTests": "warn"
       },
 
       "style": {
         "recommended": true,
-        "noVar":              "error",
-        "useConst":           "error",
-        "useTemplate":        "error",
-        "noNonNullAssertion":  "warn",
+        "noVar": "error",
+        "useConst": "error",
+        "useTemplate": "error",
+        "noNonNullAssertion": "warn",
         "useNamingConvention": {
           "level": "warn",
           "options": {
@@ -96,9 +96,9 @@
 
       "performance": {
         "recommended": true,
-        "noDelete":            "warn",
-        "noBarrelFile":        "warn",
-        "noReExportAll":       "warn"
+        "noDelete": "warn",
+        "noBarrelFile": "warn",
+        "noReExportAll": "warn"
       },
 
       "security": {
@@ -108,9 +108,9 @@
 
       "complexity": {
         "recommended": true,
-        "noBannedTypes":      "error",
+        "noBannedTypes": "error",
         "noUselessFragments": "error",
-        "noForEach":          "warn",
+        "noForEach": "warn",
         "noExcessiveCognitiveComplexity": {
           "level": "error",
           "options": {
@@ -121,12 +121,12 @@
 
       "a11y": {
         "recommended": true,
-        "noSvgWithoutTitle":     "warn",
-        "useAltText":            "error",
-        "useButtonType":         "error",
+        "noSvgWithoutTitle": "warn",
+        "useAltText": "error",
+        "useButtonType": "error",
         "useKeyWithClickEvents": "warn",
         "noAriaHiddenOnFocusable": "error",
-        "useAriaPropsForRole":   "error"
+        "useAriaPropsForRole": "error"
       },
 
       "nursery": {
@@ -149,9 +149,9 @@
       "linter": {
         "rules": {
           "suspicious": {
-            "noConsole":          "off",
-            "noExplicitAny":      "off",
-            "noSkippedTests":     "error"
+            "noConsole": "off",
+            "noExplicitAny": "off",
+            "noSkippedTests": "error"
           },
           "complexity": {
             "noExcessiveCognitiveComplexity": {
@@ -164,8 +164,11 @@
     },
     {
       "include": [
-        "*.config.ts", "*.config.mts",
-        "vite.config.ts", "vitest.config.ts", "playwright.config.ts"
+        "*.config.ts",
+        "*.config.mts",
+        "vite.config.ts",
+        "vitest.config.ts",
+        "playwright.config.ts"
       ],
       "linter": {
         "rules": {

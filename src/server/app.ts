@@ -9,13 +9,13 @@
 import { Hono } from "hono";
 import type { Env } from "./env";
 import { createAuth } from "./routes/auth";
-import tripsRouter from "./routes/trips";
-import usersRouter from "./routes/users";
+import coverRouter from "./routes/cover";
+import membersRouter from "./routes/members";
+import memoRouter from "./routes/memo";
 import scheduleRouter from "./routes/schedule";
 import todosRouter from "./routes/todos";
-import memoRouter from "./routes/memo";
-import membersRouter from "./routes/members";
-import coverRouter from "./routes/cover";
+import tripsRouter from "./routes/trips";
+import usersRouter from "./routes/users";
 
 /**
  * Main Hono application with type annotations

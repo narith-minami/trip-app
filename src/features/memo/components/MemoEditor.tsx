@@ -4,9 +4,9 @@
  * Editable shared memo with dirty tracking and a save action.
  */
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 
 export interface MemoEditorProps {
   content: string;
@@ -37,9 +37,7 @@ export function MemoEditor({ content, isSaving = false, onSave }: MemoEditorProp
         className="font-mono text-sm"
       />
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {dirty ? "Unsaved changes" : "All changes saved"}
-        </p>
+        <p className="text-sm text-gray-500">{dirty ? "Unsaved changes" : "All changes saved"}</p>
         <Button onClick={() => onSave(value)} disabled={!dirty || isSaving}>
           {isSaving ? "Saving..." : "Save memo"}
         </Button>

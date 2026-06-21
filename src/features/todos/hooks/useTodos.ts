@@ -4,10 +4,10 @@
  * Hook for fetching a trip's todos.
  */
 
-import { useQuery } from "@tanstack/react-query";
 import { fetchTodos } from "@/api/todos";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { Todo } from "@/types/entities";
+import { useQuery } from "@tanstack/react-query";
 
 export function useTodos(tripId: string) {
   return useQuery({

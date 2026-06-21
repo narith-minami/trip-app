@@ -6,8 +6,8 @@
  * configured for Cloudflare D1 with full schema.
  */
 
-import { drizzle } from "drizzle-orm/d1";
 import type { D1Database } from "@cloudflare/workers-types";
+import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export type {
