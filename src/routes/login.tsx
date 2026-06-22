@@ -93,15 +93,17 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true);
+    // No try/finally: the catch swallows errors, so resetting the flag after
+    // the try/catch runs on both success and failure (and stays React
+    // Compiler friendly — it can't lower a `finally` clause).
     try {
       await signIn.email({ email, password });
       toast.success("Logged in successfully");
       navigate({ to: "/trips" });
     } catch {
       toast.error("Invalid email or password");
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   if (isPending) return <LoadingSpinner fullScreen />;

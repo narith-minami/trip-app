@@ -21,7 +21,15 @@ export interface TodoFormProps {
   onSubmit: (values: TodoFormValues) => void;
 }
 
-export function TodoForm({ members = [], isSubmitting = false, onSubmit }: TodoFormProps) {
+// Stable default so the prop identity doesn't change every render (which would
+// break memoised children comparing `members` by reference).
+const EMPTY_MEMBERS: TripMember[] = [];
+
+export function TodoForm({
+  members = EMPTY_MEMBERS,
+  isSubmitting = false,
+  onSubmit,
+}: TodoFormProps) {
   const [title, setTitle] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
 

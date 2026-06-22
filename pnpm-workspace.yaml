@@ -1,0 +1,14 @@
+# Single-package repo; the root is the only project. `packages` is required by
+# pnpm even when settings (below) are the real reason this file exists.
+packages:
+  - "."
+
+# Supply-chain hardening for pnpm (React Doctor: require-pnpm-hardening).
+#
+# minimumReleaseAge: delay installing freshly published versions so a malicious
+# release has time to be detected and unpublished before it reaches us.
+minimumReleaseAge: 10080 # minutes (7 days)
+#
+# trustPolicy: never silently accept a package whose trust signals (provenance,
+# signatures) weaken between updates.
+trustPolicy: no-downgrade

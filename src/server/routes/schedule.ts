@@ -19,11 +19,11 @@ const ERR_INTERNAL = "Internal server error";
 
 // Schemas for schedule items
 const CreateScheduleItemSchema = z.object({
-  date: z.string().date(),
+  date: z.iso.date(),
   startTime: z.string().nullable().optional(),
   title: z.string().min(1),
   placeName: z.string().nullable().optional(),
-  placeUrl: z.string().url().nullable().optional(),
+  placeUrl: z.url().nullable().optional(),
   memo: z.string().nullable().optional(),
   orderIndex: z.number().int().default(0),
 });
