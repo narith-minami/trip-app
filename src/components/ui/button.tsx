@@ -5,8 +5,7 @@
  */
 
 import { cn } from "@/lib/cn";
-import { forwardRef } from "react";
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "success";
 type Size = "sm" | "md";
@@ -14,6 +13,8 @@ type Size = "sm" | "md";
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
+  // React 19: ref is a normal prop, no forwardRef needed.
+  ref?: Ref<HTMLButtonElement>;
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
@@ -29,8 +30,15 @@ const SIZE_CLASSES: Record<Size, string> = {
   md: "px-4 py-2",
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", className, type = "button", ...props }, ref) => (
+export function Button({
+  variant = "primary",
+  size = "md",
+  className,
+  type = "button",
+  ref,
+  ...props
+}: ButtonProps) {
+  return (
     <button
       ref={ref}
       type={type}
@@ -42,7 +50,5 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       )}
       {...props}
     />
-  )
-);
-
-Button.displayName = "Button";
+  );
+}

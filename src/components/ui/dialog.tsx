@@ -20,6 +20,12 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   const titleId = useId();
 
   // Close on Escape for keyboard users.
+  // NOTE: react-doctor's prefer-use-effect-event suggests wrapping `onClose` in
+  // useEffectEvent so the listener isn't re-subscribed on a new callback
+  // identity. That's deferred — the pinned react-hooks (5.2.0) and
+  // react-compiler ESLint plugins don't yet recognise useEffectEvent, so it
+  // produces false exhaustive-deps / react-compiler errors. Suppressed in
+  // doctor.config.ts until the toolchain supports it.
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {

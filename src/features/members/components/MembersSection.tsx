@@ -35,14 +35,15 @@ export function MembersSection({ tripId, inviteToken, canManage = false }: Membe
   const handleRemove = async (member: TripMember) => {
     if (!window.confirm(`Remove ${member.user?.name ?? "this member"}?`)) return;
     setPendingId(member.userId);
+    // No try/finally (React Compiler can't lower a `finally`); the catch
+    // swallows errors so clearing the pending id afterwards runs in both paths.
     try {
       await removeMutation.mutateAsync(member.userId);
       toast.success("Member removed");
     } catch {
       toast.error("Failed to remove member");
-    } finally {
-      setPendingId(undefined);
     }
+    setPendingId(undefined);
   };
 
   if (isLoading) return <LoadingSpinner label="Loading members..." />;

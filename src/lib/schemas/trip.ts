@@ -16,8 +16,8 @@ export const CreateTripSchema = z
   .object({
     title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
     description: z.string().max(500, "Description must be 500 characters or less").optional(),
-    startDate: z.string().date(INVALID_DATE_MSG),
-    endDate: z.string().date(INVALID_DATE_MSG),
+    startDate: z.iso.date(INVALID_DATE_MSG),
+    endDate: z.iso.date(INVALID_DATE_MSG),
     location: z.string().max(200, "Location must be 200 characters or less").optional(),
   })
   .refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
@@ -38,8 +38,8 @@ export const UpdateTripSchema = z.object({
     .max(100, "Title must be 100 characters or less")
     .optional(),
   description: z.string().max(500, "Description must be 500 characters or less").optional(),
-  startDate: z.string().date(INVALID_DATE_MSG).optional(),
-  endDate: z.string().date(INVALID_DATE_MSG).optional(),
+  startDate: z.iso.date(INVALID_DATE_MSG).optional(),
+  endDate: z.iso.date(INVALID_DATE_MSG).optional(),
   location: z.string().max(200, "Location must be 200 characters or less").optional(),
 });
 
@@ -65,8 +65,8 @@ export const TripResponseSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   destination: z.string().optional(),
-  startDate: z.string().date(),
-  endDate: z.string().date(),
+  startDate: z.iso.date(),
+  endDate: z.iso.date(),
   coverImageUrl: z.string().optional(),
   ownerId: z.string(),
   inviteToken: z.string(),

@@ -43,6 +43,8 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
 
   const handleToggle = async (todo: Todo) => {
     addPending(todo.id);
+    // No try/finally (React Compiler can't lower a `finally`); the catch
+    // swallows errors so clearing the pending id afterwards runs in both paths.
     try {
       await update.mutateAsync({
         todoId: todo.id,
@@ -50,20 +52,20 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
       });
     } catch {
       toast.error("Failed to update todo");
-    } finally {
-      clearPending(todo.id);
     }
+    clearPending(todo.id);
   };
 
   const handleDelete = async (todo: Todo) => {
     addPending(todo.id);
+    // No try/finally (React Compiler can't lower a `finally`); the catch
+    // swallows errors so clearing the pending id afterwards runs in both paths.
     try {
       await remove.mutateAsync(todo.id);
     } catch {
       toast.error("Failed to delete todo");
-    } finally {
-      clearPending(todo.id);
     }
+    clearPending(todo.id);
   };
 
   if (isLoading) return <LoadingSpinner label="Loading todos..." />;

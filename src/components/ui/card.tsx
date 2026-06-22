@@ -20,5 +20,6 @@ export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  // react-doctor-disable-next-line react-doctor/heading-has-content -- generic <h3> primitive; callers supply heading text via children
   return <h3 className={cn("text-lg font-semibold text-gray-900", className)} {...props} />;
 }

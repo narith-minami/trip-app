@@ -53,15 +53,17 @@ function useSignupForm() {
     }
 
     setIsSubmitting(true);
+    // No try/finally: the catch swallows errors, so resetting the flag after
+    // the try/catch runs on both success and failure (and stays React
+    // Compiler friendly — it can't lower a `finally` clause).
     try {
       await signUp.email({ email: values.email, password: values.password, name: values.name });
       toast.success("Account created successfully");
       navigate({ to: "/trips" });
     } catch {
       toast.error("Failed to create account");
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return { values, setField, isSubmitting, handleSubmit };
