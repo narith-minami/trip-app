@@ -193,7 +193,8 @@ src/
 
 1. Run `pnpm check` to ensure all checks pass
 2. If needed, run `pnpm lint:fix` and `pnpm format`
-3. Commit changes
+3. **セルフレビュー**: `AGENTS.md` のレビュー観点チェックリストを上から順に確認する
+4. Commit changes
 
 ### Adding a New Feature
 
@@ -286,6 +287,7 @@ This project deploys to **Cloudflare Pages** with a **Cloudflare D1** database b
 - **Test Coverage**: Target 70% (can be increased over time)
 - **Formatting**: Biome handles all formatting (no Prettier)
 - **Pre-commit Hooks**: Husky + lint-staged (format & lint on commit)
+- **セルフレビュー**: PRを作る前に `AGENTS.md` のレビュー観点チェックリストで確認する（過去PRの指摘パターンを網羅）
 
 ## Important Notes
 
