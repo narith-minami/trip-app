@@ -86,6 +86,7 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
           <Input
             type="time"
             value={values.endTime}
+            min={values.startTime || undefined}
             onChange={(e) => set("endTime", e.target.value)}
           />
         </div>

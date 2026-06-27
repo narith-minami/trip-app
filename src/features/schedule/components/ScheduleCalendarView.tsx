@@ -51,8 +51,12 @@ const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 function formatDayHeading(dateStr: string): string {
   if (!dateStr) return "";
-  const [y, mo, d] = dateStr.split("-").map(Number);
-  const dow = DOW[new Date(y, mo - 1, d).getDay()];
+  const parts = dateStr.split("-").map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
+  const [y, mo, d] = parts;
+  const date = new Date(y, mo - 1, d);
+  if (isNaN(date.getTime())) return dateStr;
+  const dow = DOW[date.getDay()];
   return `${mo}/${d} (${dow})`;
 }
 
@@ -66,24 +70,52 @@ function computeLayout(items: ScheduleItem[]): LayoutItem[] {
   const sorted = [...items].sort(
     (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
   );
-  const colEnds: number[] = [];
-  const placed: Array<{ item: ScheduleItem; col: number }> = [];
+
+  // Group into independent time clusters so numCols is local to each cluster.
+  // Events in separate clusters never overlap, so they should each be full-width.
+  const clusters: ScheduleItem[][] = [];
+  let currentCluster: ScheduleItem[] = [];
+  let maxEnd = 0;
 
   for (const item of sorted) {
     const start = timeToMinutes(item.startTime);
     const end = item.endTime ? timeToMinutes(item.endTime) : start + 60;
-    let col = colEnds.findIndex((e) => e <= start);
-    if (col === -1) {
-      col = colEnds.length;
-      colEnds.push(end);
-    } else {
-      colEnds[col] = end;
+    if (start >= maxEnd && currentCluster.length > 0) {
+      clusters.push(currentCluster);
+      currentCluster = [];
+      maxEnd = 0;
     }
-    placed.push({ item, col });
+    currentCluster.push(item);
+    maxEnd = Math.max(maxEnd, end);
+  }
+  if (currentCluster.length > 0) clusters.push(currentCluster);
+
+  const placed: LayoutItem[] = [];
+
+  for (const cluster of clusters) {
+    const colEnds: number[] = [];
+    const clusterPlaced: Array<{ item: ScheduleItem; col: number }> = [];
+
+    for (const item of cluster) {
+      const start = timeToMinutes(item.startTime);
+      const end = item.endTime ? timeToMinutes(item.endTime) : start + 60;
+      let col = colEnds.findIndex((e) => e <= start);
+      if (col === -1) {
+        col = colEnds.length;
+        colEnds.push(end);
+      } else {
+        colEnds[col] = end;
+      }
+      clusterPlaced.push({ item, col });
+    }
+
+    const numCols = Math.max(1, colEnds.length);
+    for (const p of clusterPlaced) {
+      placed.push({ ...p, numCols });
+    }
   }
 
-  const numCols = Math.max(1, colEnds.length);
-  return placed.map((p) => ({ ...p, numCols }));
+  return placed;
 }
 
 type PendingChange = { startTime: string; endTime: string };
@@ -114,20 +146,24 @@ export function ScheduleCalendarView({
     initialClientY: number;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastScrolledDateRef = useRef<string | null>(null);
 
   const { data: items } = useScheduleItems(tripId);
   const { update, remove, reorder } = useScheduleMutations(tripId);
 
-  // Scroll to first event when date changes
+  // Scroll to first event only when the viewed date changes (not on every refetch).
   useEffect(() => {
     if (!scrollRef.current || !items?.length) return;
+    if (lastScrolledDateRef.current === currentDate) return;
+
     const dateItems = items.filter((i) => i.date === currentDate && i.startTime);
     if (dateItems.length === 0) {
-      scrollRef.current.scrollTop = 9 * 60 * PX_PER_MIN; // default to 9:00
-      return;
+      scrollRef.current.scrollTop = 9 * 60 * PX_PER_MIN;
+    } else {
+      const firstMin = Math.min(...dateItems.map((i) => timeToMinutes(i.startTime)));
+      scrollRef.current.scrollTop = Math.max(0, firstMin * PX_PER_MIN - 80);
     }
-    const firstMin = Math.min(...dateItems.map((i) => timeToMinutes(i.startTime)));
-    scrollRef.current.scrollTop = Math.max(0, firstMin * PX_PER_MIN - 80);
+    lastScrolledDateRef.current = currentDate;
   }, [currentDate, items]);
 
   // Reset pending changes when date changes
@@ -179,7 +215,9 @@ export function ScheduleCalendarView({
     const deltaMin = deltaY / PX_PER_MIN;
     const rawStart = dragRef.current.initialStartMin + deltaMin;
     const snapped = Math.round(rawStart / SNAP_MIN) * SNAP_MIN;
-    const clampedStart = Math.max(0, Math.min(23 * 60, snapped));
+    // Clamp so the event end never exceeds 23:50, preserving duration.
+    const maxStart = Math.max(0, 23 * 60 + 50 - dragRef.current.duration);
+    const clampedStart = Math.max(0, Math.min(maxStart, snapped));
     const newStart = minutesToTime(clampedStart);
     const newEnd = minutesToTime(clampedStart + dragRef.current.duration);
 
