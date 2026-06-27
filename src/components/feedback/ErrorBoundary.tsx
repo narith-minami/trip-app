@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="text-center">
             <p className="font-medium text-red-600">Something went wrong</p>
             {this.state.message && (
-              <p className="mt-1 text-sm text-gray-600">{this.state.message}</p>
+              <p className="mt-1 text-sm text-ink-muted">{this.state.message}</p>
             )}
           </div>
         </div>

@@ -36,10 +36,10 @@ export function ScheduleTimeline({
     <div className="space-y-8">
       {groups.map(([date, items]) => (
         <section key={date}>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
             {date}
           </h3>
-          <div className="space-y-3 border-l-2 border-gray-100 pl-4">
+          <div className="space-y-3 border-l-2 border-cream-dark pl-4">
             {items.map((item) => (
               <ScheduleItemCard
                 key={item.id}

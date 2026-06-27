@@ -35,14 +35,14 @@ export function InviteLinkBox({ inviteToken }: InviteLinkBoxProps) {
 
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-gray-700">Invite link</p>
+      <p className="mb-2 text-sm font-medium text-ink-muted">Invite link</p>
       <div className="flex gap-2">
-        <Input readOnly value={url} className="flex-1 bg-gray-50 text-sm" />
+        <Input readOnly value={url} className="flex-1 bg-cream text-sm" />
         <Button variant="secondary" onClick={handleCopy}>
           {copied ? "Copied!" : "Copy"}
         </Button>
       </div>
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-ink-light">
         Anyone with this link can request to join the trip.
       </p>
     </div>

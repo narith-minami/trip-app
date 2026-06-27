@@ -31,22 +31,42 @@ export function TripsPage() {
   const trips = (tripsData?.data ?? []) as TripCardData[];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
+      {/* App header */}
       <div className="bg-white shadow-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Trips</h1>
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-cream"
+                aria-hidden="true"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </span>
+            <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
+          </div>
           <Button onClick={() => setShowCreateModal(true)}>+ New Trip</Button>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {trips.length === 0 ? (
-          <div className="py-12 text-center">
-            <p className="mb-4 text-gray-600">No trips yet. Create your first trip!</p>
+          <div className="py-16 text-center">
+            <p className="mb-6 text-ink-muted">No trips yet. Create your first trip!</p>
             <Button onClick={() => setShowCreateModal(true)}>Create First Trip</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {trips.map((trip) => (
               <TripCard
                 key={trip.id}

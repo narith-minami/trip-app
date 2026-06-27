@@ -26,8 +26,8 @@ export function LoadingSpinner({
       )}
     >
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
-        {label && <p className="text-gray-600">{label}</p>}
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-coral" />
+        {label && <p className="text-ink-muted">{label}</p>}
       </div>
     </div>
   );

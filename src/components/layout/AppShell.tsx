@@ -15,7 +15,7 @@ export interface AppShellProps {
 
 export function AppShell({ header, children, className }: AppShellProps) {
   return (
-    <div className={cn("min-h-screen bg-gray-50", className)}>
+    <div className={cn("min-h-screen bg-cream", className)}>
       {header && <div className="bg-white shadow-sm">{header}</div>}
       <main>{children}</main>
     </div>

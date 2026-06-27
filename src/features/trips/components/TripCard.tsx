@@ -15,31 +15,75 @@ export interface TripCardProps {
   onClick: () => void;
 }
 
+const COVER_GRADIENTS = [
+  "linear-gradient(160deg, #006994 0%, #00A878 50%, #7EC8E3 100%)",
+  "linear-gradient(160deg, #FF6B47 0%, #D4A854 60%, #FF8F72 100%)",
+  "linear-gradient(160deg, #5B8A6F 0%, #1A2E48 60%, #243D5C 100%)",
+] as const;
+
+function coverGradient(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return COVER_GRADIENTS[hash % COVER_GRADIENTS.length];
+}
+
+function formatDateRange(start: string, end: string): string {
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString("en", { month: "short", day: "numeric" });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
 export function TripCard({ trip, onClick }: TripCardProps) {
   const isOwner = trip.members?.some((m) => m.role === "owner");
+  const hasCover = Boolean(trip.coverImageUrl);
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="block w-full overflow-hidden rounded-lg bg-white text-left shadow transition hover:shadow-lg"
+      className="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      {trip.coverImageUrl && (
-        <span className="block h-48 w-full bg-gray-200">
-          <img src={trip.coverImageUrl} alt={trip.title} className="h-full w-full object-cover" />
-        </span>
-      )}
-      <span className="block p-4">
-        <span className="mb-2 block text-xl font-semibold text-gray-900">{trip.title}</span>
-        {trip.destination && <span className="mb-2 block text-gray-600">{trip.destination}</span>}
-        <span className="mb-4 block text-sm text-gray-500">
-          {trip.startDate} to {trip.endDate}
-        </span>
-        <span className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">{trip.members?.length ?? 0} members</span>
-          <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
-            {isOwner ? "Owner" : "Member"}
+      {/* Cover area */}
+      <span className="relative block h-44 w-full">
+        {hasCover ? (
+          <img
+            src={trip.coverImageUrl ?? ""}
+            alt={trip.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span
+            className="block h-full w-full"
+            style={{ background: coverGradient(trip.id) }}
+            aria-hidden="true"
+          />
+        )}
+        {/* Gradient overlay with title */}
+        <span className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-navy/75 to-transparent p-4">
+          <span className="font-display text-lg font-semibold leading-tight text-white">
+            {trip.title}
           </span>
+          {trip.destination && (
+            <span className="mt-0.5 text-xs text-white/70">{trip.destination}</span>
+          )}
+        </span>
+      </span>
+
+      {/* Body */}
+      <span className="flex items-center justify-between px-4 py-3">
+        <span className="text-xs text-ink-light">
+          {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : ""}
+        </span>
+        <span
+          className={
+            isOwner
+              ? "rounded-full bg-coral/10 px-2.5 py-0.5 text-xs font-medium text-coral"
+              : "rounded-full bg-cream-dark px-2.5 py-0.5 text-xs font-medium text-ink-muted"
+          }
+        >
+          {isOwner ? "Owner" : "Member"}
         </span>
       </span>
     </button>

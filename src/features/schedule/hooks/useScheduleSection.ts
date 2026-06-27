@@ -80,6 +80,6 @@ export function useScheduleSection(tripId: string) {
     handleSubmit,
     handleDelete,
     isSubmitting: create.isPending || update.isPending,
-    groups: [...groupByDate(items ?? []).entries()],
+    groupsMap: groupByDate(items ?? []),
   };
 }

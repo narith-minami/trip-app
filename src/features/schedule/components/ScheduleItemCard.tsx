@@ -22,29 +22,29 @@ export function ScheduleItemCard({
   onDelete,
 }: ScheduleItemCardProps) {
   return (
-    <Card className="border border-gray-100">
+    <Card className="border border-cream-dark">
       <CardBody className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {item.startTime && (
-              <span className="text-sm font-semibold text-blue-600">{item.startTime}</span>
+              <span className="text-sm font-semibold text-coral">{item.startTime}</span>
             )}
-            <h4 className="truncate font-medium text-gray-900">{item.title}</h4>
+            <h4 className="truncate font-medium text-ink">{item.title}</h4>
           </div>
 
-          {item.placeName && <p className="mt-1 text-sm text-gray-700">📍 {item.placeName}</p>}
+          {item.placeName && <p className="mt-1 text-sm text-ink-muted">📍 {item.placeName}</p>}
           {item.placeUrl && (
             <a
               href={item.placeUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-1 inline-block text-sm text-blue-600 hover:underline"
+              className="mt-1 inline-block text-sm text-coral hover:underline"
             >
               Open map
             </a>
           )}
           {item.memo && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{item.memo}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{item.memo}</p>
           )}
         </div>
 

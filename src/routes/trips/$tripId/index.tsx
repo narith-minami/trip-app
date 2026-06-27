@@ -47,7 +47,7 @@ export function TripDetailPage() {
   const isOwner = trip.ownerId === trip.owner?.id;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <TripHeader
         trip={trip}
         isOwner={isOwner}
@@ -55,7 +55,7 @@ export function TripDetailPage() {
         onBack={() => navigate({ to: "/trips" })}
       />
 
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="mx-auto max-w-4xl px-4 py-6">
         <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
         <div className="mt-6">
           <TripTabsContent tripId={tripId} trip={trip} isOwner={isOwner} activeTab={activeTab} />

@@ -54,7 +54,7 @@ export function TodoForm({
         <select
           value={assigneeId}
           onChange={(e) => setAssigneeId(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
         >
           <option value="">Unassigned</option>
           {members.map((member) => (

@@ -19,8 +19,8 @@ export function EmptyState({ title, description, icon, action, className }: Empt
   return (
     <div className={cn("py-12 text-center", className)}>
       {icon && <div className="mb-3 text-4xl">{icon}</div>}
-      <p className="font-medium text-gray-900">{title}</p>
-      {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+      <p className="font-medium text-ink">{title}</p>
+      {description && <p className="mt-1 text-sm text-ink-muted">{description}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );

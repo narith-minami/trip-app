@@ -1,9 +1,40 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap");
+
+@theme {
+  /* Brand colors */
+  --color-navy: #0f1c2e;
+  --color-navy-mid: #1a2e48;
+  --color-navy-light: #243d5c;
+  --color-coral: #ff6b47;
+  --color-coral-light: #ff8f72;
+  --color-cream: #fff8f0;
+  --color-cream-mid: #f5ede0;
+  --color-cream-dark: #e8d9c5;
+  --color-gold: #d4a854;
+  --color-gold-light: #f0c878;
+  --color-sage: #5b8a6f;
+  --color-sage-light: #7db89a;
+  /* Text alias colors */
+  --color-ink: #0f1c2e;
+  --color-ink-muted: #6b7a8d;
+  --color-ink-light: #9aaab8;
+
+  /* Typography */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Playfair Display", serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+
+  /* Shadows (navy-tinted) */
+  --shadow-sm: 0 2px 8px rgba(15, 28, 46, 0.08);
+  --shadow-md: 0 8px 32px rgba(15, 28, 46, 0.14);
+  --shadow-lg: 0 20px 60px rgba(15, 28, 46, 0.2);
+}
 
 :root {
   color-scheme: light;
-  --color-bg: #f9fafb;
-  --color-fg: #111827;
+  --color-bg: #fff8f0;
+  --color-fg: #0f1c2e;
 }
 
 *,
@@ -22,7 +53,7 @@ body {
   min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
