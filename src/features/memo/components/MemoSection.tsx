@@ -21,14 +21,14 @@ export function MemoSection({ tripId }: MemoSectionProps) {
   const handleSave = async (content: string) => {
     try {
       await updateMutation.mutateAsync(content);
-      toast.success("Memo saved");
+      toast.success("メモを保存しました");
     } catch {
-      toast.error("Failed to save memo");
+      toast.error("メモの保存に失敗しました");
     }
   };
 
-  if (isLoading) return <LoadingSpinner label="Loading memo..." />;
-  if (error) return <p className="text-red-600">Failed to load memo.</p>;
+  if (isLoading) return <LoadingSpinner label="メモを読み込み中..." />;
+  if (error) return <p className="text-red-600">メモの読み込みに失敗しました。</p>;
 
   return (
     <MemoEditor

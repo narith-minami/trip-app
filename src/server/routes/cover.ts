@@ -20,12 +20,12 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
   try {
     const userId = c.get("user")?.id ?? null;
     if (!userId) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: "認証が必要です" }, 401);
     }
 
     const tripId = c.req.param("tripId");
     if (!tripId) {
-      return c.json({ error: "Trip ID is required" }, 400);
+      return c.json({ error: "旅行IDが必要です" }, 400);
     }
     const db = getDb(c.env.DB);
 
@@ -35,12 +35,12 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     });
 
     if (!trip) {
-      return c.json({ error: "Trip not found" }, 404);
+      return c.json({ error: "旅行が見つかりません" }, 404);
     }
 
     // Only owner can update cover
     if (trip.ownerId !== userId) {
-      return c.json({ error: "Forbidden" }, 403);
+      return c.json({ error: "アクセスが拒否されました" }, 403);
     }
 
     // Get file from form data
@@ -48,17 +48,17 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     const file = formData.get("file") as File;
 
     if (!file) {
-      return c.json({ error: "No file provided" }, 400);
+      return c.json({ error: "ファイルが提供されていません" }, 400);
     }
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      return c.json({ error: "File must be an image" }, 400);
+      return c.json({ error: "ファイルは画像でなければなりません" }, 400);
     }
 
     // Upload to R2
     if (!c.env.R2) {
-      return c.json({ error: "R2 storage is not configured" }, 503);
+      return c.json({ error: "R2ストレージが設定されていません" }, 503);
     }
 
     const buffer = await file.arrayBuffer();
@@ -72,7 +72,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
       });
     } catch (error) {
       console.error("Error uploading to R2:", error);
-      return c.json({ error: "Failed to upload image" }, 500);
+      return c.json({ error: "画像のアップロードに失敗しました" }, 500);
     }
 
     // Update trip with R2 key
@@ -85,7 +85,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     return c.json(updated);
   } catch (error) {
     console.error("Error uploading cover:", error);
-    return c.json({ error: "Internal server error" }, 500);
+    return c.json({ error: "内部サーバーエラー" }, 500);
   }
 });
 

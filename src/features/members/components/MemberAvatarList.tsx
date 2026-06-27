@@ -49,7 +49,7 @@ export function MemberAvatarList({
                   isOwner ? "bg-coral/10 text-coral" : "bg-cream-dark text-ink-muted"
                 )}
               >
-                {isOwner ? "Owner" : "Member"}
+                {isOwner ? "オーナー" : "メンバー"}
               </span>
               {canManage && !isOwner && (
                 <Button
@@ -58,7 +58,7 @@ export function MemberAvatarList({
                   disabled={pendingId === member.userId}
                   onClick={() => onRemove?.(member)}
                 >
-                  Remove
+                  削除
                 </Button>
               )}
             </div>

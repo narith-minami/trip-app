@@ -43,7 +43,7 @@ export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoIte
           />
         )}
         <Button size="sm" variant="ghost" disabled={disabled} onClick={() => onDelete(todo)}>
-          Delete
+          削除
         </Button>
       </div>
     </div>

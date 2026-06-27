@@ -24,9 +24,9 @@ interface SignupValues {
 const LABEL_CLASS = "mb-1 block text-sm font-medium text-gray-700";
 
 function validateSignup({ name, email, password, confirmPassword }: SignupValues): string | null {
-  if (!name || !email || !password || !confirmPassword) return "Please fill in all fields";
-  if (password !== confirmPassword) return "Passwords do not match";
-  if (password.length < 8) return "Password must be at least 8 characters";
+  if (!name || !email || !password || !confirmPassword) return "すべての項目を入力してください";
+  if (password !== confirmPassword) return "パスワードが一致しません";
+  if (password.length < 8) return "パスワードは8文字以上にしてください";
   return null;
 }
 
@@ -58,10 +58,10 @@ function useSignupForm() {
     // Compiler friendly — it can't lower a `finally` clause).
     try {
       await signUp.email({ email: values.email, password: values.password, name: values.name });
-      toast.success("Account created successfully");
+      toast.success("アカウントを作成しました");
       navigate({ to: "/trips" });
     } catch {
-      toast.error("Failed to create account");
+      toast.error("アカウントの作成に失敗しました");
     }
     setIsSubmitting(false);
   };
@@ -118,16 +118,16 @@ function SignupForm({ values, setField, isSubmitting, onSubmit }: SignupFormProp
     <form onSubmit={onSubmit} className="space-y-4">
       <SignupField
         id="name"
-        label="Name"
+        label="名前"
         type="text"
-        placeholder="John Doe"
+        placeholder="山田太郎"
         value={values.name}
         disabled={isSubmitting}
         onChange={(v) => setField("name", v)}
       />
       <SignupField
         id="email"
-        label="Email"
+        label="メールアドレス"
         type="email"
         placeholder="you@example.com"
         value={values.email}
@@ -136,7 +136,7 @@ function SignupForm({ values, setField, isSubmitting, onSubmit }: SignupFormProp
       />
       <SignupField
         id="password"
-        label="Password"
+        label="パスワード"
         type="password"
         placeholder="••••••••"
         value={values.password}
@@ -145,7 +145,7 @@ function SignupForm({ values, setField, isSubmitting, onSubmit }: SignupFormProp
       />
       <SignupField
         id="confirmPassword"
-        label="Confirm Password"
+        label="パスワード（確認）"
         type="password"
         placeholder="••••••••"
         value={values.confirmPassword}
@@ -154,7 +154,7 @@ function SignupForm({ values, setField, isSubmitting, onSubmit }: SignupFormProp
       />
 
       <Button type="submit" disabled={isSubmitting} className="w-full" variant="primary">
-        {isSubmitting ? "Creating account..." : "Sign Up"}
+        {isSubmitting ? "作成中..." : "新規登録"}
       </Button>
     </form>
   );
@@ -177,7 +177,7 @@ export function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Create Account</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold">アカウント作成</h1>
 
         <SignupForm
           values={values}
@@ -188,13 +188,13 @@ export function SignupPage() {
 
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{" "}
+            すでにアカウントをお持ちの方は{" "}
             <button
               type="button"
               onClick={() => navigate({ to: "/login" })}
               className="font-medium text-blue-600 hover:text-blue-700"
             >
-              Sign in
+              ログイン
             </button>
           </p>
         </div>

@@ -18,7 +18,7 @@ const usersRouter = new Hono<AuthContext>().get("/me", requireSession(), async (
     const user = getUser(c);
 
     if (!user) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: "認証が必要です" }, 401);
     }
 
     return c.json({
@@ -32,7 +32,7 @@ const usersRouter = new Hono<AuthContext>().get("/me", requireSession(), async (
     });
   } catch (error) {
     console.error("Error fetching user:", error);
-    return c.json({ error: "Internal server error" }, 500);
+    return c.json({ error: "内部サーバーエラー" }, 500);
   }
 });
 

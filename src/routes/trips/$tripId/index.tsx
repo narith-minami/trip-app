@@ -30,15 +30,15 @@ export function TripDetailPage() {
   const [activeTab, setActiveTab] = useState("schedule");
   const editor = useTripEditor(tripId);
 
-  if (isLoading) return <LoadingSpinner fullScreen label="Loading trip..." />;
+  if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
 
   if (error || !trip) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading trip</p>
+          <p className="text-red-600">旅行の読み込みに失敗しました</p>
           <Button variant="ghost" className="mt-4" onClick={() => navigate({ to: "/trips" })}>
-            Back to Trips
+            旅行一覧に戻る
           </Button>
         </div>
       </div>

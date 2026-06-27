@@ -13,7 +13,7 @@ export interface LoadingSpinnerProps {
 }
 
 export function LoadingSpinner({
-  label = "Loading...",
+  label = "読み込み中...",
   fullScreen = false,
   className,
 }: LoadingSpinnerProps) {

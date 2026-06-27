@@ -35,15 +35,15 @@ export function InviteLinkBox({ inviteToken }: InviteLinkBoxProps) {
 
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-ink-muted">Invite link</p>
+      <p className="mb-2 text-sm font-medium text-ink-muted">招待リンク</p>
       <div className="flex gap-2">
         <Input readOnly value={url} className="flex-1 bg-cream text-sm" />
         <Button variant="secondary" onClick={handleCopy}>
-          {copied ? "Copied!" : "Copy"}
+          {copied ? "コピーしました！" : "コピー"}
         </Button>
       </div>
       <p className="mt-2 text-xs text-ink-light">
-        Anyone with this link can request to join the trip.
+        このリンクを持っている方は旅行への参加をリクエストできます。
       </p>
     </div>
   );

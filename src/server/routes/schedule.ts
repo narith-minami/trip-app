@@ -15,7 +15,7 @@ import { requireSession } from "../middleware/auth";
 import { requireMember } from "../middleware/requireMember";
 import type { TripMemberContext } from "../middleware/requireMember";
 
-const ERR_INTERNAL = "Internal server error";
+const ERR_INTERNAL = "内部サーバーエラー";
 
 // Schemas for schedule items
 const CreateScheduleItemSchema = z.object({
@@ -145,7 +145,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
         const tripId = c.get("tripId");
         const itemId = c.req.param("itemId");
         if (!itemId) {
-          return c.json({ error: "Item ID is required" }, 400);
+          return c.json({ error: "アイテムIDが必要です" }, 400);
         }
         const validated = c.req.valid("json");
 
@@ -157,7 +157,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
         });
 
         if (!item) {
-          return c.json({ error: "Schedule item not found" }, 404);
+          return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
         }
 
         const updateData = buildScheduleUpdate(validated, userId);
@@ -205,7 +205,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           ),
         });
         if (existing.length !== items.length) {
-          return c.json({ error: "One or more items not found" }, 404);
+          return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
         }
 
         const now = Date.now();
@@ -232,7 +232,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       const tripId = c.get("tripId");
       const itemId = c.req.param("itemId");
       if (!itemId) {
-        return c.json({ error: "Item ID is required" }, 400);
+        return c.json({ error: "アイテムIDが必要です" }, 400);
       }
       const db = getDb(c.env.DB);
 
@@ -242,7 +242,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       });
 
       if (!item) {
-        return c.json({ error: "Schedule item not found" }, 404);
+        return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
       }
 
       await db.delete(scheduleItems).where(eq(scheduleItems.id, itemId));

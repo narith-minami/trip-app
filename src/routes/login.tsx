@@ -35,7 +35,7 @@ function LoginForm({
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-          Email
+          メールアドレス
         </label>
         <Input
           id="email"
@@ -50,7 +50,7 @@ function LoginForm({
 
       <div>
         <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-          Password
+          パスワード
         </label>
         <Input
           id="password"
@@ -64,7 +64,7 @@ function LoginForm({
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full" variant="primary">
-        {isSubmitting ? "Signing in..." : "Sign In"}
+        {isSubmitting ? "ログイン中..." : "ログイン"}
       </Button>
     </form>
   );
@@ -88,7 +88,7 @@ export function LoginPage() {
     e.preventDefault();
 
     if (!email || !password) {
-      toast.error("Please fill in all fields");
+      toast.error("すべての項目を入力してください");
       return;
     }
 
@@ -98,10 +98,10 @@ export function LoginPage() {
     // Compiler friendly — it can't lower a `finally` clause).
     try {
       await signIn.email({ email, password });
-      toast.success("Logged in successfully");
+      toast.success("ログインしました");
       navigate({ to: "/trips" });
     } catch {
-      toast.error("Invalid email or password");
+      toast.error("メールアドレスまたはパスワードが正しくありません");
     }
     setIsSubmitting(false);
   };
@@ -111,7 +111,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Sign In</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold">ログイン</h1>
 
         <LoginForm
           email={email}
@@ -124,13 +124,13 @@ export function LoginPage() {
 
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
+            アカウントをお持ちでない方は{" "}
             <button
               type="button"
               onClick={() => navigate({ to: "/signup" })}
               className="font-medium text-blue-600 hover:text-blue-700"
             >
-              Sign up
+              新規登録
             </button>
           </p>
         </div>

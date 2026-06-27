@@ -27,7 +27,7 @@ const UpdateTodoSchema = z.object({
   assigneeId: z.string().optional().nullable(),
 });
 
-const ERR_INTERNAL = "Internal server error";
+const ERR_INTERNAL = "内部サーバーエラー";
 
 type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 
@@ -114,7 +114,7 @@ const todosRouter = new Hono<TripMemberContext>()
         const tripId = c.get("tripId");
         const todoId = c.req.param("todoId");
         if (!todoId) {
-          return c.json({ error: "Todo ID is required" }, 400);
+          return c.json({ error: "TodoのIDが必要です" }, 400);
         }
         const validated = c.req.valid("json");
 
@@ -126,7 +126,7 @@ const todosRouter = new Hono<TripMemberContext>()
         });
 
         if (!todo) {
-          return c.json({ error: "Todo not found" }, 404);
+          return c.json({ error: "Todoが見つかりません" }, 404);
         }
 
         const updateData = buildTodoUpdate(validated);
@@ -159,7 +159,7 @@ const todosRouter = new Hono<TripMemberContext>()
       const tripId = c.get("tripId");
       const todoId = c.req.param("todoId");
       if (!todoId) {
-        return c.json({ error: "Todo ID is required" }, 400);
+        return c.json({ error: "TodoのIDが必要です" }, 400);
       }
       const db = getDb(c.env.DB);
 
@@ -169,7 +169,7 @@ const todosRouter = new Hono<TripMemberContext>()
       });
 
       if (!todo) {
-        return c.json({ error: "Todo not found" }, 404);
+        return c.json({ error: "Todoが見つかりません" }, 404);
       }
 
       await db.delete(todos).where(eq(todos.id, todoId));

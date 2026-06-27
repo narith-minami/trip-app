@@ -126,8 +126,8 @@ export function ScheduleSection({
   const dates = startDate && endDate ? generateDateRange(startDate, endDate) : [];
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
 
-  if (isLoading) return <LoadingSpinner label="Loading schedule..." />;
-  if (error) return <p className="text-red-600">Failed to load schedule.</p>;
+  if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
+  if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
 
   return (
     <div className="space-y-5">
