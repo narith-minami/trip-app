@@ -57,6 +57,10 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     }
 
     // Upload to R2
+    if (!c.env.R2) {
+      return c.json({ error: "R2 storage is not configured" }, 503);
+    }
+
     const buffer = await file.arrayBuffer();
     const fileName = `${tripId}-${generateId("cover")}.${file.type.split("/")[1]}`;
 

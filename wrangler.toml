@@ -18,11 +18,12 @@ database_name = "trip-app-db"
 
 # ============================================================================
 # R2 Bucket Binding
+# Requires R2 to be enabled in Cloudflare Dashboard before deploying.
+# To enable: Dashboard → R2 → Enable, then uncomment below.
 # ============================================================================
-[[r2_buckets]]
-binding = "R2"
-bucket_name = "trip-app-photos"
-# account_id will be auto-detected or can be set explicitly
+# [[r2_buckets]]
+# binding = "R2"
+# bucket_name = "trip-app-photos"
 
 # ============================================================================
 # Environment Variables (public)

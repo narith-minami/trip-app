@@ -9,7 +9,7 @@ import type { D1Database, Fetcher } from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
-  R2: R2Bucket;
+  R2?: R2Bucket;
   ASSETS?: Fetcher;
   AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
