@@ -27,6 +27,7 @@ export async function createScheduleItem(
   data: {
     date: string;
     startTime?: string | null;
+    endTime?: string | null;
     title: string;
     placeName?: string | null;
     placeUrl?: string | null;
@@ -53,6 +54,7 @@ export async function updateScheduleItem(
   data: Partial<{
     date: string;
     startTime: string | null;
+    endTime: string | null;
     title: string;
     placeName: string | null;
     placeUrl: string | null;

@@ -14,6 +14,7 @@ import { RootLayout } from "@/routes/__root";
 import { IndexPage } from "@/routes/index";
 import { LoginPage } from "@/routes/login";
 import { SignupPage } from "@/routes/signup";
+import { ScheduleEditPage } from "@/routes/trips/$tripId/schedule-edit";
 import { TripDetailPage } from "@/routes/trips/$tripId/index";
 import { TripsPage } from "@/routes/trips/index";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
@@ -59,10 +60,19 @@ const tripDetailIndexRoute = createRoute({
   component: TripDetailPage,
 });
 
+const scheduleEditRoute = createRoute({
+  getParentRoute: () => tripRoute,
+  path: "/schedule-edit",
+  component: ScheduleEditPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    date: typeof search.date === "string" ? search.date : "",
+  }),
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   signupRoute,
   tripsIndexRoute,
-  tripRoute.addChildren([tripDetailIndexRoute]),
+  tripRoute.addChildren([tripDetailIndexRoute, scheduleEditRoute]),
 ]);

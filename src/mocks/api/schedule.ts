@@ -14,6 +14,7 @@ const mockScheduleItems: ScheduleItem[] = [
     tripId: "trip-1",
     date: "2025-07-01",
     startTime: "09:00",
+    endTime: "10:00",
     title: "羽田空港到着",
     placeName: "羽田空港",
     placeUrl: "https://www.haneda-airport.jp",
@@ -29,6 +30,7 @@ const mockScheduleItems: ScheduleItem[] = [
     tripId: "trip-1",
     date: "2025-07-01",
     startTime: "12:00",
+    endTime: "13:00",
     title: "渋谷で昼食",
     placeName: "渋谷スクランブル交差点周辺",
     placeUrl: null,
@@ -61,6 +63,7 @@ export async function createScheduleItem(
   data: {
     date: string;
     startTime?: string | null;
+    endTime?: string | null;
     title: string;
     placeName?: string | null;
     placeUrl?: string | null;
@@ -73,6 +76,7 @@ export async function createScheduleItem(
     tripId,
     date: data.date,
     startTime: data.startTime ?? null,
+    endTime: data.endTime ?? null,
     title: data.title,
     placeName: data.placeName ?? null,
     placeUrl: data.placeUrl ?? null,
