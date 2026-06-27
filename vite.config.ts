@@ -14,7 +14,7 @@ import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const isMock = env.VITE_MOCK === "true";
+  const isMock = env.VITE_MOCK !== "false";
 
   console.log("[vite.config.js] mode:", mode);
   console.log("[vite.config.js] VITE_MOCK env var:", env.VITE_MOCK);
