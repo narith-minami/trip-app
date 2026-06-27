@@ -21,6 +21,18 @@ interface PinchState {
   relativeCenterY: number;
 }
 
+function initPinchState(e: TouchEvent, el: HTMLDivElement, pxPerMin: number): PinchState | null {
+  if (e.touches.length !== 2) return null;
+  const t1 = e.touches[0];
+  const t2 = e.touches[1];
+  const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  if (dist === 0) return null;
+  const centerY = (t1.clientY + t2.clientY) / 2;
+  const relativeCenterY = centerY - el.getBoundingClientRect().top;
+  const focalMinute = (el.scrollTop + relativeCenterY) / pxPerMin;
+  return { initialDist: dist, initialPxPerMin: pxPerMin, focalMinute, relativeCenterY };
+}
+
 function calcPinchResult(
   e: TouchEvent,
   pinch: PinchState
@@ -58,20 +70,7 @@ export function usePinchZoom({
     if (!el) return;
 
     const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 2) return;
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const centerY = (t1.clientY + t2.clientY) / 2;
-      const rect = el.getBoundingClientRect();
-      const relativeCenterY = centerY - rect.top;
-      const focalMinute = (el.scrollTop + relativeCenterY) / pxPerMinRef.current;
-      pinchRef.current = {
-        initialDist: dist,
-        initialPxPerMin: pxPerMinRef.current,
-        focalMinute,
-        relativeCenterY,
-      };
+      pinchRef.current = initPinchState(e, el, pxPerMinRef.current);
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -93,11 +92,13 @@ export function usePinchZoom({
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
     el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
     return () => {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;

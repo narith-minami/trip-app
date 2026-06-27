@@ -156,7 +156,7 @@ export function ScheduleCalendarView({
       scrollRef.current.scrollTop = pendingScrollRef.current;
       pendingScrollRef.current = null;
     }
-  });
+  }, [pxPerMin, pendingScrollRef, scrollRef]);
 
   const { data: items } = useScheduleItems(tripId);
   const { update, remove, reorder } = useScheduleMutations(tripId);
