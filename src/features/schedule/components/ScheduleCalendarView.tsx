@@ -8,15 +8,15 @@
 import { Button } from "@/components/ui/button";
 import { useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
 import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
+import { usePinchZoom } from "@/features/schedule/hooks/usePinchZoom";
 import { cn } from "@/lib/cn";
 import type { ScheduleItem } from "@/types/entities";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-// 1 minute = 1.5px → 1 hour = 90px → 24 hours = 2160px
+// 1 minute = 1.5px → 1 hour = 90px → 24 hours = 2160px (default scale)
 const PX_PER_MIN = 1.5;
 const SNAP_MIN = 10;
-const TOTAL_PX = 24 * 60 * PX_PER_MIN;
 
 const COLORS = [
   "#FF6B47",
@@ -148,6 +148,16 @@ export function ScheduleCalendarView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastScrolledDateRef = useRef<string | null>(null);
 
+  const { pxPerMin, pxPerMinRef, pendingScrollRef } = usePinchZoom({ scrollRef, initialPxPerMin: PX_PER_MIN });
+
+  // Apply pending scroll position after React re-renders the new grid height
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current !== null && scrollRef.current) {
+      scrollRef.current.scrollTop = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+    }
+  });
+
   const { data: items } = useScheduleItems(tripId);
   const { update, remove, reorder } = useScheduleMutations(tripId);
 
@@ -158,13 +168,13 @@ export function ScheduleCalendarView({
 
     const dateItems = items.filter((i) => i.date === currentDate && i.startTime);
     if (dateItems.length === 0) {
-      scrollRef.current.scrollTop = 9 * 60 * PX_PER_MIN;
+      scrollRef.current.scrollTop = 9 * 60 * pxPerMinRef.current;
     } else {
       const firstMin = Math.min(...dateItems.map((i) => timeToMinutes(i.startTime)));
-      scrollRef.current.scrollTop = Math.max(0, firstMin * PX_PER_MIN - 80);
+      scrollRef.current.scrollTop = Math.max(0, firstMin * pxPerMinRef.current - 80);
     }
     lastScrolledDateRef.current = currentDate;
-  }, [currentDate, items]);
+  }, [currentDate, items, pxPerMinRef]);
 
   // Reset pending changes when date changes
   useEffect(() => {
@@ -212,7 +222,7 @@ export function ScheduleCalendarView({
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     const deltaY = e.clientY - dragRef.current.initialClientY;
-    const deltaMin = deltaY / PX_PER_MIN;
+    const deltaMin = deltaY / pxPerMinRef.current;
     const rawStart = dragRef.current.initialStartMin + deltaMin;
     const snapped = Math.round(rawStart / SNAP_MIN) * SNAP_MIN;
     // Clamp so the event end never exceeds 23:50, preserving duration.
@@ -346,14 +356,14 @@ export function ScheduleCalendarView({
 
       {/* Time grid (scrollable) */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="relative flex" style={{ height: TOTAL_PX }}>
+        <div className="relative flex" style={{ height: 24 * 60 * pxPerMin }}>
           {/* Time axis */}
           <div className="relative w-12 shrink-0">
             {Array.from({ length: 25 }, (_, h) => (
               <div
                 key={h}
                 className="absolute right-0 left-0 flex justify-end pr-2"
-                style={{ top: h * 60 * PX_PER_MIN - 8 }}
+                style={{ top: h * 60 * pxPerMin - 8 }}
               >
                 <span className="text-xs text-ink-muted">{h}:00</span>
               </div>
@@ -367,7 +377,7 @@ export function ScheduleCalendarView({
               <div
                 key={h}
                 className="absolute left-0 right-0 border-t border-cream-dark"
-                style={{ top: h * 60 * PX_PER_MIN }}
+                style={{ top: h * 60 * pxPerMin }}
               />
             ))}
             {/* 30-min lines */}
@@ -375,7 +385,7 @@ export function ScheduleCalendarView({
               <div
                 key={h}
                 className="absolute left-0 right-0 border-t border-cream"
-                style={{ top: (h * 60 + 30) * PX_PER_MIN }}
+                style={{ top: (h * 60 + 30) * pxPerMin }}
               />
             ))}
 
@@ -388,8 +398,8 @@ export function ScheduleCalendarView({
                   ? timeToMinutes(displayItem.endTime)
                   : startMin + 60;
                 const durationMin = Math.max(10, endMin - startMin);
-                const top = startMin * PX_PER_MIN;
-                const height = Math.max(30, durationMin * PX_PER_MIN);
+                const top = startMin * pxPerMin;
+                const height = Math.max(30, durationMin * pxPerMin);
                 const colWidth = 100 / numCols;
                 const isDragging = dragItemId === item.id;
                 const color = eventColor(item.id);
