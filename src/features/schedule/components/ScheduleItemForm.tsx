@@ -13,6 +13,7 @@ import type { FormEvent } from "react";
 export interface ScheduleFormValues {
   date: string;
   startTime: string;
+  endTime: string;
   title: string;
   placeName: string;
   placeUrl: string;
@@ -31,6 +32,7 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
   return {
     date: item?.date ?? defaultDate ?? "",
     startTime: item?.startTime ?? "",
+    endTime: item?.endTime ?? "",
     title: item?.title ?? "",
     placeName: item?.placeName ?? "",
     placeUrl: item?.placeUrl ?? "",
@@ -45,25 +47,46 @@ interface FieldsProps {
   set: SetField;
 }
 
+function addOneHour(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  return `${String((h + 1) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 function ScheduleDateTitleFields({ values, set }: FieldsProps) {
+  const handleStartTimeChange = (value: string) => {
+    set("startTime", value);
+    if (!values.endTime && value) {
+      set("endTime", addOneHour(value));
+    }
+  };
+
   return (
     <>
+      <div>
+        <Label>Date *</Label>
+        <Input
+          type="date"
+          value={values.date}
+          onChange={(e) => set("date", e.target.value)}
+          required
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>Date *</Label>
-          <Input
-            type="date"
-            value={values.date}
-            onChange={(e) => set("date", e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <Label>Start time</Label>
+          <Label>開始時刻</Label>
           <Input
             type="time"
             value={values.startTime}
-            onChange={(e) => set("startTime", e.target.value)}
+            onChange={(e) => handleStartTimeChange(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>終了時刻</Label>
+          <Input
+            type="time"
+            value={values.endTime}
+            onChange={(e) => set("endTime", e.target.value)}
           />
         </div>
       </div>

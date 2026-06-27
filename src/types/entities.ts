@@ -31,6 +31,7 @@ export interface ScheduleItem {
   tripId: string;
   date: string; // YYYY-MM-DD
   startTime?: string | null; // HH:MM
+  endTime?: string | null; // HH:MM
   title: string;
   placeName?: string | null;
   placeUrl?: string | null;

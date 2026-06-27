@@ -21,6 +21,7 @@ const ERR_INTERNAL = "Internal server error";
 const CreateScheduleItemSchema = z.object({
   date: z.iso.date(),
   startTime: z.string().nullable().optional(),
+  endTime: z.string().nullable().optional(),
   title: z.string().min(1),
   placeName: z.string().nullable().optional(),
   placeUrl: z.url().nullable().optional(),
@@ -53,6 +54,7 @@ function buildScheduleUpdate(
   };
   if (validated.date) updateData.date = validated.date;
   if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
+  if (validated.endTime !== undefined) updateData.endTime = validated.endTime;
   if (validated.title) updateData.title = validated.title;
   if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
   if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
@@ -105,6 +107,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           tripId,
           date: validated.date,
           startTime: validated.startTime,
+          endTime: validated.endTime,
           title: validated.title,
           placeName: validated.placeName,
           placeUrl: validated.placeUrl,

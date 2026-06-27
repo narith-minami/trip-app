@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { cn } from "@/lib/cn";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
@@ -106,6 +107,7 @@ export function ScheduleSection({
   startDate,
   endDate,
 }: ScheduleSectionProps) {
+  const navigate = useNavigate();
   const {
     isLoading,
     error,
@@ -130,7 +132,19 @@ export function ScheduleSection({
   return (
     <div className="space-y-5">
       {canEdit && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() =>
+              navigate({
+                to: "/trips/$tripId/schedule-edit",
+                params: { tripId },
+                search: { date: selectedDate },
+              })
+            }
+          >
+            カレンダー編集
+          </Button>
           <Button onClick={openCreate}>+ アイテム追加</Button>
         </div>
       )}

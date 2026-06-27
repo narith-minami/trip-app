@@ -56,6 +56,7 @@ export const scheduleItems = sqliteTable("schedule_items", {
   tripId: text("tripId").notNull(),
   date: text("date").notNull(), // YYYY-MM-DD
   startTime: text("startTime"), // HH:MM format, nullable
+  endTime: text("endTime"), // HH:MM format, nullable
   title: text("title").notNull(),
   placeName: text("placeName"),
   placeUrl: text("placeUrl"),
