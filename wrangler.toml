@@ -13,8 +13,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "trip-app-db"
-# database_id will be set during deployment or via wrangler commands
-# database_id = "<YOUR_D1_ID>"
+database_id = "d61efaa7-4652-4955-b92f-52e8f056bc83"
 
 # ============================================================================
 # R2 Bucket Binding
@@ -29,7 +28,7 @@ database_name = "trip-app-db"
 # Environment Variables (public)
 # ============================================================================
 [vars]
-BETTER_AUTH_URL = "https://trip-app.pages.dev"
+BETTER_AUTH_URL = "https://trip-app.narith-for-work.workers.dev"
 
 # Note: Sensitive environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET)
 # should be set via Cloudflare Dashboard or wrangler secret commands:

@@ -44,10 +44,15 @@ export const sessions = sqliteTable("sessions", {
 export const accounts = sqliteTable("accounts", {
   id: text("id").primaryKey(),
   userId: text("userId").notNull(),
-  providerId: text("providerId").notNull(), // "google", etc.
-  accountId: text("accountId").notNull(), // provider-specific ID (Google sub)
+  providerId: text("providerId").notNull(),
+  accountId: text("accountId").notNull(),
   accessToken: text("accessToken"),
   refreshToken: text("refreshToken"),
+  idToken: text("idToken"),
+  accessTokenExpiresAt: integer("accessTokenExpiresAt"),
+  refreshTokenExpiresAt: integer("refreshTokenExpiresAt"),
+  scope: text("scope"),
+  password: text("password"),
   createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
 });
