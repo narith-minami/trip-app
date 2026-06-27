@@ -1,7 +1,11 @@
 name = "trip-app"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "dist"
+main = "src/server/app.ts"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
 
 # ============================================================================
 # D1 Database Binding

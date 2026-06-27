@@ -5,11 +5,12 @@
  * Defines the structure of bindings available in the Cloudflare Pages/Workers context.
  */
 
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, Fetcher } from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
   R2: R2Bucket;
+  ASSETS?: Fetcher;
   AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   GOOGLE_CLIENT_ID: string;

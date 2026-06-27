@@ -57,9 +57,18 @@ const routes = app
   .route("/api/trips", coverRouter);
 
 /**
- * 404 handler
+ * 404 handler — serve SPA index.html for client-side routes, JSON 404 for unknown API routes
  */
-app.notFound((c) => {
+app.notFound(async (c) => {
+  if (c.req.path.startsWith("/api/")) {
+    return c.json({ error: "Not Found" }, 404);
+  }
+  if (c.env.ASSETS) {
+    const assetResponse = await c.env.ASSETS.fetch(c.req.url);
+    if (assetResponse.ok) return assetResponse as unknown as Response;
+    const indexUrl = new URL("/index.html", c.req.url).toString();
+    return (await c.env.ASSETS.fetch(indexUrl)) as unknown as Response;
+  }
   return c.json({ error: "Not Found" }, 404);
 });
 
