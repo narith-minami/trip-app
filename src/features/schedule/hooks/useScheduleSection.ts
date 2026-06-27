@@ -27,7 +27,7 @@ function toPayload(values: ScheduleFormValues) {
 
 export function useScheduleSection(tripId: string) {
   const { data: items, isLoading, error } = useScheduleItems(tripId);
-  const { create, update, remove } = useScheduleMutations(tripId);
+  const { create, update, remove, reorder } = useScheduleMutations(tripId);
   const [editing, setEditing] = useState<ScheduleItem | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -68,6 +68,14 @@ export function useScheduleSection(tripId: string) {
     }
   };
 
+  const handleReorder = async (reorderedItems: Array<{ id: string; orderIndex: number }>) => {
+    try {
+      await reorder.mutateAsync(reorderedItems);
+    } catch {
+      toast.error("並び替えに失敗しました");
+    }
+  };
+
   return {
     items,
     isLoading,
@@ -79,6 +87,7 @@ export function useScheduleSection(tripId: string) {
     close,
     handleSubmit,
     handleDelete,
+    handleReorder,
     isSubmitting: create.isPending || update.isPending,
     groupsMap: groupByDate(items ?? []),
   };

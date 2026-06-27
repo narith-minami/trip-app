@@ -5,8 +5,14 @@
  * Each mutation invalidates the schedule list cache on success.
  */
 
-import { createScheduleItem, deleteScheduleItem, updateScheduleItem } from "@/api/schedule";
+import {
+  createScheduleItem,
+  deleteScheduleItem,
+  reorderScheduleItems,
+  updateScheduleItem,
+} from "@/api/schedule";
 import { QUERY_KEYS } from "@/lib/queryKeys";
+import type { ScheduleItem } from "@/types/entities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type CreateInput = Parameters<typeof createScheduleItem>[1];
@@ -36,5 +42,30 @@ export function useScheduleMutations(tripId: string) {
     onSuccess: invalidate,
   });
 
-  return { create, update, remove };
+  const reorder = useMutation({
+    mutationFn: (items: Array<{ id: string; orderIndex: number }>) =>
+      reorderScheduleItems(tripId, items),
+    onMutate: async (reorderedItems) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.schedule.list(tripId) });
+      const previous = queryClient.getQueryData<ScheduleItem[]>(QUERY_KEYS.schedule.list(tripId));
+      queryClient.setQueryData<ScheduleItem[]>(QUERY_KEYS.schedule.list(tripId), (old) => {
+        if (!old) return old;
+        const indexMap = new Map(reorderedItems.map((r) => [r.id, r.orderIndex]));
+        return old
+          .map((item) =>
+            indexMap.has(item.id) ? { ...item, orderIndex: indexMap.get(item.id)! } : item
+          )
+          .sort((a, b) => a.date.localeCompare(b.date) || a.orderIndex - b.orderIndex);
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(QUERY_KEYS.schedule.list(tripId), context.previous);
+      }
+    },
+    onSettled: invalidate,
+  });
+
+  return { create, update, remove, reorder };
 }

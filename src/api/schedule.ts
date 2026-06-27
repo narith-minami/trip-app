@@ -71,6 +71,23 @@ export async function updateScheduleItem(
 }
 
 /**
+ * Bulk reorder schedule items by updating their orderIndex values
+ */
+export async function reorderScheduleItems(
+  tripId: string,
+  items: Array<{ id: string; orderIndex: number }>
+) {
+  const res = await apiClient.api.trips[":tripId"].schedule.reorder.$patch({
+    param: { tripId },
+    json: { items },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to reorder schedule items");
+  }
+  return res.json();
+}
+
+/**
  * Delete schedule item
  */
 export async function deleteScheduleItem(tripId: string, itemId: string) {

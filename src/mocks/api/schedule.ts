@@ -108,6 +108,20 @@ export async function updateScheduleItem(
   return item;
 }
 
+export async function reorderScheduleItems(
+  tripId: string,
+  items: Array<{ id: string; orderIndex: number }>
+) {
+  for (const { id, orderIndex } of items) {
+    const item = scheduleItems.find((s) => s.id === id && s.tripId === tripId);
+    if (item) {
+      item.orderIndex = orderIndex;
+      item.updatedAt = Date.now();
+    }
+  }
+  return { success: true };
+}
+
 export async function deleteScheduleItem(tripId: string, itemId: string) {
   const index = scheduleItems.findIndex((s) => s.id === itemId && s.tripId === tripId);
   if (index === -1) throw new Error(`Schedule item ${itemId} not found`);

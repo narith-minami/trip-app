@@ -7,7 +7,7 @@
 
 import { generateId } from "@/lib/utils";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { getDb, scheduleItems } from "../db";
@@ -29,6 +29,13 @@ const CreateScheduleItemSchema = z.object({
 });
 
 const UpdateScheduleItemSchema = CreateScheduleItemSchema.partial();
+
+const ReorderScheduleItemsSchema = z.object({
+  items: z
+    .array(z.object({ id: z.string(), orderIndex: z.number().int().min(0) }))
+    .min(1)
+    .max(100),
+});
 
 type ScheduleUpdateInput = Partial<typeof scheduleItems.$inferInsert>;
 
@@ -164,6 +171,51 @@ const scheduleRouter = new Hono<TripMemberContext>()
           return c.json({ error: error.message }, 400);
         }
         console.error("Error updating schedule item:", error);
+        return c.json({ error: ERR_INTERNAL }, 500);
+      }
+    }
+  )
+  /**
+   * PATCH /api/trips/:tripId/schedule/reorder
+   * Bulk update orderIndex for multiple schedule items
+   */
+  .patch(
+    "/reorder",
+    requireSession(),
+    requireMember,
+    zValidator("json", ReorderScheduleItemsSchema),
+    async (c) => {
+      try {
+        const tripId = c.get("tripId");
+        const userId = c.get("user")?.id ?? null;
+        const { items } = c.req.valid("json");
+        const db = getDb(c.env.DB);
+
+        // Verify all items belong to this trip
+        const existing = await db.query.scheduleItems.findMany({
+          where: and(
+            eq(scheduleItems.tripId, tripId),
+            inArray(
+              scheduleItems.id,
+              items.map((i) => i.id)
+            )
+          ),
+        });
+        if (existing.length !== items.length) {
+          return c.json({ error: "One or more items not found" }, 404);
+        }
+
+        const now = Date.now();
+        for (const { id, orderIndex } of items) {
+          await db
+            .update(scheduleItems)
+            .set({ orderIndex, updatedAt: now, updatedBy: userId })
+            .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
+        }
+
+        return c.json({ success: true });
+      } catch (error) {
+        console.error("Error reordering schedule items:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }

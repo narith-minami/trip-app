@@ -116,6 +116,7 @@ export function ScheduleSection({
     close,
     handleSubmit,
     handleDelete,
+    handleReorder,
     isSubmitting,
     groupsMap,
   } = useScheduleSection(tripId);
@@ -147,6 +148,7 @@ export function ScheduleSection({
         canEdit={canEdit}
         onEdit={openEdit}
         onDelete={handleDelete}
+        onReorder={canEdit ? handleReorder : undefined}
       />
 
       <Dialog
