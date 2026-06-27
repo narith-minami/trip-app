@@ -1,12 +1,23 @@
 /**
  * src/features/schedule/components/ScheduleItemCard.tsx
  *
- * Presentational card for a single schedule item.
+ * Card-only display for a single schedule item.
+ * Layout (thumbnail + connecting line) is handled by ScheduleTimeline.
  */
 
 import { Button } from "@/components/ui/button";
-import { Card, CardBody } from "@/components/ui/card";
 import type { ScheduleItem } from "@/types/entities";
+
+function timeAgo(ms: number): string {
+  const diff = Date.now() - ms;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor(diff / 60000);
+  if (days > 0) return `${days}日前`;
+  if (hours > 0) return `${hours}時間前`;
+  if (mins > 0) return `${mins}分前`;
+  return "たった今";
+}
 
 export interface ScheduleItemCardProps {
   item: ScheduleItem;
@@ -22,43 +33,55 @@ export function ScheduleItemCard({
   onDelete,
 }: ScheduleItemCardProps) {
   return (
-    <Card className="border border-cream-dark">
-      <CardBody className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            {item.startTime && (
-              <span className="text-sm font-semibold text-coral">{item.startTime}</span>
-            )}
-            <h4 className="truncate font-medium text-ink">{item.title}</h4>
+    <div className="overflow-hidden rounded-2xl border border-cream-dark bg-white shadow-sm">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-semibold text-ink">{item.title}</h4>
+            {item.placeName && <p className="mt-0.5 text-sm text-ink-muted">📍 {item.placeName}</p>}
           </div>
-
-          {item.placeName && <p className="mt-1 text-sm text-ink-muted">📍 {item.placeName}</p>}
-          {item.placeUrl && (
-            <a
-              href={item.placeUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1 inline-block text-sm text-coral hover:underline"
-            >
-              Open map
-            </a>
-          )}
-          {item.memo && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{item.memo}</p>
+          {canEdit && (
+            <div className="flex shrink-0 gap-1">
+              <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
+                Edit
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
+                Del
+              </Button>
+            </div>
           )}
         </div>
 
-        {canEdit && (
-          <div className="flex shrink-0 gap-2">
-            <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
-              Edit
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
-              Delete
-            </Button>
+        {item.memo && (
+          <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted">
+            {item.memo}
           </div>
         )}
-      </CardBody>
-    </Card>
+        {item.imageUrl && (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="mt-2 h-32 w-full rounded-xl object-cover"
+          />
+        )}
+      </div>
+
+      <div className="flex items-center justify-between border-t border-cream-dark px-4 py-2">
+        <span className="text-xs text-ink-light">
+          {item.updatedBy ? `${item.updatedBy} · ` : ""}
+          {timeAgo(item.updatedAt)}
+        </span>
+        {item.placeUrl && (
+          <a
+            href={item.placeUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-medium text-coral"
+          >
+            マップ
+          </a>
+        )}
+      </div>
+    </div>
   );
 }

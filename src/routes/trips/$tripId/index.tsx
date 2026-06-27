@@ -11,15 +11,16 @@ import { Tabs } from "@/components/ui/tabs";
 import { TripHeader } from "@/features/trips/components/TripHeader";
 import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
 import { useTripEditor } from "@/features/trips/hooks/useTripEditor";
+import type { TripMember } from "@/types/entities";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { TripTabsContent } from "./TripTabsContent";
 
 const TRIP_TABS = [
-  { value: "schedule", label: "Schedule" },
-  { value: "todos", label: "Todos" },
-  { value: "memo", label: "Memo" },
-  { value: "members", label: "Members" },
+  { value: "schedule", label: "日程" },
+  { value: "todos", label: "Todo" },
+  { value: "memo", label: "メモ" },
+  { value: "members", label: "メンバー" },
 ];
 
 export function TripDetailPage() {
@@ -52,14 +53,20 @@ export function TripDetailPage() {
         trip={trip}
         isOwner={isOwner}
         editor={editor}
+        members={trip.members as TripMember[] | undefined}
         onBack={() => navigate({ to: "/trips" })}
       />
 
-      <div className="mx-auto max-w-4xl px-4 py-6">
-        <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
-        <div className="mt-6">
-          <TripTabsContent tripId={tripId} trip={trip} isOwner={isOwner} activeTab={activeTab} />
+      {/* Tab bar on white band */}
+      <div className="bg-white shadow-sm">
+        <div className="mx-auto max-w-4xl px-4">
+          <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
         </div>
+      </div>
+
+      {/* Content area */}
+      <div className="mx-auto max-w-4xl px-4 py-6">
+        <TripTabsContent tripId={tripId} trip={trip} isOwner={isOwner} activeTab={activeTab} />
       </div>
     </div>
   );

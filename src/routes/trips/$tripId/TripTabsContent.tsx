@@ -25,7 +25,13 @@ export function TripTabsContent({ tripId, trip, isOwner, activeTab }: TripTabsCo
   return (
     <>
       {activeTab === "schedule" && (
-        <ScheduleSection tripId={tripId} canEdit defaultDate={trip.startDate} />
+        <ScheduleSection
+          tripId={tripId}
+          canEdit
+          defaultDate={trip.startDate}
+          startDate={trip.startDate}
+          endDate={trip.endDate}
+        />
       )}
       {activeTab === "todos" && <TodosSection tripId={tripId} members={trip.members} />}
       {activeTab === "memo" && <MemoSection tripId={tripId} />}
