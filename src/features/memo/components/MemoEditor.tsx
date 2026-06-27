@@ -44,13 +44,13 @@ export function MemoEditor({ content, isSaving = false, onSave }: MemoEditorProp
         rows={12}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Shared notes for this trip..."
+        placeholder="旅行の共有メモ..."
         className="font-mono text-sm"
       />
       <div className="flex items-center justify-between">
-        <p className="text-sm text-ink-muted">{dirty ? "Unsaved changes" : "All changes saved"}</p>
+        <p className="text-sm text-ink-muted">{dirty ? "未保存の変更があります" : "すべての変更が保存されました"}</p>
         <Button onClick={() => onSave(value)} disabled={!dirty || isSaving}>
-          {isSaving ? "Saving..." : "Save memo"}
+          {isSaving ? "保存中..." : "メモを保存"}
         </Button>
       </div>
     </div>

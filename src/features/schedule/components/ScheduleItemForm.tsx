@@ -63,7 +63,7 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
   return (
     <>
       <div>
-        <Label>Date *</Label>
+        <Label>日付 *</Label>
         <Input
           type="date"
           value={values.date}
@@ -93,11 +93,11 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
       </div>
 
       <div>
-        <Label>Title *</Label>
+        <Label>タイトル *</Label>
         <Input
           value={values.title}
           onChange={(e) => set("title", e.target.value)}
-          placeholder="e.g., Check-in at hotel"
+          placeholder="例：ホテルチェックイン"
           required
         />
       </div>
@@ -109,16 +109,16 @@ function SchedulePlaceFields({ values, set }: FieldsProps) {
   return (
     <>
       <div>
-        <Label>Place name</Label>
+        <Label>場所名</Label>
         <Input
           value={values.placeName}
           onChange={(e) => set("placeName", e.target.value)}
-          placeholder="e.g., Grand Hotel"
+          placeholder="例：グランドホテル"
         />
       </div>
 
       <div>
-        <Label>Place URL</Label>
+        <Label>場所のURL</Label>
         <Input
           type="url"
           value={values.placeUrl}
@@ -128,12 +128,12 @@ function SchedulePlaceFields({ values, set }: FieldsProps) {
       </div>
 
       <div>
-        <Label>Memo</Label>
+        <Label>メモ</Label>
         <Textarea
           rows={3}
           value={values.memo}
           onChange={(e) => set("memo", e.target.value)}
-          placeholder="Notes..."
+          placeholder="メモ..."
         />
       </div>
     </>
@@ -163,10 +163,10 @@ export function ScheduleItemForm({
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
-          Cancel
+          キャンセル
         </Button>
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save"}
+          {isSubmitting ? "保存中..." : "保存"}
         </Button>
       </div>
     </form>

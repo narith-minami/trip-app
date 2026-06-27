@@ -74,17 +74,17 @@ function TripEditFields({ editor }: { editor: TripEditor }) {
   return (
     <div className="mt-4 space-y-3">
       <div>
-        <Label className="text-cream-mid">Location</Label>
+        <Label className="text-cream-mid">場所</Label>
         <Input
           value={editData.location}
           onChange={(e) => setField("location", e.target.value)}
-          placeholder="Location"
+          placeholder="場所"
           className="border-cream-dark/40 bg-navy-mid text-white placeholder:text-ink-light focus:ring-coral"
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="text-cream-mid">Start Date</Label>
+          <Label className="text-cream-mid">出発日</Label>
           <Input
             type="date"
             value={editData.startDate}
@@ -93,7 +93,7 @@ function TripEditFields({ editor }: { editor: TripEditor }) {
           />
         </div>
         <div>
-          <Label className="text-cream-mid">End Date</Label>
+          <Label className="text-cream-mid">帰着日</Label>
           <Input
             type="date"
             value={editData.endDate}
@@ -111,14 +111,14 @@ function OwnerActions({ editor, onEdit }: { editor: TripEditor; onEdit: () => vo
     return (
       <>
         <Button variant="success" onClick={editor.save} disabled={editor.isSaving}>
-          Save
+          保存
         </Button>
         <Button
           variant="secondary"
           onClick={editor.cancelEdit}
           className="border-white/20 text-white hover:bg-white/10"
         >
-          Cancel
+          キャンセル
         </Button>
       </>
     );
@@ -130,10 +130,10 @@ function OwnerActions({ editor, onEdit }: { editor: TripEditor; onEdit: () => vo
         onClick={onEdit}
         className="text-white/80 hover:bg-white/10 hover:text-white"
       >
-        Edit
+        編集
       </Button>
       <Button variant="danger" onClick={editor.remove} disabled={editor.isDeleting}>
-        Delete
+        削除
       </Button>
     </>
   );

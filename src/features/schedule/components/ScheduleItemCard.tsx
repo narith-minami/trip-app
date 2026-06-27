@@ -43,10 +43,10 @@ export function ScheduleItemCard({
           {canEdit && (
             <div className="flex shrink-0 gap-1">
               <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
-                Edit
+                編集
               </Button>
               <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
-                Del
+                削除
               </Button>
             </div>
           )}

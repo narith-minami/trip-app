@@ -47,7 +47,7 @@ export function TodoForm({
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Add a todo..."
+        placeholder="やることを追加..."
         className="flex-1"
       />
       {members.length > 0 && (
@@ -56,7 +56,7 @@ export function TodoForm({
           onChange={(e) => setAssigneeId(e.target.value)}
           className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
         >
-          <option value="">Unassigned</option>
+          <option value="">未割り当て</option>
           {members.map((member) => (
             <option key={member.userId} value={member.userId}>
               {member.user?.name ?? member.userId}
@@ -65,7 +65,7 @@ export function TodoForm({
         </select>
       )}
       <Button type="submit" disabled={isSubmitting || !title.trim()}>
-        Add
+        追加
       </Button>
     </form>
   );

@@ -20,8 +20,8 @@ export function TodoList({ todos, onToggle, onDelete, pendingIds }: TodoListProp
     return (
       <EmptyState
         icon="✅"
-        title="No todos yet"
-        description="Add tasks so everyone knows what's left to do."
+        title="やることはまだありません"
+        description="タスクを追加してみんなで共有しましょう。"
       />
     );
   }

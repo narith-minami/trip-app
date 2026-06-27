@@ -18,12 +18,12 @@ export function TripsPage() {
   const { data: tripsData, isLoading, error } = useTrips();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  if (isLoading) return <LoadingSpinner fullScreen label="Loading trips..." />;
+  if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
 
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-red-600">Error loading trips</p>
+        <p className="text-red-600">旅行の読み込みに失敗しました</p>
       </div>
     );
   }
@@ -55,15 +55,15 @@ export function TripsPage() {
             </span>
             <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
           </div>
-          <Button onClick={() => setShowCreateModal(true)}>+ New Trip</Button>
+          <Button onClick={() => setShowCreateModal(true)}>+ 新しい旅行</Button>
         </div>
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-8">
         {trips.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="mb-6 text-ink-muted">No trips yet. Create your first trip!</p>
-            <Button onClick={() => setShowCreateModal(true)}>Create First Trip</Button>
+            <p className="mb-6 text-ink-muted">旅行がまだありません。最初の旅行を作成しましょう！</p>
+            <Button onClick={() => setShowCreateModal(true)}>最初の旅行を作成</Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -37,7 +37,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
     try {
       await create.mutateAsync(values);
     } catch {
-      toast.error("Failed to add todo");
+      toast.error("Todoの追加に失敗しました");
     }
   };
 
@@ -51,7 +51,7 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
         data: { isDone: todo.isDone !== 1 },
       });
     } catch {
-      toast.error("Failed to update todo");
+      toast.error("Todoの更新に失敗しました");
     }
     clearPending(todo.id);
   };
@@ -63,13 +63,13 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
     try {
       await remove.mutateAsync(todo.id);
     } catch {
-      toast.error("Failed to delete todo");
+      toast.error("Todoの削除に失敗しました");
     }
     clearPending(todo.id);
   };
 
-  if (isLoading) return <LoadingSpinner label="Loading todos..." />;
-  if (error) return <p className="text-red-600">Failed to load todos.</p>;
+  if (isLoading) return <LoadingSpinner label="Todoを読み込み中..." />;
+  if (error) return <p className="text-red-600">Todoの読み込みに失敗しました。</p>;
 
   return (
     <div className="space-y-4">

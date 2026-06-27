@@ -32,7 +32,7 @@ const membersRouter = new Hono<TripMemberContext>()
       return c.json({ data: members });
     } catch (error) {
       console.error("Error fetching members:", error);
-      return c.json({ error: "Internal server error" }, 500);
+      return c.json({ error: "内部サーバーエラー" }, 500);
     }
   })
   /**
@@ -45,7 +45,7 @@ const membersRouter = new Hono<TripMemberContext>()
       const tripId = c.get("tripId");
       const memberId = c.req.param("memberId");
       if (!memberId) {
-        return c.json({ error: "Member ID is required" }, 400);
+        return c.json({ error: "メンバーIDが必要です" }, 400);
       }
       const db = getDb(c.env.DB);
 
@@ -55,12 +55,12 @@ const membersRouter = new Hono<TripMemberContext>()
       });
 
       if (!trip) {
-        return c.json({ error: "Trip not found" }, 404);
+        return c.json({ error: "旅行が見つかりません" }, 404);
       }
 
       // Only owner can remove members
       if (trip.ownerId !== userId) {
-        return c.json({ error: "Forbidden" }, 403);
+        return c.json({ error: "アクセスが拒否されました" }, 403);
       }
 
       // Cannot remove owner
@@ -69,11 +69,11 @@ const membersRouter = new Hono<TripMemberContext>()
       });
 
       if (!member) {
-        return c.json({ error: "Member not found" }, 404);
+        return c.json({ error: "メンバーが見つかりません" }, 404);
       }
 
       if (member.role === "owner") {
-        return c.json({ error: "Cannot remove trip owner" }, 400);
+        return c.json({ error: "旅行のオーナーは削除できません" }, 400);
       }
 
       await db
@@ -83,7 +83,7 @@ const membersRouter = new Hono<TripMemberContext>()
       return c.json({ success: true });
     } catch (error) {
       console.error("Error removing member:", error);
-      return c.json({ error: "Internal server error" }, 500);
+      return c.json({ error: "内部サーバーエラー" }, 500);
     }
   });
 

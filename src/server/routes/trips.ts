@@ -14,10 +14,10 @@ import { getDb, tripMembers, trips } from "../db";
 import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
 
-const ERR_UNAUTHORIZED = "Unauthorized";
-const ERR_FORBIDDEN = "Forbidden";
-const ERR_INTERNAL = "Internal server error";
-const ERR_TRIP_ID_REQUIRED = "Trip ID is required";
+const ERR_UNAUTHORIZED = "認証が必要です";
+const ERR_FORBIDDEN = "アクセスが拒否されました";
+const ERR_INTERNAL = "内部サーバーエラー";
+const ERR_TRIP_ID_REQUIRED = "旅行IDが必要です";
 
 type TripUpdateInput = Partial<typeof trips.$inferInsert>;
 
@@ -211,7 +211,7 @@ const tripsRouter = new Hono<AuthContext>()
       });
 
       if (!trip) {
-        return c.json({ error: "Trip not found" }, 404);
+        return c.json({ error: "旅行が見つかりません" }, 404);
       }
 
       return c.json(trip);
@@ -302,7 +302,7 @@ const tripsRouter = new Hono<AuthContext>()
       });
 
       if (!trip) {
-        return c.json({ error: "Trip not found" }, 404);
+        return c.json({ error: "旅行が見つかりません" }, 404);
       }
 
       // Only owner can delete

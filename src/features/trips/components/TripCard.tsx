@@ -31,7 +31,7 @@ function coverGradient(id: string): string {
 
 function formatDateRange(start: string, end: string): string {
   const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("en", { month: "short", day: "numeric" });
+    new Date(d).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
@@ -83,7 +83,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
               : "rounded-full bg-cream-dark px-2.5 py-0.5 text-xs font-medium text-ink-muted"
           }
         >
-          {isOwner ? "Owner" : "Member"}
+          {isOwner ? "オーナー" : "メンバー"}
         </span>
       </span>
     </button>

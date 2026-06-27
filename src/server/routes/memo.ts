@@ -48,7 +48,7 @@ const memoRouter = new Hono<TripMemberContext>()
       return c.json(memo);
     } catch (error) {
       console.error("Error fetching memo:", error);
-      return c.json({ error: "Internal server error" }, 500);
+      return c.json({ error: "内部サーバーエラー" }, 500);
     }
   })
   /**
@@ -92,7 +92,7 @@ const memoRouter = new Hono<TripMemberContext>()
         return c.json({ error: error.message }, 400);
       }
       console.error("Error updating memo:", error);
-      return c.json({ error: "Internal server error" }, 500);
+      return c.json({ error: "内部サーバーエラー" }, 500);
     }
   });
 
