@@ -8,6 +8,7 @@
 
 import process from "node:process";
 import { URL, fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
@@ -20,22 +21,49 @@ export default defineConfig(({ mode }) => {
   console.log("[vite.config.js] isMock:", isMock);
 
   return {
-    plugins: [react()],
+    plugins: [tailwindcss(), react()],
     resolve: {
-      alias: {
-        "@": fileURLToPath(new URL("./src", import.meta.url)),
-        ...(isMock && {
-          "@/api/users": fileURLToPath(new URL("./src/mocks/api/users.ts", import.meta.url)),
-          "@/api/trips": fileURLToPath(new URL("./src/mocks/api/trips.ts", import.meta.url)),
-          "@/api/schedule": fileURLToPath(new URL("./src/mocks/api/schedule.ts", import.meta.url)),
-          "@/api/todos": fileURLToPath(new URL("./src/mocks/api/todos.ts", import.meta.url)),
-          "@/api/memo": fileURLToPath(new URL("./src/mocks/api/memo.ts", import.meta.url)),
-          "@/api/members": fileURLToPath(new URL("./src/mocks/api/members.ts", import.meta.url)),
-          "@/lib/auth-client": fileURLToPath(
-            new URL("./src/mocks/auth-client.ts", import.meta.url)
-          ),
-        }),
-      },
+      alias: [
+        ...(isMock
+          ? [
+              {
+                find: "@/api/users",
+                replacement: fileURLToPath(new URL("./src/mocks/api/users.ts", import.meta.url)),
+              },
+              {
+                find: "@/api/trips",
+                replacement: fileURLToPath(new URL("./src/mocks/api/trips.ts", import.meta.url)),
+              },
+              {
+                find: "@/api/schedule",
+                replacement: fileURLToPath(
+                  new URL("./src/mocks/api/schedule.ts", import.meta.url)
+                ),
+              },
+              {
+                find: "@/api/todos",
+                replacement: fileURLToPath(new URL("./src/mocks/api/todos.ts", import.meta.url)),
+              },
+              {
+                find: "@/api/memo",
+                replacement: fileURLToPath(new URL("./src/mocks/api/memo.ts", import.meta.url)),
+              },
+              {
+                find: "@/api/members",
+                replacement: fileURLToPath(
+                  new URL("./src/mocks/api/members.ts", import.meta.url)
+                ),
+              },
+              {
+                find: "@/lib/auth-client",
+                replacement: fileURLToPath(
+                  new URL("./src/mocks/auth-client.ts", import.meta.url)
+                ),
+              },
+            ]
+          : []),
+        { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+      ],
     },
     build: {
       outDir: "dist",

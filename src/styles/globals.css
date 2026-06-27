@@ -1,13 +1,4 @@
-/**
- * src/styles/globals.css
- *
- * Global base styles for the application.
- *
- * NOTE: The components in this project are authored with Tailwind utility
- * classes, but Tailwind is not yet wired into the build. Adding Tailwind
- * (tailwindcss + a Vite plugin and an `@import "tailwindcss";` here) is a
- * recommended follow-up to make those utility classes take effect.
- */
+@import "tailwindcss";
 
 :root {
   color-scheme: light;
