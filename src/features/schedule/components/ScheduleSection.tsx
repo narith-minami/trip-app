@@ -12,6 +12,7 @@ import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection
 import { cn } from "@/lib/cn";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
 import { ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
@@ -152,7 +153,7 @@ export function ScheduleSection({
           <Button
             variant="secondary"
             onClick={() => setCopyOpen(true)}
-            disabled={(groupsMap.get(selectedDate) ?? []).length === 0}
+            disabled={dates.length <= 1 || (groupsMap.get(selectedDate) ?? []).length === 0}
           >
             コピー
           </Button>
@@ -196,9 +197,14 @@ export function ScheduleSection({
           items={groupsMap.get(selectedDate) ?? []}
           dates={dates}
           onCopy={async (targetDate, itemIds) => {
-            await copy.mutateAsync({ targetDate, itemIds });
-            setCopyOpen(false);
-            setSelectedDate(targetDate);
+            try {
+              await copy.mutateAsync({ targetDate, itemIds });
+              toast.success("予定をコピーしました");
+              setCopyOpen(false);
+              setSelectedDate(targetDate);
+            } catch {
+              toast.error("予定のコピーに失敗しました");
+            }
           }}
           onClose={() => setCopyOpen(false)}
           isSubmitting={copy.isPending}

@@ -252,29 +252,30 @@ const scheduleRouter = new Hono<TripMemberContext>()
         }
 
         const now = Date.now();
-        const created = [];
-        for (const item of existing) {
-          const newId = generateId("schedule");
-          await db.insert(scheduleItems).values({
-            id: newId,
-            tripId,
-            date: targetDate,
-            startTime: item.startTime,
-            endTime: item.endTime,
-            title: item.title,
-            placeName: item.placeName,
-            placeUrl: item.placeUrl,
-            memo: item.memo,
-            orderIndex: item.orderIndex,
-            updatedBy: userId,
-            createdAt: now,
-            updatedAt: now,
-          });
-          const newItem = await db.query.scheduleItems.findFirst({
-            where: eq(scheduleItems.id, newId),
-          });
-          if (newItem) created.push(newItem);
-        }
+        const insertRows = existing.map((item) => ({
+          id: generateId("schedule"),
+          tripId,
+          date: targetDate,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          title: item.title,
+          placeName: item.placeName,
+          placeUrl: item.placeUrl,
+          memo: item.memo,
+          orderIndex: item.orderIndex,
+          updatedBy: userId,
+          createdAt: now,
+          updatedAt: now,
+        }));
+
+        await db.insert(scheduleItems).values(insertRows);
+
+        const created = await db.query.scheduleItems.findMany({
+          where: inArray(
+            scheduleItems.id,
+            insertRows.map((r) => r.id)
+          ),
+        });
 
         return c.json({ data: created, count: created.length }, 201);
       } catch (error) {
