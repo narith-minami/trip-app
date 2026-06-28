@@ -6,6 +6,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -15,6 +17,7 @@ export interface ScheduleFormValues {
   startTime: string;
   endTime: string;
   title: string;
+  eventType: EventType | "";
   placeName: string;
   placeUrl: string;
   memo: string;
@@ -34,6 +37,7 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
     startTime: item?.startTime ?? "",
     endTime: item?.endTime ?? "",
     title: item?.title ?? "",
+    eventType: (item?.eventType as EventType | undefined) ?? "",
     placeName: item?.placeName ?? "",
     placeUrl: item?.placeUrl ?? "",
     memo: item?.memo ?? "",
@@ -50,6 +54,37 @@ interface FieldsProps {
 function addOneHour(time: string): string {
   const [h, m] = time.split(":").map(Number);
   return `${String((h + 1) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function EventTypeSelector({ values, set }: FieldsProps) {
+  return (
+    <fieldset className="border-0 p-0">
+      <legend className="mb-1.5 text-sm font-medium text-ink">イベントタイプ</legend>
+      <div className="flex flex-wrap gap-2">
+        {EVENT_TYPE_LIST.map(({ key, label, icon: Icon, color }) => {
+          const selected = values.eventType === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => set("eventType", selected ? "" : key)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                selected
+                  ? "border-transparent text-white"
+                  : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"
+              )}
+              style={selected ? { backgroundColor: color, borderColor: color } : undefined}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
 }
 
 function ScheduleDateTitleFields({ values, set }: FieldsProps) {
@@ -159,9 +194,10 @@ export function ScheduleItemForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <ScheduleDateTitleFields values={values} set={set} />
+      <EventTypeSelector values={values} set={set} />
       <SchedulePlaceFields values={values} set={set} />
 
-      <div className="flex gap-3 pt-2">
+      <div className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>

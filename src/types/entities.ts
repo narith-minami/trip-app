@@ -33,6 +33,7 @@ export interface ScheduleItem {
   startTime?: string | null; // HH:MM
   endTime?: string | null; // HH:MM
   title: string;
+  eventType?: string | null;
   placeName?: string | null;
   placeUrl?: string | null;
   memo?: string | null;

@@ -6,6 +6,7 @@
  */
 
 import { Button } from "@/components/ui/button";
+import { resolveEventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
 
 function timeAgo(ms: number): string {
@@ -32,12 +33,26 @@ export function ScheduleItemCard({
   onEdit,
   onDelete,
 }: ScheduleItemCardProps) {
+  const eventType = resolveEventType(item.eventType);
+  const Icon = eventType.icon;
+
   return (
     <div className="overflow-hidden rounded-2xl border border-cream-dark bg-white shadow-sm">
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-ink">{item.title}</h4>
+            <div className="flex items-center gap-2">
+              <span
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: `${eventType.color}20`, color: eventType.color }}
+              >
+                <Icon size={11} />
+              </span>
+              <span className="text-xs font-medium" style={{ color: eventType.color }}>
+                {eventType.label}
+              </span>
+            </div>
+            <h4 className="mt-1 font-semibold text-ink">{item.title}</h4>
             {item.placeName && <p className="mt-0.5 text-sm text-ink-muted">📍 {item.placeName}</p>}
           </div>
           {canEdit && (

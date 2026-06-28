@@ -61,6 +61,7 @@ export const scheduleItems = sqliteTable("schedule_items", {
   placeName: text("placeName"),
   placeUrl: text("placeUrl"),
   memo: text("memo"),
+  eventType: text("eventType"), // EventType key, nullable
   imageUrl: text("imageUrl"), // R2 object key
   orderIndex: integer("orderIndex").notNull().default(0),
   updatedBy: text("updatedBy"), // User ID, nullable

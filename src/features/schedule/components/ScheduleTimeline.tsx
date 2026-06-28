@@ -8,6 +8,7 @@
 
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { cn } from "@/lib/cn";
+import { resolveEventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
 import {
   DndContext,
@@ -18,23 +19,18 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ScheduleItemCard } from "./ScheduleItemCard";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
-const THUMB_COLORS = ["#D4A854", "#FF6B47", "#5B8A6F", "#1A2E48"] as const;
-
-function thumbColor(id: string): string {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) {
-    h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return THUMB_COLORS[h % THUMB_COLORS.length];
-}
 
 function formatDayHeading(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -52,6 +48,20 @@ function GripIcon() {
       <circle cx="11" cy="8" r="1.5" />
       <circle cx="11" cy="12" r="1.5" />
     </svg>
+  );
+}
+
+function EventThumb({ item }: { item: ScheduleItem }) {
+  const et = resolveEventType(item.eventType);
+  const Icon = et.icon;
+  return (
+    <div
+      className="flex h-11 w-11 items-center justify-center rounded-2xl"
+      style={{ backgroundColor: et.color }}
+      aria-hidden="true"
+    >
+      <Icon size={20} color="white" strokeWidth={2} />
+    </div>
   );
 }
 
@@ -108,11 +118,7 @@ function SortableScheduleRow({
             <GripIcon />
           </span>
         )}
-        <div
-          className="h-11 w-11 rounded-2xl"
-          style={{ background: thumbColor(item.id) }}
-          aria-hidden="true"
-        />
+        <EventThumb item={item} />
         {item.startTime && <span className="text-xs text-ink-muted">{item.startTime}</span>}
       </div>
 
@@ -131,11 +137,7 @@ function RowOverlay({ item }: { item: ScheduleItem }) {
         <span className="mb-0.5 text-ink-muted">
           <GripIcon />
         </span>
-        <div
-          className="h-11 w-11 rounded-2xl"
-          style={{ background: thumbColor(item.id) }}
-          aria-hidden="true"
-        />
+        <EventThumb item={item} />
         {item.startTime && <span className="text-xs text-ink-muted">{item.startTime}</span>}
       </div>
       <div className="min-w-0 flex-1">
@@ -173,9 +175,7 @@ export function ScheduleTimeline({
     }
   }, [items]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null);
