@@ -13,9 +13,11 @@ import { cn } from "@/lib/cn";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
 import { ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
+import { computeScheduleAlerts } from "../hooks/useScheduleAlerts";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
@@ -37,10 +39,11 @@ interface DateCardProps {
   dateStr: string;
   isSelected: boolean;
   hasItems: boolean;
+  alertCount: number;
   onClick: () => void;
 }
 
-function DateCard({ dateStr, isSelected, hasItems, onClick }: DateCardProps) {
+function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCardProps) {
   const [y, m, d] = dateStr.split("-").map(Number);
   const dow = DOW[new Date(y, m - 1, d).getDay()];
   return (
@@ -48,12 +51,17 @@ function DateCard({ dateStr, isSelected, hasItems, onClick }: DateCardProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "flex min-w-[64px] flex-col items-center rounded-2xl px-3 py-2.5 transition-all",
+        "relative flex min-w-[64px] flex-col items-center rounded-2xl px-3 py-2.5 transition-all",
         isSelected
           ? "bg-navy text-white"
           : "border border-cream-dark bg-white text-ink hover:bg-cream"
       )}
     >
+      {alertCount > 0 && (
+        <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white">
+          !
+        </span>
+      )}
       <span className={cn("text-xs", isSelected ? "text-cream-mid" : "text-ink-muted")}>{dow}</span>
       <span
         className={cn("text-2xl font-bold leading-tight", isSelected ? "text-white" : "text-ink")}
@@ -72,10 +80,11 @@ interface DatePickerProps {
   dates: string[];
   selectedDate: string;
   datesWithItems: Set<string>;
+  alertCountByDate: Map<string, number>;
   onSelect: (d: string) => void;
 }
 
-function DatePicker({ dates, selectedDate, datesWithItems, onSelect }: DatePickerProps) {
+function DatePicker({ dates, selectedDate, datesWithItems, alertCountByDate, onSelect }: DatePickerProps) {
   if (dates.length === 0) return null;
   return (
     <div>
@@ -87,6 +96,7 @@ function DatePicker({ dates, selectedDate, datesWithItems, onSelect }: DatePicke
             dateStr={d}
             isSelected={d === selectedDate}
             hasItems={datesWithItems.has(d)}
+            alertCount={alertCountByDate.get(d) ?? 0}
             onClick={() => onSelect(d)}
           />
         ))}
@@ -131,6 +141,11 @@ export function ScheduleSection({
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
   const [copyOpen, setCopyOpen] = useState(false);
 
+  const isMultiDay = dates.length > 1;
+  const alerts = computeScheduleAlerts(groupsMap, dates, isMultiDay);
+  const alertCountByDate = new Map(alerts.map((a) => [a.date, a.missing.length]));
+  const selectedMissing = alerts.find((a) => a.date === selectedDate)?.missing ?? [];
+
   if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
   if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
 
@@ -165,8 +180,11 @@ export function ScheduleSection({
         dates={dates}
         selectedDate={selectedDate}
         datesWithItems={new Set(groupsMap.keys())}
+        alertCountByDate={alertCountByDate}
         onSelect={setSelectedDate}
       />
+
+      <ScheduleAlerts missing={selectedMissing} />
 
       <ScheduleTimeline
         date={selectedDate}
