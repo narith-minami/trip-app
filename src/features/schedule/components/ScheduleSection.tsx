@@ -11,7 +11,7 @@ import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutat
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { cn } from "@/lib/cn";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
@@ -59,6 +59,7 @@ function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCa
     >
       {alertCount > 0 && (
         <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white">
+          <span className="sr-only">未設定の予定あり</span>
           !
         </span>
       )}
@@ -141,10 +142,18 @@ export function ScheduleSection({
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
   const [copyOpen, setCopyOpen] = useState(false);
 
-  const isMultiDay = dates.length > 1;
-  const alerts = computeScheduleAlerts(groupsMap, dates, isMultiDay);
-  const alertCountByDate = new Map(alerts.map((a) => [a.date, a.missing.length]));
-  const selectedMissing = alerts.find((a) => a.date === selectedDate)?.missing ?? [];
+  const alerts = useMemo(
+    () => computeScheduleAlerts(groupsMap, dates),
+    [groupsMap, dates],
+  );
+  const alertCountByDate = useMemo(
+    () => new Map(alerts.map((a) => [a.date, a.missing.length])),
+    [alerts],
+  );
+  const selectedMissing = useMemo(
+    () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
+    [alerts, selectedDate],
+  );
 
   if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
   if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;

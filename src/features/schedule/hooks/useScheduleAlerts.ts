@@ -10,8 +10,9 @@ export interface DayAlert {
 export function computeScheduleAlerts(
   groupsMap: Map<string, ScheduleItem[]>,
   dates: string[],
-  isMultiDay: boolean,
 ): DayAlert[] {
+  if (dates.length === 0) return [];
+  const isMultiDay = dates.length > 1;
   const lastDate = dates[dates.length - 1];
   const alerts: DayAlert[] = [];
 

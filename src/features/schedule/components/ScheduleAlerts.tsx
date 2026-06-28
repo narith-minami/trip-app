@@ -1,7 +1,8 @@
 import { BedDouble, Plane, Utensils } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { AlertType } from "../hooks/useScheduleAlerts";
 
-const ALERT_CONFIG: Record<AlertType, { icon: typeof Plane; label: string }> = {
+const ALERT_CONFIG: Record<AlertType, { icon: LucideIcon; label: string }> = {
   hotel: { icon: BedDouble, label: "ホテルの予定が未登録です" },
   food: { icon: Utensils, label: "食事の予定が未登録です" },
   transport: { icon: Plane, label: "移動手段（飛行機・電車）が未登録です" },
