@@ -15,6 +15,13 @@
       "when": 1782554211830,
       "tag": "0001_sparkling_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1751068800000,
+      "tag": "0002_travel_event_type",
+      "breakpoints": true
     }
   ]
 }

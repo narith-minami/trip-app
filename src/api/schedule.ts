@@ -4,6 +4,7 @@
  * Schedule API query functions.
  */
 
+import type { EventType } from "@/lib/eventTypes";
 import { apiClient } from "./client";
 
 /**
@@ -29,6 +30,7 @@ export async function createScheduleItem(
     startTime?: string | null;
     endTime?: string | null;
     title: string;
+    eventType?: EventType | null;
     placeName?: string | null;
     placeUrl?: string | null;
     memo?: string | null;
@@ -56,6 +58,7 @@ export async function updateScheduleItem(
     startTime: string | null;
     endTime: string | null;
     title: string;
+    eventType: EventType | null;
     placeName: string | null;
     placeUrl: string | null;
     memo: string | null;

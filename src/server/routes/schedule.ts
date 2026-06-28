@@ -17,12 +17,24 @@ import type { TripMemberContext } from "../middleware/requireMember";
 
 const ERR_INTERNAL = "内部サーバーエラー";
 
+const EVENT_TYPE_VALUES = [
+  "food",
+  "flight",
+  "train",
+  "sightseeing",
+  "activity",
+  "hotel",
+  "shopping",
+  "other",
+] as const;
+
 // Schemas for schedule items
 const CreateScheduleItemSchema = z.object({
   date: z.iso.date(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
   title: z.string().min(1),
+  eventType: z.enum(EVENT_TYPE_VALUES).nullable().optional(),
   placeName: z.string().nullable().optional(),
   placeUrl: z.url().nullable().optional(),
   memo: z.string().nullable().optional(),
@@ -61,6 +73,7 @@ function buildScheduleUpdate(
   if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
   if (validated.endTime !== undefined) updateData.endTime = validated.endTime;
   if (validated.title) updateData.title = validated.title;
+  if (validated.eventType !== undefined) updateData.eventType = validated.eventType;
   if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
   if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
   if (validated.memo !== undefined) updateData.memo = validated.memo;
@@ -114,6 +127,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           startTime: validated.startTime,
           endTime: validated.endTime,
           title: validated.title,
+          eventType: validated.eventType,
           placeName: validated.placeName,
           placeUrl: validated.placeUrl,
           memo: validated.memo,
@@ -259,6 +273,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           startTime: item.startTime,
           endTime: item.endTime,
           title: item.title,
+          eventType: item.eventType,
           placeName: item.placeName,
           placeUrl: item.placeUrl,
           memo: item.memo,

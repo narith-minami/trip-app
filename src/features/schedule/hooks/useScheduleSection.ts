@@ -20,6 +20,7 @@ function toPayload(values: ScheduleFormValues) {
     startTime: values.startTime || null,
     endTime: values.endTime || null,
     title: values.title,
+    eventType: values.eventType || null,
     placeName: values.placeName || null,
     placeUrl: values.placeUrl || null,
     memo: values.memo || null,
