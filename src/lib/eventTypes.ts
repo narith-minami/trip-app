@@ -20,6 +20,7 @@ export const EVENT_TYPE_LIST = Object.entries(EVENT_TYPES).map(([key, value]) =>
 }));
 
 export function resolveEventType(type?: string | null): (typeof EVENT_TYPES)[EventType] {
-  if (type && type in EVENT_TYPES) return EVENT_TYPES[type as EventType];
+  if (type && Object.prototype.hasOwnProperty.call(EVENT_TYPES, type))
+    return EVENT_TYPES[type as EventType];
   return EVENT_TYPES.other;
 }

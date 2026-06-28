@@ -58,15 +58,16 @@ function addOneHour(time: string): string {
 
 function EventTypeSelector({ values, set }: FieldsProps) {
   return (
-    <div>
-      <Label>イベントタイプ</Label>
-      <div className="mt-1.5 flex flex-wrap gap-2">
+    <fieldset className="border-0 p-0">
+      <legend className="mb-1.5 text-sm font-medium text-ink">イベントタイプ</legend>
+      <div className="flex flex-wrap gap-2">
         {EVENT_TYPE_LIST.map(({ key, label, icon: Icon, color }) => {
           const selected = values.eventType === key;
           return (
             <button
               key={key}
               type="button"
+              aria-pressed={selected}
               onClick={() => set("eventType", selected ? "" : key)}
               className={cn(
                 "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
@@ -82,7 +83,7 @@ function EventTypeSelector({ values, set }: FieldsProps) {
           );
         })}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
