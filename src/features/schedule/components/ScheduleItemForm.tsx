@@ -197,7 +197,7 @@ export function ScheduleItemForm({
       <EventTypeSelector values={values} set={set} />
       <SchedulePlaceFields values={values} set={set} />
 
-      <div className="flex gap-3 pt-2">
+      <div className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>

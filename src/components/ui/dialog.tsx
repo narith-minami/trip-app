@@ -48,15 +48,20 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
-        className={cn("w-full max-w-md rounded-lg bg-white p-6 shadow-xl", className)}
+        className={cn(
+          "flex w-full max-w-md flex-col rounded-2xl bg-white shadow-xl max-h-[90dvh]",
+          className
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <h2 id={titleId} className="mb-4 text-2xl font-bold">
-            {title}
-          </h2>
+          <div className="shrink-0 px-6 pt-6">
+            <h2 id={titleId} className="text-2xl font-bold">
+              {title}
+            </h2>
+          </div>
         )}
-        {children}
+        <div className={cn("flex-1 overflow-y-auto p-6", title && "pt-4")}>{children}</div>
       </div>
     </div>
   );
