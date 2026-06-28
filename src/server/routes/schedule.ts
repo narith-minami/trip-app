@@ -38,6 +38,11 @@ const ReorderScheduleItemsSchema = z.object({
     .max(100),
 });
 
+const CopyScheduleItemsSchema = z.object({
+  targetDate: z.iso.date(),
+  itemIds: z.array(z.string()).min(1).max(50),
+});
+
 type ScheduleUpdateInput = Partial<typeof scheduleItems.$inferInsert>;
 
 /**
@@ -219,6 +224,61 @@ const scheduleRouter = new Hono<TripMemberContext>()
         return c.json({ success: true });
       } catch (error) {
         console.error("Error reordering schedule items:", error);
+        return c.json({ error: ERR_INTERNAL }, 500);
+      }
+    }
+  )
+  /**
+   * POST /api/trips/:tripId/schedule/copy
+   * Bulk-copy schedule items to a different date
+   */
+  .post(
+    "/copy",
+    requireSession(),
+    requireMember,
+    zValidator("json", CopyScheduleItemsSchema),
+    async (c) => {
+      try {
+        const tripId = c.get("tripId");
+        const userId = c.get("user")?.id ?? null;
+        const { targetDate, itemIds } = c.req.valid("json");
+        const db = getDb(c.env.DB);
+
+        const existing = await db.query.scheduleItems.findMany({
+          where: and(eq(scheduleItems.tripId, tripId), inArray(scheduleItems.id, itemIds)),
+        });
+        if (existing.length !== itemIds.length) {
+          return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
+        }
+
+        const now = Date.now();
+        const created = [];
+        for (const item of existing) {
+          const newId = generateId("schedule");
+          await db.insert(scheduleItems).values({
+            id: newId,
+            tripId,
+            date: targetDate,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            title: item.title,
+            placeName: item.placeName,
+            placeUrl: item.placeUrl,
+            memo: item.memo,
+            orderIndex: item.orderIndex,
+            updatedBy: userId,
+            createdAt: now,
+            updatedAt: now,
+          });
+          const newItem = await db.query.scheduleItems.findFirst({
+            where: eq(scheduleItems.id, newId),
+          });
+          if (newItem) created.push(newItem);
+        }
+
+        return c.json({ data: created, count: created.length }, 201);
+      } catch (error) {
+        console.error("Error copying schedule items:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }

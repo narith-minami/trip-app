@@ -6,6 +6,7 @@
  */
 
 import {
+  copyScheduleItems,
   createScheduleItem,
   deleteScheduleItem,
   reorderScheduleItems,
@@ -67,5 +68,11 @@ export function useScheduleMutations(tripId: string) {
     onSettled: invalidate,
   });
 
-  return { create, update, remove, reorder };
+  const copy = useMutation({
+    mutationFn: (data: { targetDate: string; itemIds: string[] }) =>
+      copyScheduleItems(tripId, data),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, remove, reorder, copy };
 }
