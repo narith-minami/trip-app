@@ -126,6 +126,25 @@ export async function reorderScheduleItems(
   return { success: true };
 }
 
+export async function copyScheduleItems(
+  tripId: string,
+  data: { targetDate: string; itemIds: string[] }
+) {
+  const source = scheduleItems.filter(
+    (s) => s.tripId === tripId && data.itemIds.includes(s.id)
+  );
+  const created: ScheduleItem[] = source.map((item) => ({
+    ...item,
+    id: `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    date: data.targetDate,
+    imageUrl: null,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }));
+  scheduleItems.push(...created);
+  return { data: created, count: created.length };
+}
+
 export async function deleteScheduleItem(tripId: string, itemId: string) {
   const index = scheduleItems.findIndex((s) => s.id === itemId && s.tripId === tripId);
   if (index === -1) throw new Error(`Schedule item ${itemId} not found`);
