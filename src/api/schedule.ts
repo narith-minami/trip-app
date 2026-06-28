@@ -90,6 +90,23 @@ export async function reorderScheduleItems(
 }
 
 /**
+ * Bulk-copy schedule items to a different date
+ */
+export async function copyScheduleItems(
+  tripId: string,
+  data: { targetDate: string; itemIds: string[] }
+) {
+  const res = await apiClient.api.trips[":tripId"].schedule.copy.$post({
+    param: { tripId },
+    json: data,
+  });
+  if (!res.ok) {
+    throw new Error("Failed to copy schedule items");
+  }
+  return res.json();
+}
+
+/**
  * Delete schedule item
  */
 export async function deleteScheduleItem(tripId: string, itemId: string) {

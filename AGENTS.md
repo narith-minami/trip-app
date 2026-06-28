@@ -6,7 +6,7 @@
 
 ## セルフレビューチェックリスト
 
-過去のPRレビュー（#1〜#8）で繰り返し指摘された観点を優先度別に整理した表。
+過去のPRレビュー（#1〜#10）で繰り返し指摘された観点を優先度別に整理した表。
 
 ### 優先度: Critical / High
 
@@ -19,6 +19,8 @@
 | 5 | **日付文字列のタイムゾーン** | `new Date("YYYY-MM-DD")` は UTC 午前0時として解釈される。`toLocaleDateString()` を `timeZone` 未指定で呼ぶと UTC-オフセット環境で日付が1日ずれる。`{ timeZone: "UTC" }` を明示する | #7 |
 | 6 | **viewport アクセシビリティ** | `user-scalable=no` をグローバルな `index.html` に追加しない（WCAG 2.1 達成基準 1.4.4 違反）。ズーム抑制はイベントスコープ内の `preventDefault` で限定的に行う | #8 |
 | 7 | **脆弱なマウントガード** | `!element.innerHTML` をマウント条件に使わない。空白・改行でガードが壊れる。直接 `createRoot(el).render(...)` を呼ぶ | #2 |
+| 8 | **INSERT の N+1 クエリ** | ループ内で `await db.insert(...).values(row)` を逐次実行しない。`db.insert(...).values([...rows])` でバルクインサートし、挿入後は `inArray` で一括取得する（DBラウンドトリップを最大100回→2回に削減） | #10 |
+| 9 | **mutateAsync のエラーハンドリングと通知** | `mutateAsync` を `try-catch` なしで呼ぶと、失敗時に Unhandled Promise Rejection になる。`try-catch` で囲み、成功・失敗とも `toast.success` / `toast.error` で通知する | #10 |
 
 ### 優先度: Medium
 
@@ -39,6 +41,8 @@
 | 20 | **タッチイベントのキャンセル処理** | `touchend` のクリーンアップに加え `touchcancel` も同じハンドラに登録する（システムジェスチャー割り込み対策）| #8 |
 | 21 | **TanStack Router の型登録** | `createRouter` 後に `declare module "@tanstack/react-router" { interface Register { router: typeof router } }` を追加して、フック（`useParams` 等）の型推論を有効にする | #2 |
 | 22 | **テストの説明精度** | テスト説明文がアサーション内容と一致しているか確認する（例: "keeps numeric values" で `0` を除外していないか）| #2 |
+| 23 | **ボタンの disabled 条件の網羅性** | 操作が実行不可能な全条件を `disabled` に含める。例: コピーボタンは「アイテム0件」だけでなく「コピー先日付が存在しない（`dates.length <= 1`）」も disabled にする | #10 |
+| 24 | **モックAPIとリアルAPIの契約一致** | `src/api/*.ts` に関数を追加したら、対応する `src/mocks/api/*.ts` にも同じ関数を追加する。`pnpm build:mock`（ `check` に含まれる）で Rollup がモック不一致を検出する | #10 |
 
 ---
 

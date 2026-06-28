@@ -7,10 +7,13 @@
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { cn } from "@/lib/cn";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
+import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
 import { ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
 
@@ -122,9 +125,11 @@ export function ScheduleSection({
     isSubmitting,
     groupsMap,
   } = useScheduleSection(tripId);
+  const { copy } = useScheduleMutations(tripId);
 
   const dates = startDate && endDate ? generateDateRange(startDate, endDate) : [];
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
+  const [copyOpen, setCopyOpen] = useState(false);
 
   if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
   if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
@@ -144,6 +149,13 @@ export function ScheduleSection({
             }
           >
             カレンダー編集
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setCopyOpen(true)}
+            disabled={dates.length <= 1 || (groupsMap.get(selectedDate) ?? []).length === 0}
+          >
+            コピー
           </Button>
           <Button onClick={openCreate}>+ アイテム追加</Button>
         </div>
@@ -178,6 +190,26 @@ export function ScheduleSection({
           onCancel={close}
         />
       </Dialog>
+
+      {copyOpen && (
+        <ScheduleCopyDialog
+          sourceDate={selectedDate}
+          items={groupsMap.get(selectedDate) ?? []}
+          dates={dates}
+          onCopy={async (targetDate, itemIds) => {
+            try {
+              await copy.mutateAsync({ targetDate, itemIds });
+              toast.success("予定をコピーしました");
+              setCopyOpen(false);
+              setSelectedDate(targetDate);
+            } catch {
+              toast.error("予定のコピーに失敗しました");
+            }
+          }}
+          onClose={() => setCopyOpen(false)}
+          isSubmitting={copy.isPending}
+        />
+      )}
     </div>
   );
 }
