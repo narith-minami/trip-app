@@ -7,11 +7,12 @@
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { useSwipe } from "@/hooks/useSwipe";
 import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { cn } from "@/lib/cn";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
@@ -138,7 +139,10 @@ export function ScheduleSection({
   } = useScheduleSection(tripId);
   const { copy } = useScheduleMutations(tripId);
 
-  const dates = startDate && endDate ? generateDateRange(startDate, endDate) : [];
+  const dates = useMemo(
+    () => (startDate && endDate ? generateDateRange(startDate, endDate) : []),
+    [startDate, endDate],
+  );
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
   const [copyOpen, setCopyOpen] = useState(false);
 
@@ -154,6 +158,22 @@ export function ScheduleSection({
     () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
     [alerts, selectedDate],
   );
+
+  const goNext = useCallback(() => {
+    setSelectedDate((prev) => {
+      const idx = dates.indexOf(prev);
+      if (idx === -1 || idx >= dates.length - 1) return prev;
+      return dates[idx + 1];
+    });
+  }, [dates]);
+  const goPrev = useCallback(() => {
+    setSelectedDate((prev) => {
+      const idx = dates.indexOf(prev);
+      if (idx <= 0) return prev;
+      return dates[idx - 1];
+    });
+  }, [dates]);
+  const { onTouchStart, onTouchEnd } = useSwipe(goNext, goPrev);
 
   if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
   if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
@@ -195,14 +215,19 @@ export function ScheduleSection({
 
       <ScheduleAlerts missing={selectedMissing} />
 
-      <ScheduleTimeline
-        date={selectedDate}
-        items={groupsMap.get(selectedDate) ?? []}
-        canEdit={canEdit}
-        onEdit={openEdit}
-        onDelete={handleDelete}
-        onReorder={canEdit ? handleReorder : undefined}
-      />
+      <div
+        onTouchStart={dates.length > 1 ? onTouchStart : undefined}
+        onTouchEnd={dates.length > 1 ? onTouchEnd : undefined}
+      >
+        <ScheduleTimeline
+          date={selectedDate}
+          items={groupsMap.get(selectedDate) ?? []}
+          canEdit={canEdit}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          onReorder={canEdit ? handleReorder : undefined}
+        />
+      </div>
 
       <Dialog
         open={isOpen}
