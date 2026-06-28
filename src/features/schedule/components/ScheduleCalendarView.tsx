@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
 import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
 import { usePinchZoom } from "@/features/schedule/hooks/usePinchZoom";
-import { cn } from "@/lib/cn";
 import type { ScheduleItem } from "@/types/entities";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -194,7 +193,10 @@ export function ScheduleCalendarView({
 
   const timedItems = displayItems.filter((i) => i.startTime);
   const untimedItems = displayItems.filter((i) => !i.startTime);
-  const layout = computeLayout(timedItems);
+  const timedItemsForLayout = dragItemId
+    ? timedItems.filter((i) => i.id !== dragItemId)
+    : timedItems;
+  const layout = computeLayout(timedItemsForLayout);
 
   const handlePointerDown = (e: React.PointerEvent, item: ScheduleItem) => {
     // Only respond to primary pointer (left click / first touch)
@@ -401,17 +403,12 @@ export function ScheduleCalendarView({
                 const top = startMin * pxPerMin;
                 const height = Math.max(30, durationMin * pxPerMin);
                 const colWidth = 100 / numCols;
-                const isDragging = dragItemId === item.id;
                 const color = eventColor(item.id);
 
                 return (
                   <div
                     key={item.id}
-                    className={cn(
-                      "absolute select-none touch-none overflow-hidden rounded-xl px-2 py-1",
-                      "cursor-grab active:cursor-grabbing",
-                      isDragging && "z-20 opacity-90 shadow-2xl ring-2 ring-white"
-                    )}
+                    className="absolute select-none touch-none overflow-hidden rounded-xl px-2 py-1 cursor-grab active:cursor-grabbing"
                     style={{
                       top,
                       height,
@@ -447,6 +444,57 @@ export function ScheduleCalendarView({
                   </div>
                 );
               })}
+
+              {/* Dragging item: rendered separately at full width above all other items */}
+              {dragItemId && (() => {
+                const displayItem = displayItems.find((d) => d.id === dragItemId);
+                if (!displayItem?.startTime) return null;
+                const startMin = timeToMinutes(displayItem.startTime);
+                const endMin = displayItem.endTime
+                  ? timeToMinutes(displayItem.endTime)
+                  : startMin + 60;
+                const durationMin = Math.max(10, endMin - startMin);
+                const top = startMin * pxPerMin;
+                const height = Math.max(30, durationMin * pxPerMin);
+                const color = eventColor(dragItemId);
+                return (
+                  <div
+                    key={`drag-${dragItemId}`}
+                    className="absolute select-none touch-none overflow-hidden rounded-xl px-2 py-1 cursor-grabbing z-30 opacity-90 shadow-2xl ring-2 ring-white"
+                    style={{
+                      top,
+                      height,
+                      left: 0,
+                      width: "calc(100% - 4px)",
+                      background: color,
+                    }}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                  >
+                    <p className="truncate text-xs font-bold text-white">
+                      {displayItem.title}
+                    </p>
+                    {displayItem.startTime && (
+                      <p className="text-xs text-white/80">
+                        {displayItem.startTime}
+                        {displayItem.endTime ? `–${displayItem.endTime}` : ""}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 text-white/60 hover:text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(dragItemId);
+                      }}
+                      aria-label="削除"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
