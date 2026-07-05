@@ -165,7 +165,7 @@ interface TimelineContentProps {
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   sensors: ReturnType<typeof useSensors>;
-  onDragStart: (e: { active: { id: string | number } }) => void;
+  onActiveIdChange: (id: string) => void;
   onDragEnd: (e: DragEndEvent) => void;
   onDragCancel: () => void;
 }
@@ -179,7 +179,7 @@ function TimelineContent({
   onEdit,
   onDelete,
   sensors,
-  onDragStart,
+  onActiveIdChange,
   onDragEnd,
   onDragCancel,
 }: TimelineContentProps) {
@@ -195,7 +195,7 @@ function TimelineContent({
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={(e) => onDragStart({ active: { id: String(e.active.id) } })}
+        onDragStart={(e) => onActiveIdChange(String(e.active.id))}
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}
       >
@@ -287,7 +287,7 @@ export function ScheduleTimeline({
       onEdit={onEdit}
       onDelete={onDelete}
       sensors={sensors}
-      onDragStart={(e) => setActiveId(String(e.active.id))}
+      onActiveIdChange={setActiveId}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     />

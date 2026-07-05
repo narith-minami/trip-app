@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const MIN_PX_PER_MIN = 0.5;
 const MAX_PX_PER_MIN = 3.0;
@@ -59,11 +59,11 @@ export function usePinchZoom({
   const rafRef = useRef<number | null>(null);
   const pinchRef = useRef<PinchState | null>(null);
 
-  const consumePendingScroll = (): number | null => {
+  const consumePendingScroll = useCallback((): number | null => {
     const value = pendingScrollRef.current;
     pendingScrollRef.current = null;
     return value;
-  };
+  }, []);
 
   // Keep pxPerMinRef in sync with state for use in native event handlers
   useLayoutEffect(() => {

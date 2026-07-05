@@ -4,14 +4,6 @@ import { minutesToTime, type PendingChange, SNAP_MIN, timeToMinutes } from "./ca
 
 export interface UseCalendarDragResult {
   dragItemId: string | null;
-  pendingChanges: Map<string, PendingChange>;
-  dragRef: React.RefObject<{
-    itemId: string;
-    initialStartMin: number;
-    duration: number;
-    initialClientY: number;
-  } | null>;
-  setPendingChanges: React.Dispatch<React.SetStateAction<Map<string, PendingChange>>>;
   handlePointerDown: (e: React.PointerEvent, item: ScheduleItem) => void;
   handlePointerMove: (e: React.PointerEvent) => void;
   handlePointerUp: (e: React.PointerEvent) => void;
@@ -95,9 +87,6 @@ export function useCalendarDrag(
 
   return {
     dragItemId,
-    pendingChanges,
-    dragRef,
-    setPendingChanges,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
