@@ -15,8 +15,6 @@ import { useScheduleMutations } from "./useScheduleMutations";
 function toPayload(values: ScheduleFormValues) {
   return {
     date: values.date,
-    // Use null (not undefined) so cleared fields are persisted as empty,
-    // since the server PUT handler skips undefined values.
     startTime: values.startTime || null,
     endTime: values.endTime || null,
     title: values.title,
@@ -27,31 +25,19 @@ function toPayload(values: ScheduleFormValues) {
   };
 }
 
-export function useScheduleSection(tripId: string) {
-  const { data: items, isLoading, error } = useScheduleItems(tripId);
-  const { create, update, remove, reorder } = useScheduleMutations(tripId);
-  const [editing, setEditing] = useState<ScheduleItem | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const openCreate = () => {
-    setEditing(null);
-    setIsOpen(true);
-  };
-
-  const openEdit = (item: ScheduleItem) => {
-    setEditing(item);
-    setIsOpen(true);
-  };
-
-  const close = () => setIsOpen(false);
-
-  const handleSubmit = async (values: ScheduleFormValues) => {
+function makeHandleSubmit(
+  editing: ScheduleItem | null,
+  create: ReturnType<typeof useScheduleMutations>["create"],
+  update: ReturnType<typeof useScheduleMutations>["update"],
+  setIsOpen: (v: boolean) => void
+) {
+  return async (values: ScheduleFormValues) => {
     try {
       if (editing) {
-        await update.mutateAsync({ itemId: editing.id, data: toPayload(values) });
+        await update.mutateAsync({ itemId: editing.id, data: toPayload(values) as never });
         toast.success("Schedule item updated");
       } else {
-        await create.mutateAsync(toPayload(values));
+        await create.mutateAsync(toPayload(values) as never);
         toast.success("Schedule item added");
       }
       setIsOpen(false);
@@ -59,8 +45,10 @@ export function useScheduleSection(tripId: string) {
       toast.error("Failed to save schedule item");
     }
   };
+}
 
-  const handleDelete = async (item: ScheduleItem) => {
+function makeHandleDelete(remove: ReturnType<typeof useScheduleMutations>["remove"]) {
+  return async (item: ScheduleItem) => {
     if (!window.confirm("Delete this schedule item?")) return;
     try {
       await remove.mutateAsync(item.id);
@@ -69,17 +57,52 @@ export function useScheduleSection(tripId: string) {
       toast.error("Failed to delete schedule item");
     }
   };
+}
 
-  const handleReorder = async (reorderedItems: Array<{ id: string; orderIndex: number }>) => {
+function makeHandleReorder(reorder: ReturnType<typeof useScheduleMutations>["reorder"]) {
+  return async (reordered: Array<{ id: string; orderIndex: number }>) => {
     try {
-      await reorder.mutateAsync(reorderedItems);
+      await reorder.mutateAsync(reordered as never);
     } catch {
       toast.error("並び替えに失敗しました");
     }
   };
+}
+
+function makeHandleCopy(
+  copy: ReturnType<typeof useScheduleMutations>["copy"],
+  setCopyOpen: (v: boolean) => void
+) {
+  return async (targetDate: string, itemIds: string[], onSuccess: (d: string) => void) => {
+    try {
+      await copy.mutateAsync({ targetDate, itemIds } as never);
+      toast.success("予定をコピーしました");
+      setCopyOpen(false);
+      onSuccess(targetDate);
+    } catch {
+      toast.error("予定のコピーに失敗しました");
+    }
+  };
+}
+
+export function useScheduleSection(tripId: string) {
+  const { data: items, isLoading, error } = useScheduleItems(tripId);
+  const m = useScheduleMutations(tripId);
+  const [editing, setEditing] = useState<ScheduleItem | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+
+  const openCreate = () => {
+    setEditing(null);
+    setIsOpen(true);
+  };
+  const openEdit = (item: ScheduleItem) => {
+    setEditing(item);
+    setIsOpen(true);
+  };
+  const close = () => setIsOpen(false);
 
   return {
-    items,
     isLoading,
     error,
     editing,
@@ -87,10 +110,14 @@ export function useScheduleSection(tripId: string) {
     openCreate,
     openEdit,
     close,
-    handleSubmit,
-    handleDelete,
-    handleReorder,
-    isSubmitting: create.isPending || update.isPending,
+    handleSubmit: makeHandleSubmit(editing, m.create, m.update, setIsOpen),
+    handleDelete: makeHandleDelete(m.remove),
+    handleReorder: makeHandleReorder(m.reorder),
+    isSubmitting: m.create.isPending || m.update.isPending,
     groupsMap: groupByDate(items ?? []),
+    copyOpen,
+    setCopyOpen,
+    handleCopy: makeHandleCopy(m.copy, setCopyOpen),
+    copyIsPending: m.copy.isPending,
   };
 }

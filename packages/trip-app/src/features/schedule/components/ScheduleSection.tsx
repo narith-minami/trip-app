@@ -4,22 +4,16 @@
  * Schedule tab: date-picker row + filtered timeline for the selected day.
  */
 
-import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
+import { useScheduleAlertsData } from "@/features/schedule/hooks/useScheduleAlerts";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
-import { cn } from "@/lib/cn";
-import { computeScheduleAlerts } from "../hooks/useScheduleAlerts";
+import { DatePicker } from "./DatePicker";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
-import { ScheduleItemForm } from "./ScheduleItemForm";
+import { ScheduleItemFormDialog } from "./ScheduleItemFormDialog";
 import { ScheduleTimeline } from "./ScheduleTimeline";
-
-const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
+import { ScheduleToolbar } from "./ScheduleToolbar";
 
 function generateDateRange(start: string, end: string): string[] {
   const [sy, sm, sd] = start.split("-").map(Number);
@@ -33,82 +27,6 @@ function generateDateRange(start: string, end: string): string[] {
     cur.setDate(cur.getDate() + 1);
   }
   return dates;
-}
-
-interface DateCardProps {
-  dateStr: string;
-  isSelected: boolean;
-  hasItems: boolean;
-  alertCount: number;
-  onClick: () => void;
-}
-
-function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCardProps) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dow = DOW[new Date(y, m - 1, d).getDay()];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative flex min-w-[64px] flex-col items-center rounded-2xl px-3 py-2.5 transition-all",
-        isSelected
-          ? "bg-navy text-white"
-          : "border border-cream-dark bg-white text-ink hover:bg-cream"
-      )}
-    >
-      {alertCount > 0 && (
-        <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white">
-          <span className="sr-only">未設定の予定あり</span>!
-        </span>
-      )}
-      <span className={cn("text-xs", isSelected ? "text-cream-mid" : "text-ink-muted")}>{dow}</span>
-      <span
-        className={cn("text-2xl font-bold leading-tight", isSelected ? "text-white" : "text-ink")}
-      >
-        {d}
-      </span>
-      <span
-        className="mt-1.5 h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: hasItems ? "#FF6B47" : "transparent" }}
-      />
-    </button>
-  );
-}
-
-interface DatePickerProps {
-  dates: string[];
-  selectedDate: string;
-  datesWithItems: Set<string>;
-  alertCountByDate: Map<string, number>;
-  onSelect: (d: string) => void;
-}
-
-function DatePicker({
-  dates,
-  selectedDate,
-  datesWithItems,
-  alertCountByDate,
-  onSelect,
-}: DatePickerProps) {
-  if (dates.length === 0) return null;
-  return (
-    <div>
-      <p className="mb-2 text-sm text-ink-muted">日付を選択</p>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {dates.map((d) => (
-          <DateCard
-            key={d}
-            dateStr={d}
-            isSelected={d === selectedDate}
-            hasItems={datesWithItems.has(d)}
-            alertCount={alertCountByDate.get(d) ?? 0}
-            onClick={() => onSelect(d)}
-          />
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export interface ScheduleSectionProps {
@@ -126,117 +44,64 @@ export function ScheduleSection({
   startDate,
   endDate,
 }: ScheduleSectionProps) {
-  const navigate = useNavigate();
-  const {
-    isLoading,
-    error,
-    editing,
-    isOpen,
-    openCreate,
-    openEdit,
-    close,
-    handleSubmit,
-    handleDelete,
-    handleReorder,
-    isSubmitting,
-    groupsMap,
-  } = useScheduleSection(tripId);
-  const { copy } = useScheduleMutations(tripId);
-
-  const dates = startDate && endDate ? generateDateRange(startDate, endDate) : [];
-  const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
-  const [copyOpen, setCopyOpen] = useState(false);
-
-  const alerts = useMemo(() => computeScheduleAlerts(groupsMap, dates), [groupsMap, dates]);
-  const alertCountByDate = useMemo(
-    () => new Map(alerts.map((a) => [a.date, a.missing.length])),
-    [alerts]
+  const sec = useScheduleSection(tripId);
+  const dates = useMemo(
+    () => (startDate && endDate ? generateDateRange(startDate, endDate) : []),
+    [startDate, endDate]
   );
-  const selectedMissing = useMemo(
-    () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
-    [alerts, selectedDate]
+  const [selectedDate, setSelectedDate] = useState(defaultDate ?? dates[0] ?? "");
+  const { alertCountByDate, selectedMissing } = useScheduleAlertsData(
+    sec.groupsMap,
+    dates,
+    selectedDate
   );
-
-  if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
-  if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
+  const items = sec.groupsMap.get(selectedDate) ?? [];
+  if (sec.isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
+  if (sec.error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
 
   return (
     <div className="space-y-5">
-      {canEdit && (
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="secondary"
-            onClick={() =>
-              navigate({
-                to: "/trips/$tripId/schedule-edit",
-                params: { tripId },
-                search: { date: selectedDate },
-              })
-            }
-          >
-            カレンダー編集
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setCopyOpen(true)}
-            disabled={dates.length <= 1 || (groupsMap.get(selectedDate) ?? []).length === 0}
-          >
-            コピー
-          </Button>
-          <Button onClick={openCreate}>+ アイテム追加</Button>
-        </div>
-      )}
-
+      <ScheduleToolbar
+        tripId={tripId}
+        selectedDate={selectedDate}
+        canEdit={canEdit}
+        datesLength={dates.length}
+        hasItems={items.length > 0}
+        onCopy={() => sec.setCopyOpen(true)}
+        onAdd={sec.openCreate}
+      />
       <DatePicker
         dates={dates}
         selectedDate={selectedDate}
-        datesWithItems={new Set(groupsMap.keys())}
+        datesWithItems={new Set(sec.groupsMap.keys())}
         alertCountByDate={alertCountByDate}
         onSelect={setSelectedDate}
       />
-
       <ScheduleAlerts missing={selectedMissing} />
-
       <ScheduleTimeline
         date={selectedDate}
-        items={groupsMap.get(selectedDate) ?? []}
+        items={items}
         canEdit={canEdit}
-        onEdit={openEdit}
-        onDelete={handleDelete}
-        onReorder={canEdit ? handleReorder : undefined}
+        onEdit={sec.openEdit}
+        onDelete={sec.handleDelete}
+        onReorder={canEdit ? sec.handleReorder : undefined}
       />
-
-      <Dialog
-        open={isOpen}
-        onClose={close}
-        title={editing ? "スケジュール編集" : "スケジュール追加"}
-      >
-        <ScheduleItemForm
-          initial={editing ?? undefined}
-          defaultDate={selectedDate || defaultDate}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-          onCancel={close}
-        />
-      </Dialog>
-
-      {copyOpen && (
+      <ScheduleItemFormDialog
+        isOpen={sec.isOpen}
+        editing={sec.editing}
+        defaultDate={selectedDate || (defaultDate ?? "")}
+        isSubmitting={sec.isSubmitting}
+        onSubmit={sec.handleSubmit}
+        onClose={sec.close}
+      />
+      {sec.copyOpen && (
         <ScheduleCopyDialog
           sourceDate={selectedDate}
-          items={groupsMap.get(selectedDate) ?? []}
+          items={items}
           dates={dates}
-          onCopy={async (targetDate, itemIds) => {
-            try {
-              await copy.mutateAsync({ targetDate, itemIds });
-              toast.success("予定をコピーしました");
-              setCopyOpen(false);
-              setSelectedDate(targetDate);
-            } catch {
-              toast.error("予定のコピーに失敗しました");
-            }
-          }}
-          onClose={() => setCopyOpen(false)}
-          isSubmitting={copy.isPending}
+          onCopy={(t, ids) => sec.handleCopy(t, ids, setSelectedDate)}
+          onClose={() => sec.setCopyOpen(false)}
+          isSubmitting={sec.copyIsPending}
         />
       )}
     </div>

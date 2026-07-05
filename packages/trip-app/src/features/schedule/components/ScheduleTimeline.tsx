@@ -156,79 +156,51 @@ export interface ScheduleTimelineProps {
   onReorder?: (items: Array<{ id: string; orderIndex: number }>) => void;
 }
 
-export function ScheduleTimeline({
+interface TimelineContentProps {
+  date: string;
+  localItems: ScheduleItem[];
+  showDragHandle: boolean;
+  activeId: string | null;
+  canEdit: boolean;
+  onEdit?: (item: ScheduleItem) => void;
+  onDelete?: (item: ScheduleItem) => void;
+  sensors: ReturnType<typeof useSensors>;
+  onDragStart: (e: { active: { id: string | number } }) => void;
+  onDragEnd: (e: DragEndEvent) => void;
+  onDragCancel: () => void;
+}
+
+function TimelineContent({
   date,
-  items,
-  canEdit = false,
+  localItems,
+  showDragHandle,
+  activeId,
+  canEdit,
   onEdit,
   onDelete,
-  onReorder,
-}: ScheduleTimelineProps) {
-  const [localItems, setLocalItems] = useState<ScheduleItem[]>(items);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const prevItemsRef = useRef(items);
-
-  useEffect(() => {
-    if (items !== prevItemsRef.current) {
-      prevItemsRef.current = items;
-      setLocalItems(items);
-    }
-  }, [items]);
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
-
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    setActiveId(null);
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = localItems.findIndex((i) => i.id === String(active.id));
-    const newIndex = localItems.findIndex((i) => i.id === String(over.id));
-    const reordered = arrayMove(localItems, oldIndex, newIndex);
-
-    const conflict = detectTimeConflict(reordered);
-    if (conflict) {
-      toast.error(conflict);
-      return;
-    }
-
-    setLocalItems(reordered);
-    onReorder?.(reordered.map((item, idx) => ({ id: item.id, orderIndex: idx })));
-  }
-
-  if (localItems.length === 0) {
-    return (
-      <EmptyState
-        icon="🗓️"
-        title="この日の予定はまだありません"
-        description="アイテムを追加して旅程を作りましょう。"
-      />
-    );
-  }
-
+  sensors,
+  onDragStart,
+  onDragEnd,
+  onDragCancel,
+}: TimelineContentProps) {
   const activeItem = activeId ? localItems.find((i) => i.id === activeId) : null;
-  const showDragHandle = !!onReorder;
-
   return (
     <div>
-      {/* Day heading with horizontal rule */}
       {date && (
         <div className="mb-5 flex items-center gap-3">
           <h3 className="shrink-0 text-lg font-bold text-ink">{formatDayHeading(date)}</h3>
           <div className="h-px flex-1 bg-cream-dark" />
         </div>
       )}
-
-      {/* Items with connecting vertical line */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={(e) => setActiveId(String(e.active.id))}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveId(null)}
+        onDragStart={(e) => onDragStart({ active: { id: String(e.active.id) } })}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
       >
         <SortableContext items={localItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
           <div className="relative">
-            {/* Continuous vertical line behind thumbnails */}
             {localItems.length > 1 && (
               <div
                 className={cn(
@@ -253,9 +225,71 @@ export function ScheduleTimeline({
             </div>
           </div>
         </SortableContext>
-
         <DragOverlay>{activeItem ? <RowOverlay item={activeItem} /> : null}</DragOverlay>
       </DndContext>
     </div>
+  );
+}
+
+export function ScheduleTimeline({
+  date,
+  items,
+  canEdit = false,
+  onEdit,
+  onDelete,
+  onReorder,
+}: ScheduleTimelineProps) {
+  const [localItems, setLocalItems] = useState<ScheduleItem[]>(items);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const prevItemsRef = useRef(items);
+
+  useEffect(() => {
+    if (items !== prevItemsRef.current) {
+      prevItemsRef.current = items;
+      setLocalItems(items);
+    }
+  }, [items]);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    setActiveId(null);
+    if (!over || active.id === over.id) return;
+    const oldIndex = localItems.findIndex((i) => i.id === String(active.id));
+    const newIndex = localItems.findIndex((i) => i.id === String(over.id));
+    const reordered = arrayMove(localItems, oldIndex, newIndex);
+    const conflict = detectTimeConflict(reordered);
+    if (conflict) {
+      toast.error(conflict);
+      return;
+    }
+    setLocalItems(reordered);
+    onReorder?.(reordered.map((item, idx) => ({ id: item.id, orderIndex: idx })));
+  }
+
+  if (localItems.length === 0) {
+    return (
+      <EmptyState
+        icon="🗓️"
+        title="この日の予定はまだありません"
+        description="アイテムを追加して旅程を作りましょう。"
+      />
+    );
+  }
+
+  return (
+    <TimelineContent
+      date={date}
+      localItems={localItems}
+      showDragHandle={!!onReorder}
+      activeId={activeId}
+      canEdit={canEdit}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      sensors={sensors}
+      onDragStart={(e) => setActiveId(String(e.active.id))}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveId(null)}
+    />
   );
 }

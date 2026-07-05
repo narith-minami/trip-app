@@ -13,6 +13,36 @@ import { CreateTripModal } from "@/features/trips/components/CreateTripModal";
 import { TripCard, type TripCardData } from "@/features/trips/components/TripCard";
 import { useTrips } from "@/features/trips/hooks/useTrips";
 
+function TripsHeader({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className="bg-white shadow-sm">
+      <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-cream"
+              aria-hidden="true"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </span>
+          <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
+        </div>
+        <Button onClick={onCreate}>+ 新しい旅行</Button>
+      </div>
+    </div>
+  );
+}
+
 export function TripsPage() {
   const navigate = useNavigate();
   const { data: tripsData, isLoading, error } = useTrips();
@@ -32,33 +62,7 @@ export function TripsPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* App header */}
-      <div className="bg-white shadow-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-cream"
-                aria-hidden="true"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            </span>
-            <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)}>+ 新しい旅行</Button>
-        </div>
-      </div>
-
+      <TripsHeader onCreate={() => setShowCreateModal(true)} />
       <div className="mx-auto max-w-4xl px-4 py-8">
         {trips.length === 0 ? (
           <div className="py-16 text-center">
@@ -79,7 +83,6 @@ export function TripsPage() {
           </div>
         )}
       </div>
-
       <CreateTripModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </div>
   );

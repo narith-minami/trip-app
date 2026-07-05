@@ -27,6 +27,27 @@ export interface ScheduleItemCardProps {
   onDelete?: (item: ScheduleItem) => void;
 }
 
+function CardFooter({ item }: { item: ScheduleItem }) {
+  return (
+    <div className="flex items-center justify-between border-t border-cream-dark px-4 py-2">
+      <span className="text-xs text-ink-light">
+        {item.updatedBy ? `${item.updatedBy} · ` : ""}
+        {timeAgo(item.updatedAt)}
+      </span>
+      {item.placeUrl && (
+        <a
+          href={item.placeUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-medium text-coral"
+        >
+          マップ
+        </a>
+      )}
+    </div>
+  );
+}
+
 export function ScheduleItemCard({
   item,
   canEdit = false,
@@ -66,7 +87,6 @@ export function ScheduleItemCard({
             </div>
           )}
         </div>
-
         {item.memo && (
           <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted">
             {item.memo}
@@ -80,23 +100,7 @@ export function ScheduleItemCard({
           />
         )}
       </div>
-
-      <div className="flex items-center justify-between border-t border-cream-dark px-4 py-2">
-        <span className="text-xs text-ink-light">
-          {item.updatedBy ? `${item.updatedBy} · ` : ""}
-          {timeAgo(item.updatedAt)}
-        </span>
-        {item.placeUrl && (
-          <a
-            href={item.placeUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs font-medium text-coral"
-          >
-            マップ
-          </a>
-        )}
-      </div>
+      <CardFooter item={item} />
     </div>
   );
 }
