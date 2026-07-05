@@ -7,7 +7,7 @@
  * @see https://tanstack.com/query/latest/docs/react/important-defaults#recommended-key-factory
  */
 
-export const queryKeys = {
+const queryKeys = {
   /**
    * Trip-related queries
    */

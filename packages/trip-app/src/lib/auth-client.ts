@@ -11,7 +11,7 @@ import { createAuthClient } from "better-auth/react";
  * Better Auth client instance for browser
  * Points to /api/auth endpoints on the same origin
  */
-export const authClient = createAuthClient({
+const authClient = createAuthClient({
   baseURL:
     typeof window !== "undefined"
       ? `${window.location.origin}/api/auth`
@@ -21,11 +21,4 @@ export const authClient = createAuthClient({
 /**
  * Re-export commonly used auth functions and hooks
  */
-export const { useSession, signIn, signOut, signUp } = authClient;
-
-/**
- * Get current session (promise-based)
- */
-export async function getSession() {
-  return authClient.getSession();
-}
+export const { useSession, signIn, signUp } = authClient;

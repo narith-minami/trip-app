@@ -28,5 +28,3 @@ export function RootLayout() {
     </QueryClientProvider>
   );
 }
-
-export default RootLayout;

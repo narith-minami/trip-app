@@ -56,37 +56,3 @@ export const TripQueryParamsSchema = z.object({
 });
 
 export type TripQueryParams = z.infer<typeof TripQueryParamsSchema>;
-
-/**
- * Schema for trip response (includes metadata)
- */
-export const TripResponseSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  destination: z.string().optional(),
-  startDate: z.iso.date(),
-  endDate: z.iso.date(),
-  coverImageUrl: z.string().optional(),
-  ownerId: z.string(),
-  inviteToken: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-export type TripResponse = z.infer<typeof TripResponseSchema>;
-
-/**
- * Schema for trip list response with pagination
- */
-export const TripListResponseSchema = z.object({
-  data: z.array(TripResponseSchema),
-  pagination: z.object({
-    page: z.number(),
-    limit: z.number(),
-    total: z.number(),
-    pages: z.number(),
-  }),
-});
-
-export type TripListResponse = z.infer<typeof TripListResponseSchema>;

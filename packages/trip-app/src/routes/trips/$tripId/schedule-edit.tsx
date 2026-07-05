@@ -40,5 +40,3 @@ export function ScheduleEditPage() {
     <ScheduleCalendarView tripId={tripId} date={initialDate} dates={dates} onBack={handleBack} />
   );
 }
-
-export default ScheduleEditPage;

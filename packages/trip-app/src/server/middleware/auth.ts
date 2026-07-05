@@ -49,15 +49,6 @@ export function requireSession() {
   };
 }
 
-export function getSession(c: Context<AuthContext>): Session | null {
-  return c.get("session") ?? null;
-}
-
 export function getUser(c: Context<AuthContext>): Session["user"] | null {
   return c.get("user") ?? null;
-}
-
-export function getUserId(c: Context<AuthContext>): string | null {
-  const user = c.get("user");
-  return user?.id ?? null;
 }

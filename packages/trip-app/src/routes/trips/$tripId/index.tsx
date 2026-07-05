@@ -71,5 +71,3 @@ export function TripDetailPage() {
     </div>
   );
 }
-
-export default TripDetailPage;
