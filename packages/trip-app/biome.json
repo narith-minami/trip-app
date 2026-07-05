@@ -41,10 +41,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
 
       "correctness": {
-        "recommended": true,
+        "preset": "recommended",
         "noUnusedVariables": "error",
         "noUnusedImports": "error",
         "noUnusedFunctionParameters": "warn",
@@ -53,7 +53,7 @@
       },
 
       "suspicious": {
-        "recommended": true,
+        "preset": "recommended",
         "noConsole": "warn",
         "noExplicitAny": "error",
         "noDoubleEquals": "error",
@@ -64,7 +64,7 @@
       },
 
       "style": {
-        "recommended": true,
+        "preset": "recommended",
         "noCommonJs": "error",
         "useConst": "error",
         "useTemplate": "error",
@@ -92,19 +92,19 @@
       },
 
       "performance": {
-        "recommended": true,
+        "preset": "recommended",
         "noDelete": "warn",
         "noBarrelFile": "warn",
         "noReExportAll": "warn"
       },
 
       "security": {
-        "recommended": true,
+        "preset": "recommended",
         "noDangerouslySetInnerHtml": "error"
       },
 
       "complexity": {
-        "recommended": true,
+        "preset": "recommended",
         "noBannedTypes": "error",
         "noUselessFragments": "error",
         "noForEach": "warn",
@@ -117,7 +117,7 @@
       },
 
       "a11y": {
-        "recommended": true,
+        "preset": "recommended",
         "noSvgWithoutTitle": "warn",
         "useAltText": "error",
         "useButtonType": "error",
