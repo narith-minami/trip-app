@@ -4,8 +4,8 @@
  * Placeholder shown when a list or section has no content yet.
  */
 
-import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/cn";
 
 export interface EmptyStateProps {
   title: string;

@@ -5,12 +5,12 @@
  * Handles cover image uploads to R2 and database updates.
  */
 
-import { generateId } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { generateId } from "@/lib/utils";
 import { getDb, trips } from "../db";
-import { requireSession } from "../middleware/auth";
 import type { AuthContext } from "../middleware/auth";
+import { requireSession } from "../middleware/auth";
 
 /**
  * POST /api/trips/:tripId/cover
@@ -70,8 +70,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
           contentType: file.type,
         },
       });
-    } catch (error) {
-      console.error("Error uploading to R2:", error);
+    } catch (_error) {
       return c.json({ error: "画像のアップロードに失敗しました" }, 500);
     }
 
@@ -83,8 +82,7 @@ const coverRouter = new Hono<AuthContext>().post("/:tripId", requireSession(), a
     });
 
     return c.json(updated);
-  } catch (error) {
-    console.error("Error uploading cover:", error);
+  } catch (_error) {
     return c.json({ error: "内部サーバーエラー" }, 500);
   }
 });

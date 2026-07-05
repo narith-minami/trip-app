@@ -5,15 +5,15 @@
  * Handles CRUD operations for trip todos.
  */
 
-import { generateId } from "@/lib/utils";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
+import { generateId } from "@/lib/utils";
 import { getDb, todos } from "../db";
 import { requireSession } from "../middleware/auth";
-import { requireMember } from "../middleware/requireMember";
 import type { TripMemberContext } from "../middleware/requireMember";
+import { requireMember } from "../middleware/requireMember";
 
 // Schemas for todos
 const CreateTodoSchema = z.object({
@@ -35,7 +35,7 @@ type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
  * Build the todo fields to update from validated input.
  */
 function buildTodoUpdate(validated: z.infer<typeof UpdateTodoSchema>): TodoUpdateInput {
-  const updateData: TodoUpdateInput = { updatedAt: new Date().getTime() };
+  const updateData: TodoUpdateInput = { updatedAt: Date.now() };
   if (validated.title) updateData.title = validated.title;
   if (validated.isDone !== undefined) updateData.isDone = validated.isDone ? 1 : 0;
   if (validated.assigneeId !== undefined) updateData.assigneeId = validated.assigneeId;
@@ -60,8 +60,7 @@ const todosRouter = new Hono<TripMemberContext>()
       });
 
       return c.json({ data: items });
-    } catch (error) {
-      console.error("Error fetching todos:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -96,7 +95,6 @@ const todosRouter = new Hono<TripMemberContext>()
       if (error instanceof Error && error.message.includes("validation")) {
         return c.json({ error: error.message }, 400);
       }
-      console.error("Error creating todo:", error);
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -145,7 +143,6 @@ const todosRouter = new Hono<TripMemberContext>()
         if (error instanceof Error && error.message.includes("validation")) {
           return c.json({ error: error.message }, 400);
         }
-        console.error("Error updating todo:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -175,8 +172,7 @@ const todosRouter = new Hono<TripMemberContext>()
       await db.delete(todos).where(eq(todos.id, todoId));
 
       return c.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting todo:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   });

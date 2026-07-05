@@ -1,5 +1,5 @@
-import { BedDouble, Bike, Landmark, Plane, ShoppingBag, Tag, Train, Utensils } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { BedDouble, Bike, Landmark, Plane, ShoppingBag, Tag, Train, Utensils } from "lucide-react";
 
 export const EVENT_TYPES = {
   food: { label: "食事", icon: Utensils, color: "#E8643A" },
@@ -20,7 +20,6 @@ export const EVENT_TYPE_LIST = Object.entries(EVENT_TYPES).map(([key, value]) =>
 }));
 
 export function resolveEventType(type?: string | null): (typeof EVENT_TYPES)[EventType] {
-  if (type && Object.prototype.hasOwnProperty.call(EVENT_TYPES, type))
-    return EVENT_TYPES[type as EventType];
+  if (type && Object.hasOwn(EVENT_TYPES, type)) return EVENT_TYPES[type as EventType];
   return EVENT_TYPES.other;
 }

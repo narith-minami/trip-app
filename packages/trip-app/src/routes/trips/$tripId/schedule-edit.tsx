@@ -5,9 +5,9 @@
  * Navigated to from the Schedule tab via the "カレンダー編集" button.
  */
 
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { ScheduleCalendarView } from "@/features/schedule/components/ScheduleCalendarView";
 import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
-import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
 function generateDateRange(start: string, end: string): string[] {
   const [sy, sm, sd] = start.split("-").map(Number);

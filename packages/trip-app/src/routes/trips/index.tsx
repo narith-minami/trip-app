@@ -5,13 +5,13 @@
  * Displays all user's trips with options to create, view, and manage them.
  */
 
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { CreateTripModal } from "@/features/trips/components/CreateTripModal";
 import { TripCard, type TripCardData } from "@/features/trips/components/TripCard";
 import { useTrips } from "@/features/trips/hooks/useTrips";
-import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 
 export function TripsPage() {
   const navigate = useNavigate();

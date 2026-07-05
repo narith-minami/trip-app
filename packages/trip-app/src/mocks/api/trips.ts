@@ -39,23 +39,16 @@ const mockTrips = [
 const trips = structuredClone(mockTrips);
 
 export async function fetchTrips() {
-  console.log("[Mock API] fetchTrips called");
-  try {
-    const response = {
-      data: trips,
-      pagination: {
-        page: 1,
-        limit: 20,
-        total: trips.length,
-        pages: 1,
-      },
-    };
-    console.log("[Mock API] fetchTrips response:", response);
-    return response;
-  } catch (err) {
-    console.error("[Mock API] fetchTrips error:", err);
-    throw err;
-  }
+  const response = {
+    data: trips,
+    pagination: {
+      page: 1,
+      limit: 20,
+      total: trips.length,
+      pages: 1,
+    },
+  };
+  return response;
 }
 
 export async function fetchTrip(tripId: string) {

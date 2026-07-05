@@ -4,10 +4,10 @@
  * Hook for fetching a trip's shared memo.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { fetchMemo } from "@/api/memo";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { TripMemo } from "@/types/entities";
-import { useQuery } from "@tanstack/react-query";
 
 export function useTripMemo(tripId: string) {
   return useQuery({

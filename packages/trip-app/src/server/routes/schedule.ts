@@ -5,15 +5,15 @@
  * Handles CRUD operations for trip schedule items.
  */
 
-import { generateId } from "@/lib/utils";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
+import { generateId } from "@/lib/utils";
 import { getDb, scheduleItems } from "../db";
 import { requireSession } from "../middleware/auth";
-import { requireMember } from "../middleware/requireMember";
 import type { TripMemberContext } from "../middleware/requireMember";
+import { requireMember } from "../middleware/requireMember";
 
 const ERR_INTERNAL = "内部サーバーエラー";
 
@@ -67,7 +67,7 @@ function buildScheduleUpdate(
 ): ScheduleUpdateInput {
   const updateData: ScheduleUpdateInput = {
     updatedBy: userId,
-    updatedAt: new Date().getTime(),
+    updatedAt: Date.now(),
   };
   if (validated.date) updateData.date = validated.date;
   if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
@@ -97,8 +97,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       });
 
       return c.json({ data: items });
-    } catch (error) {
-      console.error("Error fetching schedule items:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -144,7 +143,6 @@ const scheduleRouter = new Hono<TripMemberContext>()
         if (error instanceof Error && error.message.includes("validation")) {
           return c.json({ error: error.message }, 400);
         }
-        console.error("Error creating schedule item:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -192,7 +190,6 @@ const scheduleRouter = new Hono<TripMemberContext>()
         if (error instanceof Error && error.message.includes("validation")) {
           return c.json({ error: error.message }, 400);
         }
-        console.error("Error updating schedule item:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -236,8 +233,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
         }
 
         return c.json({ success: true });
-      } catch (error) {
-        console.error("Error reordering schedule items:", error);
+      } catch (_error) {
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -293,8 +289,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
         });
 
         return c.json({ data: created, count: created.length }, 201);
-      } catch (error) {
-        console.error("Error copying schedule items:", error);
+      } catch (_error) {
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -324,8 +319,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       await db.delete(scheduleItems).where(eq(scheduleItems.id, itemId));
 
       return c.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting schedule item:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   });

@@ -4,9 +4,9 @@
  * Mutation for saving a trip's shared memo content.
  */
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMemo } from "@/api/memo";
 import { QUERY_KEYS } from "@/lib/queryKeys";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useMemoUpdateMutation(tripId: string) {
   const queryClient = useQueryClient();

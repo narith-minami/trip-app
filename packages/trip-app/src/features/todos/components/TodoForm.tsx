@@ -4,11 +4,11 @@
  * Inline form for adding a todo, with an optional assignee select.
  */
 
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { TripMember } from "@/types/entities";
-import { useState } from "react";
-import type { FormEvent } from "react";
 
 export interface TodoFormValues {
   title: string;

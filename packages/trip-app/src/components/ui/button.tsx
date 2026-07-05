@@ -4,8 +4,8 @@
  * Lightweight button primitive with a few visual variants.
  */
 
-import { cn } from "@/lib/cn";
 import type { ButtonHTMLAttributes, Ref } from "react";
+import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "success";
 type Size = "sm" | "md";

@@ -4,9 +4,9 @@
  * Hooks for trip mutations (create, update, delete).
  */
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTrip, deleteTrip, updateTrip } from "@/api/trips";
 import { QUERY_KEYS } from "@/lib/queryKeys";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Hook for creating a new trip

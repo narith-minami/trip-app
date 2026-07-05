@@ -9,8 +9,8 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb, tripMembers, trips } from "../db";
 import { requireSession } from "../middleware/auth";
-import { requireMember } from "../middleware/requireMember";
 import type { TripMemberContext } from "../middleware/requireMember";
+import { requireMember } from "../middleware/requireMember";
 
 /**
  * GET /api/trips/:tripId/members
@@ -30,8 +30,7 @@ const membersRouter = new Hono<TripMemberContext>()
       });
 
       return c.json({ data: members });
-    } catch (error) {
-      console.error("Error fetching members:", error);
+    } catch (_error) {
       return c.json({ error: "内部サーバーエラー" }, 500);
     }
   })
@@ -81,8 +80,7 @@ const membersRouter = new Hono<TripMemberContext>()
         .where(and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, memberId)));
 
       return c.json({ success: true });
-    } catch (error) {
-      console.error("Error removing member:", error);
+    } catch (_error) {
       return c.json({ error: "内部サーバーエラー" }, 500);
     }
   });

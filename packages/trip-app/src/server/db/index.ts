@@ -11,25 +11,25 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export type {
-  Trip,
-  NewTrip,
-  TripMember,
-  NewTripMember,
-  ScheduleItem,
   NewScheduleItem,
-  Todo,
   NewTodo,
-  TripMemo,
+  NewTrip,
+  NewTripMember,
   NewTripMemo,
+  ScheduleItem,
+  Todo,
+  Trip,
+  TripMember,
+  TripMemo,
   User,
 } from "./schema";
 
 export {
-  trips,
-  tripMembers,
   scheduleItems,
   todos,
+  tripMembers,
   tripMemos,
+  trips,
   users,
 } from "./schema";
 

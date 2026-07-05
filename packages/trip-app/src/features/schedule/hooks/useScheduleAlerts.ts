@@ -9,7 +9,7 @@ export interface DayAlert {
 
 export function computeScheduleAlerts(
   groupsMap: Map<string, ScheduleItem[]>,
-  dates: string[],
+  dates: string[]
 ): DayAlert[] {
   if (dates.length === 0) return [];
   const isMultiDay = dates.length > 1;
@@ -29,7 +29,7 @@ export function computeScheduleAlerts(
     if (!hasFood) missing.push("food");
 
     const hasTransport = items.some(
-      (item) => item.eventType === "flight" || item.eventType === "train",
+      (item) => item.eventType === "flight" || item.eventType === "train"
     );
     if (!hasTransport) missing.push("transport");
 

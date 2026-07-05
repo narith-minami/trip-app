@@ -5,7 +5,7 @@
  * Runs in the Node environment with v8 coverage and resolves the "@/" alias.
  */
 
-import { URL, fileURLToPath } from "node:url";
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
