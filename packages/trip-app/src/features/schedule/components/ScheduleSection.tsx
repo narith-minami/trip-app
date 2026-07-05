@@ -4,20 +4,20 @@
  * Schedule tab: date-picker row + filtered timeline for the selected day.
  */
 
+import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { cn } from "@/lib/cn";
-import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { computeScheduleAlerts } from "../hooks/useScheduleAlerts";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
 import { ScheduleItemForm } from "./ScheduleItemForm";
 import { ScheduleTimeline } from "./ScheduleTimeline";
-import { computeScheduleAlerts } from "../hooks/useScheduleAlerts";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
@@ -59,8 +59,7 @@ function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCa
     >
       {alertCount > 0 && (
         <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white">
-          <span className="sr-only">未設定の予定あり</span>
-          !
+          <span className="sr-only">未設定の予定あり</span>!
         </span>
       )}
       <span className={cn("text-xs", isSelected ? "text-cream-mid" : "text-ink-muted")}>{dow}</span>
@@ -85,7 +84,13 @@ interface DatePickerProps {
   onSelect: (d: string) => void;
 }
 
-function DatePicker({ dates, selectedDate, datesWithItems, alertCountByDate, onSelect }: DatePickerProps) {
+function DatePicker({
+  dates,
+  selectedDate,
+  datesWithItems,
+  alertCountByDate,
+  onSelect,
+}: DatePickerProps) {
   if (dates.length === 0) return null;
   return (
     <div>
@@ -142,17 +147,14 @@ export function ScheduleSection({
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate ?? dates[0] ?? "");
   const [copyOpen, setCopyOpen] = useState(false);
 
-  const alerts = useMemo(
-    () => computeScheduleAlerts(groupsMap, dates),
-    [groupsMap, dates],
-  );
+  const alerts = useMemo(() => computeScheduleAlerts(groupsMap, dates), [groupsMap, dates]);
   const alertCountByDate = useMemo(
     () => new Map(alerts.map((a) => [a.date, a.missing.length])),
-    [alerts],
+    [alerts]
   );
   const selectedMissing = useMemo(
     () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
-    [alerts, selectedDate],
+    [alerts, selectedDate]
   );
 
   if (isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;

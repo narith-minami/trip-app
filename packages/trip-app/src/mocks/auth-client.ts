@@ -16,7 +16,9 @@ export function useSession() {
     isPending: false,
     isRefetching: false,
     error: null,
-    refetch: async () => {},
+    refetch: async () => {
+      // no-op: mock always returns fresh data
+    },
   };
 }
 

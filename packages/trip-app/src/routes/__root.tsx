@@ -6,10 +6,10 @@
  * Sets up query client, router, error boundaries, and notifications.
  */
 
-import { getQueryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Outlet } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { getQueryClient } from "@/lib/queryClient";
 
 /**
  * Root layout component

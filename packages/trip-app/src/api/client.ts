@@ -5,7 +5,7 @@
  * Provides automatic type inference from server routes.
  */
 
-import type { AppType } from "@/server/app";
 import { hc } from "hono/client";
+import type { AppType } from "@/server/app";
 
 export const apiClient = hc<AppType>("/");

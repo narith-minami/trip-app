@@ -4,15 +4,15 @@
  * Container for the trip detail "Members" tab.
  */
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { removeMember } from "@/api/members";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Card, CardBody } from "@/components/ui/card";
 import { useMembers } from "@/features/members/hooks/useMembers";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { TripMember } from "@/types/entities";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
 import { InviteLinkBox } from "./InviteLinkBox";
 import { MemberAvatarList } from "./MemberAvatarList";
 

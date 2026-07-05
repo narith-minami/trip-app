@@ -1,5 +1,5 @@
-import { BedDouble, Plane, Utensils } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { BedDouble, Plane, Utensils } from "lucide-react";
 import type { AlertType } from "../hooks/useScheduleAlerts";
 
 const ALERT_CONFIG: Record<AlertType, { icon: LucideIcon; label: string }> = {

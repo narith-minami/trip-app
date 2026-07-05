@@ -4,10 +4,10 @@
  * Container for the trip detail "Memo" tab.
  */
 
+import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { useTripMemo } from "@/features/memo/hooks/useMemo";
 import { useMemoUpdateMutation } from "@/features/memo/hooks/useMemoUpdateMutation";
-import { toast } from "sonner";
 import { MemoEditor } from "./MemoEditor";
 
 export interface MemoSectionProps {

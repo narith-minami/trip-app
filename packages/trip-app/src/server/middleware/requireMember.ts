@@ -65,8 +65,7 @@ export async function requireMember(
     c.set("tripId", tripId);
 
     await next();
-  } catch (error) {
-    console.error("Error checking trip membership:", error);
+  } catch (_error) {
     return c.json({ error: "Internal server error" }, 500);
   }
 }

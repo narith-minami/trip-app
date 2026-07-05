@@ -1,5 +1,5 @@
-import { formatDate, formatDateTime, generateId, isValidDateString } from "@/lib/utils";
 import { describe, expect, it } from "vitest";
+import { formatDate, formatDateTime, generateId, isValidDateString } from "@/lib/utils";
 
 describe("generateId", () => {
   it("prefixes the id with the given prefix", () => {

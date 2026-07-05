@@ -10,6 +10,7 @@
  * detail page reads params via `from: "/trips/$tripId/"`).
  */
 
+import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { RootLayout } from "@/routes/__root";
 import { IndexPage } from "@/routes/index";
 import { LoginPage } from "@/routes/login";
@@ -17,7 +18,6 @@ import { SignupPage } from "@/routes/signup";
 import { TripDetailPage } from "@/routes/trips/$tripId/index";
 import { ScheduleEditPage } from "@/routes/trips/$tripId/schedule-edit";
 import { TripsPage } from "@/routes/trips/index";
-import { createRootRoute, createRoute } from "@tanstack/react-router";
 
 const rootRoute = createRootRoute({
   component: RootLayout,

@@ -75,8 +75,7 @@ app.notFound(async (c) => {
 /**
  * Error handler
  */
-app.onError((err, c) => {
-  console.error("Unhandled error:", err);
+app.onError((_err, c) => {
   return c.json({ error: "Internal Server Error" }, 500);
 });
 

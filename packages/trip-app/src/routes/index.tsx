@@ -5,10 +5,10 @@
  * Redirects authenticated users to trips page, shows login for guests.
  */
 
-import { fetchCurrentUser } from "@/api/users";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { fetchCurrentUser } from "@/api/users";
 
 export function IndexPage() {
   const navigate = useNavigate();

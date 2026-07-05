@@ -6,13 +6,13 @@
  * Redirects to /trips if already authenticated.
  */
 
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signIn, useSession } from "@/lib/auth-client";
-import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface LoginFormProps {
   email: string;

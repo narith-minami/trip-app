@@ -4,9 +4,9 @@
  * Hook for fetching single trip details.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { fetchTrip } from "@/api/trips";
 import { QUERY_KEYS } from "@/lib/queryKeys";
-import { useQuery } from "@tanstack/react-query";
 
 export function useTripDetail(tripId: string | undefined) {
   return useQuery({

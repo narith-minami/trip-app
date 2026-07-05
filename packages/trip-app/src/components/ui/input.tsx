@@ -4,8 +4,8 @@
  * Text input and textarea primitives with shared styling.
  */
 
-import { cn } from "@/lib/cn";
 import type { InputHTMLAttributes, Ref, TextareaHTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
 
 const FIELD_CLASSES =
   "w-full px-3 py-2 border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-coral";

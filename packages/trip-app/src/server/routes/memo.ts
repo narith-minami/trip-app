@@ -11,8 +11,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { getDb, tripMemos } from "../db";
 import { requireSession } from "../middleware/auth";
-import { requireMember } from "../middleware/requireMember";
 import type { TripMemberContext } from "../middleware/requireMember";
+import { requireMember } from "../middleware/requireMember";
 
 // Schemas for memo
 const MemoSchema = z.object({
@@ -46,8 +46,7 @@ const memoRouter = new Hono<TripMemberContext>()
       }
 
       return c.json(memo);
-    } catch (error) {
-      console.error("Error fetching memo:", error);
+    } catch (_error) {
       return c.json({ error: "内部サーバーエラー" }, 500);
     }
   })
@@ -71,14 +70,14 @@ const memoRouter = new Hono<TripMemberContext>()
           tripId,
           content: validated.content,
           updatedBy: userId,
-          updatedAt: new Date().getTime(),
+          updatedAt: Date.now(),
         })
         .onConflictDoUpdate({
           target: tripMemos.tripId,
           set: {
             content: validated.content,
             updatedBy: userId,
-            updatedAt: new Date().getTime(),
+            updatedAt: Date.now(),
           },
         });
 
@@ -91,7 +90,6 @@ const memoRouter = new Hono<TripMemberContext>()
       if (error instanceof Error && error.message.includes("validation")) {
         return c.json({ error: error.message }, 400);
       }
-      console.error("Error updating memo:", error);
       return c.json({ error: "内部サーバーエラー" }, 500);
     }
   });

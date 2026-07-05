@@ -4,13 +4,13 @@
  * Modal form for creating a new trip.
  */
 
+import type { FormEvent } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { useCreateTrip } from "@/features/trips/hooks/useTripMutations";
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { toast } from "sonner";
 
 const EMPTY_FORM = {
   title: "",

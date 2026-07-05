@@ -5,6 +5,8 @@
  * Displays trip information with tabs for schedule, todos, memo, and members.
  */
 
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
@@ -12,8 +14,6 @@ import { TripHeader } from "@/features/trips/components/TripHeader";
 import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
 import { useTripEditor } from "@/features/trips/hooks/useTripEditor";
 import type { TripMember } from "@/types/entities";
-import { useNavigate, useParams } from "@tanstack/react-router";
-import { useState } from "react";
 import { TripTabsContent } from "./TripTabsContent";
 
 const TRIP_TABS = [

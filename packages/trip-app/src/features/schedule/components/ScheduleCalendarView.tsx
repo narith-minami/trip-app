@@ -5,31 +5,23 @@
  * Uses custom PointerEvents (not @dnd-kit) for time-grid drag with 10-min snap.
  */
 
-import { Button } from "@/components/ui/button";
-import { useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
-import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
-import { usePinchZoom } from "@/features/schedule/hooks/usePinchZoom";
-import type { ScheduleItem } from "@/types/entities";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { usePinchZoom } from "@/features/schedule/hooks/usePinchZoom";
+import { useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
+import { useScheduleMutations } from "@/features/schedule/hooks/useScheduleMutations";
+import type { ScheduleItem } from "@/types/entities";
 
 // 1 minute = 1.5px → 1 hour = 90px → 24 hours = 2160px (default scale)
 const PX_PER_MIN = 1.5;
 const SNAP_MIN = 10;
 
-const COLORS = [
-  "#FF6B47",
-  "#4F7EF7",
-  "#2EC4B6",
-  "#E9C46A",
-  "#9B5DE5",
-  "#F77F00",
-  "#06D6A0",
-];
+const COLORS = ["#FF6B47", "#4F7EF7", "#2EC4B6", "#E9C46A", "#9B5DE5", "#F77F00", "#06D6A0"];
 
 function eventColor(id: string): string {
   let hash = 0;
-  for (const ch of id) hash = ((hash * 31) + ch.charCodeAt(0)) & 0xffff;
+  for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffff;
   return COLORS[hash % COLORS.length];
 }
 
@@ -51,10 +43,10 @@ const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 function formatDayHeading(dateStr: string): string {
   if (!dateStr) return "";
   const parts = dateStr.split("-").map(Number);
-  if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return dateStr;
   const [y, mo, d] = parts;
   const date = new Date(y, mo - 1, d);
-  if (isNaN(date.getTime())) return dateStr;
+  if (Number.isNaN(date.getTime())) return dateStr;
   const dow = DOW[date.getDay()];
   return `${mo}/${d} (${dow})`;
 }
@@ -66,9 +58,7 @@ interface LayoutItem {
 }
 
 function computeLayout(items: ScheduleItem[]): LayoutItem[] {
-  const sorted = [...items].sort(
-    (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
-  );
+  const sorted = [...items].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
   // Group into independent time clusters so numCols is local to each cluster.
   // Events in separate clusters never overlap, so they should each be full-width.
@@ -126,12 +116,7 @@ export interface ScheduleCalendarViewProps {
   onBack: () => void;
 }
 
-export function ScheduleCalendarView({
-  tripId,
-  date,
-  dates,
-  onBack,
-}: ScheduleCalendarViewProps) {
+export function ScheduleCalendarView({ tripId, date, dates, onBack }: ScheduleCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(date);
   const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
@@ -147,7 +132,10 @@ export function ScheduleCalendarView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastScrolledDateRef = useRef<string | null>(null);
 
-  const { pxPerMin, pxPerMinRef, pendingScrollRef } = usePinchZoom({ scrollRef, initialPxPerMin: PX_PER_MIN });
+  const { pxPerMin, pxPerMinRef, pendingScrollRef } = usePinchZoom({
+    scrollRef,
+    initialPxPerMin: PX_PER_MIN,
+  });
 
   // Apply pending scroll position after React re-renders the new grid height
   useLayoutEffect(() => {
@@ -155,7 +143,7 @@ export function ScheduleCalendarView({
       scrollRef.current.scrollTop = pendingScrollRef.current;
       pendingScrollRef.current = null;
     }
-  }, [pxPerMin, pendingScrollRef, scrollRef]);
+  }, [pendingScrollRef]);
 
   const { data: items } = useScheduleItems(tripId);
   const { update, remove, reorder } = useScheduleMutations(tripId);
@@ -179,7 +167,7 @@ export function ScheduleCalendarView({
   useEffect(() => {
     setPendingChanges(new Map());
     setDeletedIds(new Set());
-  }, [currentDate]);
+  }, []);
 
   const allDateItems = (items ?? []).filter((i) => i.date === currentDate);
 
@@ -259,13 +247,9 @@ export function ScheduleCalendarView({
       await Promise.all([...deletedIds].map((id) => remove.mutateAsync(id)));
 
       // 2. Apply time changes (skip deleted)
-      const updateEntries = [...pendingChanges.entries()].filter(
-        ([id]) => !deletedIds.has(id)
-      );
+      const updateEntries = [...pendingChanges.entries()].filter(([id]) => !deletedIds.has(id));
       await Promise.all(
-        updateEntries.map(([id, data]) =>
-          update.mutateAsync({ itemId: id, data })
-        )
+        updateEntries.map(([id, data]) => update.mutateAsync({ itemId: id, data }))
       );
 
       // 3. Reorder survivors by startTime
@@ -278,9 +262,7 @@ export function ScheduleCalendarView({
         .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
       if (survivors.length > 1) {
-        await reorder.mutateAsync(
-          survivors.map((item, idx) => ({ id: item.id, orderIndex: idx }))
-        );
+        await reorder.mutateAsync(survivors.map((item, idx) => ({ id: item.id, orderIndex: idx })));
       }
 
       onBack();
@@ -298,11 +280,7 @@ export function ScheduleCalendarView({
     <div className="flex h-dvh flex-col bg-cream">
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between bg-white px-4 py-3 shadow-sm">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm font-medium text-ink-muted"
-        >
+        <button type="button" onClick={onBack} className="text-sm font-medium text-ink-muted">
           ← 戻る
         </button>
         <div className="flex items-center gap-3">
@@ -421,9 +399,7 @@ export function ScheduleCalendarView({
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
                   >
-                    <p className="truncate text-xs font-bold text-white">
-                      {displayItem.title}
-                    </p>
+                    <p className="truncate text-xs font-bold text-white">{displayItem.title}</p>
                     {displayItem.startTime && (
                       <p className="text-xs text-white/80">
                         {displayItem.startTime}
@@ -446,55 +422,54 @@ export function ScheduleCalendarView({
               })}
 
               {/* Dragging item: rendered separately at full width above all other items */}
-              {dragItemId && (() => {
-                const displayItem = displayItems.find((d) => d.id === dragItemId);
-                if (!displayItem?.startTime) return null;
-                const startMin = timeToMinutes(displayItem.startTime);
-                const endMin = displayItem.endTime
-                  ? timeToMinutes(displayItem.endTime)
-                  : startMin + 60;
-                const durationMin = Math.max(10, endMin - startMin);
-                const top = startMin * pxPerMin;
-                const height = Math.max(30, durationMin * pxPerMin);
-                const color = eventColor(dragItemId);
-                return (
-                  <div
-                    key={`drag-${dragItemId}`}
-                    className="absolute select-none touch-none overflow-hidden rounded-xl px-2 py-1 cursor-grabbing z-30 opacity-90 shadow-2xl ring-2 ring-white"
-                    style={{
-                      top,
-                      height,
-                      left: 0,
-                      width: "calc(100% - 4px)",
-                      background: color,
-                    }}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={handlePointerUp}
-                    onPointerCancel={handlePointerUp}
-                  >
-                    <p className="truncate text-xs font-bold text-white">
-                      {displayItem.title}
-                    </p>
-                    {displayItem.startTime && (
-                      <p className="text-xs text-white/80">
-                        {displayItem.startTime}
-                        {displayItem.endTime ? `–${displayItem.endTime}` : ""}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 text-white/60 hover:text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(dragItemId);
+              {dragItemId &&
+                (() => {
+                  const displayItem = displayItems.find((d) => d.id === dragItemId);
+                  if (!displayItem?.startTime) return null;
+                  const startMin = timeToMinutes(displayItem.startTime);
+                  const endMin = displayItem.endTime
+                    ? timeToMinutes(displayItem.endTime)
+                    : startMin + 60;
+                  const durationMin = Math.max(10, endMin - startMin);
+                  const top = startMin * pxPerMin;
+                  const height = Math.max(30, durationMin * pxPerMin);
+                  const color = eventColor(dragItemId);
+                  return (
+                    <div
+                      key={`drag-${dragItemId}`}
+                      className="absolute select-none touch-none overflow-hidden rounded-xl px-2 py-1 cursor-grabbing z-30 opacity-90 shadow-2xl ring-2 ring-white"
+                      style={{
+                        top,
+                        height,
+                        left: 0,
+                        width: "calc(100% - 4px)",
+                        background: color,
                       }}
-                      aria-label="削除"
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
                     >
-                      ×
-                    </button>
-                  </div>
-                );
-              })()}
+                      <p className="truncate text-xs font-bold text-white">{displayItem.title}</p>
+                      {displayItem.startTime && (
+                        <p className="text-xs text-white/80">
+                          {displayItem.startTime}
+                          {displayItem.endTime ? `–${displayItem.endTime}` : ""}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 text-white/60 hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(dragItemId);
+                        }}
+                        aria-label="削除"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })()}
             </div>
           </div>
         </div>
@@ -505,11 +480,7 @@ export function ScheduleCalendarView({
         <Button variant="secondary" className="flex-1" onClick={onBack}>
           キャンセル
         </Button>
-        <Button
-          className="flex-1"
-          onClick={handleSave}
-          disabled={isSaving}
-        >
+        <Button className="flex-1" onClick={handleSave} disabled={isSaving}>
           {isSaving ? "保存中..." : "確定して保存"}
         </Button>
       </footer>

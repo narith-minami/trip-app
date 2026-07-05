@@ -4,13 +4,13 @@
  * Controlled form for creating or editing a schedule item.
  */
 
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
-import { useState } from "react";
-import type { FormEvent } from "react";
 
 export interface ScheduleFormValues {
   date: string;

@@ -4,10 +4,10 @@
  * Hook for fetching a trip's schedule items, grouped by date.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { fetchScheduleItems } from "@/api/schedule";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { ScheduleItem } from "@/types/entities";
-import { useQuery } from "@tanstack/react-query";
 
 export function useScheduleItems(tripId: string) {
   return useQuery({

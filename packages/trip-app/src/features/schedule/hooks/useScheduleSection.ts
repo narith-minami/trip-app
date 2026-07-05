@@ -5,9 +5,9 @@
  * trip detail "Schedule" tab, keeping the section component presentational.
  */
 
-import type { ScheduleItem } from "@/types/entities";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { ScheduleItem } from "@/types/entities";
 import type { ScheduleFormValues } from "../components/ScheduleItemForm";
 import { groupByDate, useScheduleItems } from "./useScheduleItems";
 import { useScheduleMutations } from "./useScheduleMutations";

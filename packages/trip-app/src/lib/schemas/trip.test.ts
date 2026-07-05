@@ -1,5 +1,5 @@
-import { CreateTripSchema, TripQueryParamsSchema } from "@/lib/schemas/trip";
 import { describe, expect, it } from "vitest";
+import { CreateTripSchema, TripQueryParamsSchema } from "@/lib/schemas/trip";
 
 describe("CreateTripSchema", () => {
   it("accepts a valid trip payload", () => {

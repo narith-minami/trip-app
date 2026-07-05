@@ -4,9 +4,9 @@
  * Editable shared memo with dirty tracking and a save action.
  */
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
-import { useState } from "react";
 
 export interface MemoEditorProps {
   content: string;

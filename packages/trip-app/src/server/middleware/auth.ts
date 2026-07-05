@@ -43,8 +43,7 @@ export function requireSession() {
       c.set("session", sessionData.session as unknown as Session);
       c.set("user", sessionData.user as unknown as Session["user"]);
       await next();
-    } catch (error) {
-      console.error("Auth middleware error:", error);
+    } catch (_error) {
       return c.json({ error: "Unauthorized" }, 401);
     }
   };

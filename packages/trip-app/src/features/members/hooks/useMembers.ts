@@ -4,10 +4,10 @@
  * Hook for fetching a trip's members.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { fetchMembers } from "@/api/members";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { TripMember } from "@/types/entities";
-import { useQuery } from "@tanstack/react-query";
 
 export function useMembers(tripId: string) {
   return useQuery({

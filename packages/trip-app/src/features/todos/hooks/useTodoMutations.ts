@@ -5,9 +5,9 @@
  * Each mutation invalidates the todos list cache on success.
  */
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTodo, deleteTodo, updateTodo } from "@/api/todos";
 import { QUERY_KEYS } from "@/lib/queryKeys";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type CreateInput = Parameters<typeof createTodo>[1];
 type UpdateInput = Parameters<typeof updateTodo>[2];

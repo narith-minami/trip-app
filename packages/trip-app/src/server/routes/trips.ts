@@ -5,11 +5,11 @@
  * Handles CRUD operations for trips with proper access control.
  */
 
-import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
-import { generateId } from "@/lib/utils";
 import { zValidator } from "@hono/zod-validator";
 import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
+import { generateId } from "@/lib/utils";
 import { getDb, tripMembers, trips } from "../db";
 import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
@@ -35,7 +35,7 @@ function buildTripUpdate(validated: {
   endDate?: string;
   location?: string;
 }): TripUpdateInput {
-  const updateData: TripUpdateInput = { updatedAt: new Date().getTime() };
+  const updateData: TripUpdateInput = { updatedAt: Date.now() };
   if (validated.title) updateData.title = validated.title;
   if (validated.startDate) updateData.startDate = validated.startDate;
   if (validated.endDate) updateData.endDate = validated.endDate;
@@ -110,8 +110,7 @@ const tripsRouter = new Hono<AuthContext>()
           pages,
         },
       });
-    } catch (error) {
-      console.error("Error fetching trips:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -168,7 +167,6 @@ const tripsRouter = new Hono<AuthContext>()
       if (error instanceof Error && error.message.includes("validation")) {
         return c.json({ error: error.message }, 400);
       }
-      console.error("Error creating trip:", error);
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -215,8 +213,7 @@ const tripsRouter = new Hono<AuthContext>()
       }
 
       return c.json(trip);
-    } catch (error) {
-      console.error("Error fetching trip:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -274,7 +271,6 @@ const tripsRouter = new Hono<AuthContext>()
         if (error instanceof Error && error.message.includes("validation")) {
           return c.json({ error: error.message }, 400);
         }
-        console.error("Error updating trip:", error);
         return c.json({ error: ERR_INTERNAL }, 500);
       }
     }
@@ -314,8 +310,7 @@ const tripsRouter = new Hono<AuthContext>()
       await db.delete(trips).where(eq(trips.id, tripId));
 
       return c.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting trip:", error);
+    } catch (_error) {
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   });

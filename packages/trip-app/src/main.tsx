@@ -5,10 +5,10 @@
  * hand-authored route tree and mounts the React application.
  */
 
-import { routeTree } from "@/routeTree";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { routeTree } from "@/routeTree";
 import "@/styles/globals.css";
 
 const router = createRouter({ routeTree });
