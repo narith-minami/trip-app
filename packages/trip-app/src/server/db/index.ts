@@ -30,7 +30,6 @@ export {
   tripMembers,
   tripMemos,
   trips,
-  users,
 } from "./schema";
 
 /**

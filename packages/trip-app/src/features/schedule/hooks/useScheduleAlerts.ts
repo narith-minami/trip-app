@@ -32,7 +32,7 @@ function findMissingAlerts(
   return missing;
 }
 
-export function computeScheduleAlerts(
+function computeScheduleAlerts(
   groupsMap: Map<string, ScheduleItem[]>,
   dates: string[]
 ): DayAlert[] {

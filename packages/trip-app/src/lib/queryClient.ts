@@ -45,8 +45,3 @@ export function getQueryClient() {
   }
   return queryClient;
 }
-
-/**
- * Export the query client as default
- */
-export default getQueryClient();

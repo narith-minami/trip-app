@@ -41,5 +41,3 @@ export function IndexPage() {
     </div>
   );
 }
-
-export default IndexPage;

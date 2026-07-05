@@ -4,7 +4,7 @@ import type { ScheduleItem } from "@/types/entities";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
-export function formatDateLabel(dateStr: string): string {
+function formatDateLabel(dateStr: string): string {
   const [, m, d] = dateStr.split("-").map(Number);
   return `${m}月${d}日`;
 }
@@ -15,7 +15,7 @@ interface DateButtonProps {
   onClick: () => void;
 }
 
-export function DateButton({ dateStr, isSelected, onClick }: DateButtonProps) {
+function DateButton({ dateStr, isSelected, onClick }: DateButtonProps) {
   const [y, m, d] = dateStr.split("-").map(Number);
   const dow = DOW[new Date(y, m - 1, d).getDay()];
   return (

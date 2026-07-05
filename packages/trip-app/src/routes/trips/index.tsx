@@ -87,5 +87,3 @@ export function TripsPage() {
     </div>
   );
 }
-
-export default TripsPage;
