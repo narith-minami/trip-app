@@ -1,0 +1,22 @@
+{
+  "name": "@monorepo/kimi-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Issue駆動でOpenHands + Kimi K2.7 CodeによるPR自動作成を行うCloudflare Workers/Containersエージェント",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "wrangler-deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.7",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260701.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
+  }
+}

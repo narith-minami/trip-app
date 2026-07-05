@@ -1,7 +1,5 @@
-# Single-package repo; the root is the only project. `packages` is required by
-# pnpm even when settings (below) are the real reason this file exists.
 packages:
-  - "."
+  - "packages/*"
 
 # Supply-chain hardening for pnpm (React Doctor: require-pnpm-hardening).
 #

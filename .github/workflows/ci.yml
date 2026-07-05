@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
+      - run: pnpm --filter trip-app run typecheck
 
   # ------------------------------------------------------------------
   # 2. Biome (format + lint)
@@ -40,8 +40,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint:biome
-      - run: pnpm format:check
+      - run: pnpm --filter trip-app run lint:biome
+      - run: pnpm --filter trip-app run format:check
 
   # ------------------------------------------------------------------
   # 3. ESLint
@@ -56,7 +56,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint:eslint
+      - run: pnpm --filter trip-app run lint:eslint
 
   # ------------------------------------------------------------------
   # 4. react-doctor (React アンチパターン検出)
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint:doctor
+      - run: pnpm --filter trip-app run lint:doctor
 
   # ------------------------------------------------------------------
   # 5. knip (デッドコード検出)
@@ -87,7 +87,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm knip
+      - run: pnpm --filter trip-app run knip
 
   # ------------------------------------------------------------------
   # 6. テスト + カバレッジ
@@ -102,11 +102,11 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:coverage
+      - run: pnpm --filter trip-app run test:coverage
       - uses: actions/upload-artifact@v4
         with:
           name: coverage
-          path: coverage/
+          path: packages/trip-app/coverage/
 
   # ------------------------------------------------------------------
   # 7. ビルド (typecheck + biome + eslint 通過後)
@@ -122,4 +122,4 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - run: pnpm --filter trip-app run build

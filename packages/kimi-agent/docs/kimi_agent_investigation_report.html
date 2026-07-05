@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kimi Issue-Driven Coding Agent 調査・検証レポート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: #e5e2dc;
+    --text: #1a1916;
+    --muted: #6b6760;
+    --dim: #a8a49e;
+    --accent: #ea580c;
+    --accent2: #0284c7;
+    --red: #dc2626;
+    --amber: #d97706;
+    --green: #16a34a;
+    --purple: #7c3aed;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.7; }
+
+  header { background: #0a0a0a; color: #f0f0ef; padding: 40px 48px 36px; border-bottom: 3px solid var(--accent); }
+  .header-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: #fdba74; margin-bottom: 10px; text-transform: uppercase; }
+  header h1 { font-size: 26px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+  header h1 span { color: #fb923c; }
+  .header-meta { font-family: var(--mono); font-size: 11px; color: #6b7280; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--surface); }
+  .stat { padding: 20px 24px; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-family: var(--mono); font-size: 26px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 11px; color: var(--muted); }
+  .c-blue { color: var(--accent2); } .c-red { color: var(--red); } .c-amber { color: var(--amber); } .c-green { color: var(--green); } .c-purple { color: var(--purple); }
+
+  .layout { display: grid; grid-template-columns: 200px 1fr; max-width: 1100px; margin: 0 auto; }
+  .content { padding: 40px 48px; }
+
+  nav { border-right: 1px solid var(--border); padding: 32px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); }
+  .nav-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--dim); padding: 0 20px 8px; text-transform: uppercase; }
+  nav a { display: block; padding: 7px 20px; font-size: 12px; color: var(--muted); text-decoration: none; border-left: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  nav a:hover { color: var(--text); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); }
+
+  .summary-box { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); padding: 24px 28px; margin-bottom: 48px; border-radius: 2px; }
+  .summary-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 10px; }
+  .summary-box p { font-size: 13.5px; color: var(--muted); line-height: 1.8; margin-bottom: 10px; }
+  .summary-box p:last-child { margin-bottom: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tag { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); background: var(--bg); }
+
+  .section { margin-bottom: 52px; }
+  .section-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .section-icon { font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 18px 22px; margin-bottom: 10px; transition: border-color 0.15s; }
+  .card:hover { border-color: #c8c4bc; }
+  .card.hi  { border-left: 3px solid var(--accent); }
+  .card.new { border-left: 3px solid var(--accent2); }
+  .card.sec { border-left: 3px solid var(--amber); }
+  .card-top { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+  .card-date { font-family: var(--mono); font-size: 10px; color: var(--dim); padding-top: 2px; white-space: nowrap; min-width: 52px; }
+  .card-title { font-size: 13.5px; font-weight: 700; line-height: 1.5; flex: 1; }
+  .card-body { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin-bottom: 10px; padding-left: 62px; }
+  .card-footer { display: flex; align-items: center; gap: 8px; padding-left: 62px; flex-wrap: wrap; }
+  .detail-list { margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .detail-list li { margin-bottom: 3px; }
+  code { font-family: var(--mono); font-size: 11px; background: rgba(0,0,0,0.05); padding: 1px 5px; border-radius: 2px; color: var(--text); }
+
+  .badge { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 2px; border: 1px solid; }
+  .badge-major { color: var(--accent); border-color: rgba(234,88,12,.3); background: rgba(234,88,12,.07); }
+  .badge-high  { color: var(--amber);  border-color: rgba(217,119,6,.3); background: rgba(217,119,6,.06); }
+  .badge-mid   { color: var(--accent2);border-color: rgba(2,132,199,.25);background: rgba(2,132,199,.05); }
+  .badge-model { color: var(--purple); border-color: rgba(124,58,237,.3);background: rgba(124,58,237,.06); }
+  .badge-sec   { color: #b45309;       border-color: rgba(180,83,9,.3);  background: rgba(180,83,9,.06); }
+  .badge-ent   { color: var(--green);  border-color: rgba(22,163,74,.3); background: rgba(22,163,74,.05); }
+  .src { font-family: var(--mono); font-size: 10px; color: var(--dim); text-decoration: none; }
+  .src:hover { color: var(--accent); }
+
+  .ver-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--surface); }
+  .ver-table th { text-align: left; padding: 9px 14px; background: var(--bg); font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--muted); border: 1px solid var(--border); }
+  .ver-table td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; line-height: 1.6; color: var(--muted); }
+  .ver-table td:first-child { font-family: var(--mono); font-size: 11px; color: var(--accent); white-space: nowrap; width: 130px; }
+  .ver-table tr:hover td { background: var(--bg); }
+
+  .insights-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 18px 20px; }
+  .insight-n { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 8px; }
+  .insight-title { font-size: 12.5px; font-weight: 700; margin-bottom: 6px; }
+  .insight-body { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  footer { border-top: 1px solid var(--border); padding: 20px 48px; font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; background: var(--surface); }
+
+  @media (max-width: 720px) {
+    header, .content, footer { padding: 24px 20px; }
+    .layout { grid-template-columns: 1fr; }
+    nav { display: none; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .insights-grid { grid-template-columns: 1fr; }
+    .card-body, .card-footer { padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">INFRASTRUCTURE / DESIGN VERIFICATION REPORT</div>
+  <h1>Kimi Issue-Driven Coding Agent<br><span>調査・検証レポート — 設計転換の記録</span></h1>
+  <div class="header-meta">対象: OpenHands × Kimi K2.7 Code × Cloudflare Containers ／ 検証日: 2026-07-04 ／ 個人開発・モノレポ構成</div>
+</header>
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="stat-num c-red">3</div>
+    <div class="stat-label">版数更新 (v1.1→v1.3)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num c-amber">1</div>
+    <div class="stat-label">アーキテクチャ全面転換 (DinD廃止)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num c-blue">$7〜11</div>
+    <div class="stat-label">月間コスト試算(中規模タスク20〜30件)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num c-green">83.7kb</div>
+    <div class="stat-label">実機ビルド検証済みサーバー</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <nav>
+    <div class="nav-label">目次</div>
+    <a href="#summary" class="active">サマリー</a>
+    <a href="#kimi">Kimi K2.7 Code</a>
+    <a href="#infra">実行基盤の選定</a>
+    <a href="#openhands">OpenHands仕様調査</a>
+    <a href="#pivot">DinD廃止という転換</a>
+    <a href="#verified">実機検証で判明したこと</a>
+    <a href="#table">設計変遷まとめ</a>
+    <a href="#insights">考察</a>
+  </nav>
+
+  <div class="content">
+
+    <div class="summary-box" id="summary">
+      <div class="label">EXECUTIVE SUMMARY</div>
+      <p>GitHub Issueへのラベル付与をトリガーに、OSSコーディングエージェント<strong>OpenHands</strong>とMoonshot AIのオープンモデル<strong>Kimi K2.7 Code</strong>を組み合わせ、Cloudflare上のサーバーレス基盤だけで自動実装〜PR作成を行うシステムを検証した。GitHub Actionsに依存しない、アイドル時課金がほぼゼロのイベント駆動アーキテクチャを目指した。</p>
+      <p>調査・実装を進める過程で、当初の設計前提そのものを覆す発見があった。<strong>OpenHands CLIは2025年11月のV1刷新で「サンドボックスコンテナを必須としない」設計に変わっており</strong>、それに気づかないまま進めていたDocker-in-Docker（DinD）構成は丸ごと不要だった。この発見によりアーキテクチャを大幅に簡素化し、実装量・複雑性の両方を削減できた。本レポートは、その調査の経緯と実機検証の結果を記録する。</p>
+      <div class="tags">
+        <span class="tag">OpenHands V1</span>
+        <span class="tag">Kimi K2.7 Code</span>
+        <span class="tag">Cloudflare Containers</span>
+        <span class="tag">Docker-in-Docker 廃止</span>
+        <span class="tag">Hono / TypeScript</span>
+        <span class="tag">pnpm workspace</span>
+      </div>
+    </div>
+
+    <!-- SECTION: Kimi -->
+    <section class="section" id="kimi">
+      <div class="section-head">
+        <div class="section-icon">🧠</div>
+        <h2 class="section-title">Kimi K2.7 Code の調査結果</h2>
+        <span class="section-count">3件</span>
+      </div>
+
+      <div class="card hi">
+        <div class="card-top">
+          <span class="card-date">概要</span>
+          <div class="card-title">Moonshot AIのコーディング特化エージェントモデル</div>
+        </div>
+        <div class="card-body">
+          2026年6月12日リリース。Kimi K2.6をベースに、コーディング・エージェントタスクに特化してチューニングされた1Tパラメータ(32B活性化)のMoE構成オープンウェイトモデル。
+          <ul class="detail-list">
+            <li><b>コンテキスト:</b> 256Kトークン、常時thinkingモード(non-thinking非対応)</li>
+            <li><b>ベンチマーク:</b> Kimi Code Bench v2で対K2.6比+21.8%、MCP Mark Verifiedで81.1(Opus 4.8の76.4を上回る)</li>
+            <li><b>ライセンス:</b> Modified MIT。月間アクティブ1億人 or 月商$20M超で帰属表示義務が発生</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-major">MODEL RELEASE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-date">料金</span>
+          <div class="card-title">API料金体系(Moonshot公式)</div>
+        </div>
+        <div class="card-body">
+          入力$0.95/M(キャッシュミス)・$0.19/M(キャッシュヒット)、出力$4.00/M(標準)・$8.00/M(HighSpeed版)。中規模タスク(1〜数ファイル実装)1件あたり$0.09〜0.20程度、月20〜30件で月$2〜6のレンジと試算。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-mid">PRICING</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-date">接続</span>
+          <div class="card-title">OpenAI互換API・LiteLLM経由での利用</div>
+        </div>
+        <div class="card-body">
+          <code>base_url: https://api.moonshot.ai/v1</code>、<code>model: openai/kimi-k2.7-code</code>としてOpenAI互換形式で呼び出し可能。<code>tool_choice</code>は<code>auto</code>/<code>none</code>のみ対応。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-mid">API COMPATIBILITY</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: infra -->
+    <section class="section" id="infra">
+      <div class="section-head">
+        <div class="section-icon">☁️</div>
+        <h2 class="section-title">実行基盤の選定プロセス</h2>
+        <span class="section-count">3件</span>
+      </div>
+
+      <div class="card hi">
+        <div class="card-top">
+          <span class="card-date">比較</span>
+          <div class="card-title">GitHub Actions → クラウド型サンドボックスへの転換</div>
+        </div>
+        <div class="card-body">
+          GitHub Actionsのジョブ課金・実行時間制約を避けるため、常駐不要のイベント駆動型に方針転換。E2B・Daytona・Modal・Fly.io Sprites・Vercel Sandbox・Cloudflare Containersを比較した。
+          <ul class="detail-list">
+            <li><b>Vercel Sandbox:</b> セッション上限45分(ベータ)、Dockerイメージ実行に非対応 → OpenHandsのDinD前提構造とは相性が悪いと判断し不採用</li>
+            <li><b>Cloudflare Containers:</b> セッション上限なし、2026年2月からDinD対応、Workers/Hono/D1と同一アカウントで統合可能 → 採用</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-major">DECISION</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-date">課金</span>
+          <div class="card-title">Cloudflare Containers課金モデルの実測試算</div>
+        </div>
+        <div class="card-body">
+          CPU課金は実利用ベース($0.00002/vCPU秒、2025年11月に実利用ベースへ変更)。Workers Paid Plan($5/月)必須。中規模タスク月20〜30件・1件12分想定で、無料枠内に収まる可能性が高いと試算。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-mid">COST MODEL</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-date">構成</span>
+          <div class="card-title">モノレポ内独立パッケージとして配置</div>
+        </div>
+        <div class="card-body">
+          個人のpnpmモノレポ内、<code>packages/kimi-agent</code>として配置する方針に決定。対象プロジェクトのデプロイライフサイクルと分離しつつ、将来の複数PJ横展開・独立リポジトリ切り出しを低コストにする設計。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-ent">ARCHITECTURE DECISION</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: openhands -->
+    <section class="section" id="openhands">
+      <div class="section-head">
+        <div class="section-icon">🔍</div>
+        <h2 class="section-title">OpenHands CLI 仕様調査で判明した誤り</h2>
+        <span class="section-count">4件</span>
+      </div>
+
+      <div class="card sec">
+        <div class="card-top">
+          <span class="card-date">誤り1</span>
+          <div class="card-title">存在しないCLIフラグ <code>--max-iterations</code></div>
+        </div>
+        <div class="card-body">
+          当初、反復回数上限をコマンドラインで<code>--max-iterations 80</code>のように指定する設計だったが、実際にはこのフラグは存在しない。他のAIエージェントがOpenHandsの文書を生成する際にhallucinateしたフラグ(<code>--model</code>, <code>--workspace</code>, <code>--sandbox</code>等も同様)が出回っていたことが調査で判明した。
+          <ul class="detail-list">
+            <li><b>正しい方法:</b> <code>config.toml</code>の<code>[core] max_iterations</code>でのみ制御可能(デフォルト500)</li>
+            <li><b>教訓:</b> Web上の二次情報だけでなく、実際の<code>openhands --help</code>相当の一次情報で検証する必要がある</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-sec">SPEC CORRECTION</span>
+        </div>
+      </div>
+
+      <div class="card sec">
+        <div class="card-top">
+          <span class="card-date">誤り2</span>
+          <div class="card-title">環境変数によるLLM設定はデフォルトで無視される</div>
+        </div>
+        <div class="card-body">
+          <code>LLM_MODEL</code>, <code>LLM_API_KEY</code>, <code>LLM_BASE_URL</code>等の環境変数は、V1系CLIではデフォルトで無視される。自動化で使うには<code>--override-with-envs</code>フラグの明示、または<code>config.toml</code>ファイルでの指定が必須。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-sec">SPEC CORRECTION</span>
+        </div>
+      </div>
+
+      <div class="card sec">
+        <div class="card-top">
+          <span class="card-date">誤り3</span>
+          <div class="card-title">レガシーPyPIパッケージ <code>openhands-ai</code> の誤用</div>
+        </div>
+        <div class="card-body">
+          <code>pip install openhands-ai</code>はV0(旧世代)のSDKであり非推奨。現行のCLIは<code>uv tool install openhands --python 3.12</code>でインストールする(PyPI名: <code>openhands</code>)。呼び出し方も<code>python -m openhands.core.main</code>ではなく<code>openhands --headless</code>コマンドに変わっている。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-sec">SPEC CORRECTION</span>
+        </div>
+      </div>
+
+      <div class="card hi">
+        <div class="card-top">
+          <span class="card-date">最重要</span>
+          <div class="card-title">V1アーキテクチャは「サンドボックス任意」が原則</div>
+        </div>
+        <div class="card-body">
+          2025年11月のV0→V1移行で、OpenHandsのアーキテクチャは「Agent / Conversation / Workspace / Event」に刷新された。V0は全ツール呼び出しをDockerサンドボックス内で実行することを前提としていたが、V1は<strong>"Optional isolation"</strong>(隔離は任意)という設計原則を採用し、デフォルトではホスト上で直接実行される。
+          <ul class="detail-list">
+            <li><b>V0の前提:</b> 全実行はDockerコンテナ内で行う(mandatory sandboxing)</li>
+            <li><b>V1の前提:</b> ローカル実行がデフォルト、サンドボックスは追加の安全性が必要な場合のオプション</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-major">ARCHITECTURE SHIFT</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: pivot -->
+    <section class="section" id="pivot">
+      <div class="section-head">
+        <div class="section-icon">🔄</div>
+        <h2 class="section-title">DinD廃止という設計転換</h2>
+        <span class="section-count">1件</span>
+      </div>
+
+      <div class="card hi">
+        <div class="card-top">
+          <span class="card-date">転換</span>
+          <div class="card-title">「V1はサンドボックス不要」の発見がもたらした波及効果</div>
+        </div>
+        <div class="card-body">
+          Cloudflare Containersが2026年2月にDocker-in-Docker(DinD)をサポートしたことを受け、当初は「Cloudflare Container内でdockerdを起動し、OpenHandsが内部でさらにサンドボックスコンテナを作る」という二重構造を設計していた。しかしOpenHands V1の仕様確認により、この構造自体が前提から誤っていたことが判明した。
+          <ul class="detail-list">
+            <li><b>気づいたきっかけ:</b> ローカルでのDinD検証が「重い」という相談を受け、代替案を調べる過程でOpenHands CLIの実際のアーキテクチャ文書に到達</li>
+            <li><b>結論:</b> Cloudflare Container自体がすでに1タスク1回限りの使い捨て隔離環境であるため、内部でさらにDinDを組む必要はない</li>
+            <li><b>波及効果:</b> ベースイメージが<code>docker:dind-rootless</code>から<code>node:22-slim</code>に変わり、entrypoint.shのdockerd起動待ち処理が丸ごと不要になった</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-major">MAJOR REDESIGN</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: verified -->
+    <section class="section" id="verified">
+      <div class="section-head">
+        <div class="section-icon">✅</div>
+        <h2 class="section-title">実機検証で確認できたこと</h2>
+        <span class="section-count">4件</span>
+      </div>
+
+      <div class="card new">
+        <div class="card-top">
+          <span class="card-date">検証</span>
+          <div class="card-title">タスク実行サーバーのビルド・起動検証</div>
+        </div>
+        <div class="card-body">
+          Hono + @hono/node-serverで実装したサーバーを、実際にtsc型チェック・esbuildバンドル(83.7kb)・起動まで通した。
+          <ul class="detail-list">
+            <li><b>/health:</b> <code>{"status":"ok"}</code>を正しく返却</li>
+            <li><b>バリデーション:</b> 不正なリクエストボディに対し<code>400</code>相当のエラーを返却</li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-model">VERIFIED</span>
+        </div>
+      </div>
+
+      <div class="card new">
+        <div class="card-top">
+          <span class="card-date">検証</span>
+          <div class="card-title">git clone・config.toml生成ロジックの実証</div>
+        </div>
+        <div class="card-body">
+          実在の公開リポジトリ(<code>octocat/Hello-World</code>)を指定し、実際に<code>git clone</code>が成功、Issue番号ごとに独立したホームディレクトリへ<code>$HOME/.openhands/config.toml</code>が正しい内容(LLM接続設定・max_iterations)で生成されることを確認した。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-model">VERIFIED</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-date">検証</span>
+          <div class="card-title">異常系ハンドリングの健全性</div>
+        </div>
+        <div class="card-body">
+          <code>openhands</code>コマンド自体が本作業環境に未インストールという状況でも、サーバープロセスはクラッシュせず<code>exitCode: 1</code>と詳細ログを含むJSONレスポンスを正しく返却することを確認した。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-mid">RESILIENCE CHECK</span>
+        </div>
+      </div>
+
+      <div class="card sec">
+        <div class="card-top">
+          <span class="card-date">未検証</span>
+          <div class="card-title">Docker/OpenHands本体の実機ビルド・起動</div>
+        </div>
+        <div class="card-body">
+          本作業環境にDockerランタイムが存在しないため、<code>docker build</code>によるイメージビルド、および<code>openhands</code>コマンド自体の実行(Kimi API接続を含む)は未検証。ユーザー環境での実施が必要な項目として実装計画書に明記した。
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-sec">PENDING — USER ENVIRONMENT</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLE -->
+    <section class="section" id="table">
+      <div class="section-head">
+        <div class="section-icon">📊</div>
+        <h2 class="section-title">設計変遷まとめ</h2>
+      </div>
+      <table class="ver-table">
+        <thead>
+          <tr>
+            <th>版数</th>
+            <th>変更内容</th>
+            <th>きっかけ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>v1.0</td>
+            <td>Cloudflare Containers + DinD構成での初期設計。OpenHands V0前提の呼び出し方(<code>python -m openhands.core.main --max-iterations</code>)</td>
+            <td>初回設計時の一般的なOpenHands文書を参照</td>
+          </tr>
+          <tr>
+            <td>v1.1</td>
+            <td>個人開発・モノレポ構成への対応。<code>packages/kimi-agent</code>としての独立パッケージ化</td>
+            <td>利用シーンの確定(個人開発・検証含む・将来複数PJ)</td>
+          </tr>
+          <tr>
+            <td>v1.2</td>
+            <td>Phase 2をDockerなしの軽量版検証に変更。DinD実機検証をPhase 3(T3-5)に統合</td>
+            <td>「ローカルでDocker動かすのが重い」という相談への対応</td>
+          </tr>
+          <tr>
+            <td>v1.3</td>
+            <td><strong>DinD構成そのものを廃止。</strong>ベースイメージを<code>node:22-slim</code>に変更。OpenHands呼び出し方法を<code>openhands --headless --json --override-with-envs</code> + <code>config.toml</code>方式に全面修正</td>
+            <td>実装(Phase 1)を進める過程でOpenHands CLIの実際の仕様を確認し、V1アーキテクチャがサンドボックス任意であることを発見</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="section" id="insights">
+      <div class="section-head">
+        <div class="section-icon">💡</div>
+        <h2 class="section-title">考察</h2>
+      </div>
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-n">01 / 一次情報の重要性</div>
+          <div class="insight-title">二次情報の劣化速度は想像以上に速い</div>
+          <div class="insight-body">OpenHands CLIのように活発に開発されているOSSは、V0→V1のような破壊的変更が数ヶ月単位で起こる。ブログ記事やチュートリアルの多くは旧仕様を前提にしており、実装直前に公式リポジトリ・issueで裏取りする工程を省略できない。</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-n">02 / 設計の先行検証</div>
+          <div class="insight-title">「重い」という違和感が誤りの発見につながった</div>
+          <div class="insight-body">当初「ローカルでのDinD検証が重い」という運用上の懸念から代替案を探索したところ、そもそもDinDが不要という設計上の誤りに行き着いた。運用面の違和感は、設計の妥当性を疑うきっかけとして機能する。</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-n">03 / 実装しながらの検証</div>
+          <div class="insight-title">手を動かすことで机上の設計ミスが顕在化する</div>
+          <div class="insight-body">実際にpackage.jsonのスクリプト名がpnpm予約コマンドと衝突する、wranglerがworkspace内で警告を出す、といった問題は、コードを書いて実行するまで気づけなかった。設計書だけでなく実装・実行を並走させる意義が確認できた。</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<footer>
+  <span>Kimi Issue-Driven Coding Agent — 調査・検証レポート ／ 対象期間: 2026年7月4日</span>
+  <span>参照: platform.kimi.ai, docs.openhands.dev, developers.cloudflare.com</span>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('section[id], div[id="summary"]');
+  const links = document.querySelectorAll('nav a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { threshold: 0.2 });
+  sections.forEach(s => io.observe(s));
+  links.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+  }));
+</script>
+</body>
+</html>

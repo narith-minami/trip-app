@@ -1,0 +1,56 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kimi-agent",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-07-05",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // コンテナ内でOpenHands (headless) + Kimi K2.7 Codeを実行するイメージ。
+  // docs/system_design.md 3.4 参照。
+  "containers": [
+    {
+      "class_name": "OpenHandsContainer",
+      "image": "./container/Dockerfile",
+      "max_instances": 3,
+      "instance_type": {
+        "vcpu": 2,
+        "memory_mib": 4096,
+        "disk_mb": 8000
+      }
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "OpenHandsContainer",
+        "name": "OPENHANDS_CONTAINER"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["OpenHandsContainer"]
+    }
+  ],
+
+  "vars": {
+    // Issueに付与された際にエージェントを起動するラベル名
+    "KIMI_IMPLEMENT_LABEL": "kimi-implement",
+    // LLM接続プロバイダ。"moonshot" | "openrouter"。docs/system_design.md 3.3参照
+    "LLM_PROVIDER": "moonshot"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // 以下のシークレットは `wrangler secret put <NAME>` で別途登録すること。
+  // このファイルには値を書かない。
+  //   - GITHUB_TOKEN     : 対象リポジトリへのcontents/pull_requests/issues write権限を持つFine-grained PAT
+  //   - WEBHOOK_SECRET   : GitHub Webhookの署名検証用シークレット
+  //   - KIMI_API_KEY     : Moonshot API (platform.kimi.ai) のAPIキー
+  //   - OPENROUTER_API_KEY : OpenRouter経由で接続する場合のAPIキー(LLM_PROVIDER="openrouter"時に使用)
+}

@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+.husky/
 
 # Build output
 dist/
@@ -8,6 +9,7 @@ build/
 .output/
 .vinxi/
 .tanstack/
+.vite/
 *.tsbuildinfo
 
 # Coverage & test artifacts
