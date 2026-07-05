@@ -7,7 +7,19 @@
 
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.css"]
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "**/*.css",
+      "!!**/dist",
+      "!!**/build",
+      "!!**/.wrangler",
+      "!!**/coverage",
+      "!!**/*.min.js"
+    ]
   },
 
   "assist": {

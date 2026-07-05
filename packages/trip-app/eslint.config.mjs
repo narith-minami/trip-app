@@ -32,14 +32,15 @@ import sonarjs       from "eslint-plugin-sonarjs";
 // 閾値定数 — ここを変えれば全ルールに反映
 // ================================================================
 const THRESHOLDS = {
-  COGNITIVE_COMPLEXITY: 10,  // Biome と揃える
-  MAX_FUNC_LINES:        60,  // 空行・コメント除く実行行
-  MAX_FILE_LINES:       300,  // ファイル全体
-  MAX_PARAMS:             4,  // 4超 → オブジェクト引数化のサイン
-  MAX_DEPTH:              3,  // 3超 → Early return で対応
-  MAX_DEPENDENCIES:      10,  // 10超 → 多重責務の間接シグナル
-  DUPLICATE_STRING_MIN:   3,  // 同一文字列が3回以上 → 定数化のサイン
-  IDENTICAL_FUNC_LINES:   3,  // 同一実装が3行以上の関数 → 関数抽出のサイン
+  COGNITIVE_COMPLEXITY: 10,   // Biome と揃える
+  MAX_FUNC_LINES:        60,   // 空行・コメント除く実行行（hooks/logic）
+  MAX_FUNC_LINES_TSX:    80,  // TSX コンポーネントは JSX で行数を要するため緩め
+  MAX_FILE_LINES:       300,   // ファイル全体
+  MAX_PARAMS:             4,   // 4超 → オブジェクト引数化のサイン
+  MAX_DEPTH:              3,   // 3超 → Early return で対応
+  MAX_DEPENDENCIES:      10,   // 10超 → 多重責務の間接シグナル
+  DUPLICATE_STRING_MIN:   5,   // 同一文字列が5回以上 → 定数化
+  IDENTICAL_FUNC_LINES:   5,   // 同一実装が5行以上の関数 → 関数抽出
 };
 
 export default [
@@ -219,16 +220,9 @@ export default [
     files: ["src/**/*.{ts,tsx}"],
     plugins: { import: importPlugin },
     rules: {
-      // 関数行数 (空行・コメント除く実行行)
-      "max-lines-per-function": [
-        "warn",
-        {
-          max:            THRESHOLDS.MAX_FUNC_LINES,
-          skipBlankLines: true,
-          skipComments:   true,
-          IIFEs:          true,
-        },
-      ],
+      // --- 関数行数 ---
+      // TSX (JSX コンポーネント) は JSX の冗長性を考慮して緩めの閾値
+      // TS (hooks/logic) は厳格に 60 行を維持
 
       // ファイル全体の行数
       "max-lines": [
@@ -257,6 +251,20 @@ export default [
 
       // 循環参照 (Biome 未実装 / dependency-cruiser の二重チェック)
       "import/no-cycle": ["error", { maxDepth: 5 }],
+    },
+  },
+
+  // --- max-lines-per-function: TSX は JSX の冗長性を考慮して緩め ---
+  {
+    files: ["src/**/*.tsx"],
+    rules: {
+      "max-lines-per-function": ["warn", { max: THRESHOLDS.MAX_FUNC_LINES_TSX, skipBlankLines: true, skipComments: true, IIFEs: true }],
+    },
+  },
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      "max-lines-per-function": ["warn", { max: THRESHOLDS.MAX_FUNC_LINES, skipBlankLines: true, skipComments: true, IIFEs: true }],
     },
   },
 

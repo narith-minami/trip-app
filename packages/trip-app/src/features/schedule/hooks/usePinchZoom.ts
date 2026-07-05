@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const MIN_PX_PER_MIN = 0.5;
 const MAX_PX_PER_MIN = 3.0;
@@ -11,7 +11,7 @@ interface UsePinchZoomOptions {
 export interface UsePinchZoomResult {
   pxPerMin: number;
   pxPerMinRef: React.RefObject<number>;
-  pendingScrollRef: React.MutableRefObject<number | null>;
+  consumePendingScroll: () => number | null;
 }
 
 interface PinchState {
@@ -58,6 +58,12 @@ export function usePinchZoom({
   const pendingScrollRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const pinchRef = useRef<PinchState | null>(null);
+
+  const consumePendingScroll = useCallback((): number | null => {
+    const value = pendingScrollRef.current;
+    pendingScrollRef.current = null;
+    return value;
+  }, []);
 
   // Keep pxPerMinRef in sync with state for use in native event handlers
   useLayoutEffect(() => {
@@ -106,5 +112,5 @@ export function usePinchZoom({
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { pxPerMin, pxPerMinRef, pendingScrollRef };
+  return { pxPerMin, pxPerMinRef, consumePendingScroll };
 }

@@ -139,6 +139,49 @@ function OwnerActions({ editor, onEdit }: { editor: TripEditor; onEdit: () => vo
   );
 }
 
+function TripHeaderBackground() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }}
+      aria-hidden="true"
+    />
+  );
+}
+
+function TripHeaderTopBar({
+  isOwner,
+  editor,
+  onEdit,
+  onBack,
+}: {
+  isOwner: boolean;
+  editor: TripEditor;
+  onEdit: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="mb-5 flex items-center justify-between">
+      <Button
+        variant="ghost"
+        onClick={onBack}
+        className="text-white/80 hover:bg-white/10 hover:text-white"
+      >
+        ← 戻る
+      </Button>
+      {isOwner && (
+        <div className="flex gap-2">
+          <OwnerActions editor={editor} onEdit={onEdit} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TripHeader({ trip, isOwner, editor, members, onBack }: TripHeaderProps) {
   const handleEdit = () =>
     editor.startEdit({
@@ -153,46 +196,16 @@ export function TripHeader({ trip, isOwner, editor, members, onBack }: TripHeade
   return (
     <div
       className="relative overflow-hidden"
-      style={{
-        background: "linear-gradient(160deg, #5B8A6F 0%, #243D5C 55%, #0F1C2E 100%)",
-      }}
+      style={{ background: "linear-gradient(160deg, #5B8A6F 0%, #243D5C 55%, #0F1C2E 100%)" }}
     >
-      {/* Subtle grid overlay */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-        aria-hidden="true"
-      />
-
+      <TripHeaderBackground />
       <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-4">
-        {/* Top bar: back + owner actions */}
-        <div className="mb-5 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="text-white/80 hover:bg-white/10 hover:text-white"
-          >
-            ← 戻る
-          </Button>
-          {isOwner && (
-            <div className="flex gap-2">
-              <OwnerActions editor={editor} onEdit={handleEdit} />
-            </div>
-          )}
-        </div>
-
-        {/* Countdown badge */}
+        <TripHeaderTopBar isOwner={isOwner} editor={editor} onEdit={handleEdit} onBack={onBack} />
         {days > 0 && (
           <span className="mb-3 inline-block rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">
             {days}日後出発
           </span>
         )}
-
-        {/* Title */}
         {editor.isEditing ? (
           <input
             type="text"
@@ -204,16 +217,12 @@ export function TripHeader({ trip, isOwner, editor, members, onBack }: TripHeade
         ) : (
           <h1 className="mb-2 font-display text-3xl font-bold text-white">{trip.title}</h1>
         )}
-
-        {/* Date range + member avatars */}
         <div className="flex items-end justify-between gap-4">
           <p className="text-sm text-cream-mid">
             {formatJaDate(trip.startDate)} — {formatJaDate(trip.endDate)}
           </p>
           {members && members.length > 0 && <MemberStack members={members} />}
         </div>
-
-        {/* Inline edit fields */}
         {editor.isEditing && <TripEditFields editor={editor} />}
       </div>
     </div>

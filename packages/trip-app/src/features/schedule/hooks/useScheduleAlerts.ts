@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { ScheduleItem } from "@/types/entities";
 
 export type AlertType = "hotel" | "food" | "transport";
@@ -5,6 +6,30 @@ export type AlertType = "hotel" | "food" | "transport";
 export interface DayAlert {
   date: string;
   missing: AlertType[];
+}
+
+function hasEvent(items: ScheduleItem[], types: string[]): boolean {
+  return items.some((item) => types.includes(item.eventType ?? ""));
+}
+
+function findMissingAlerts(
+  items: ScheduleItem[],
+  isMultiDay: boolean,
+  isLastDate: boolean
+): AlertType[] {
+  const missing: AlertType[] = [];
+
+  if (isMultiDay && !isLastDate && !hasEvent(items, ["hotel"])) {
+    missing.push("hotel");
+  }
+  if (!hasEvent(items, ["food"])) {
+    missing.push("food");
+  }
+  if (!hasEvent(items, ["flight", "train"])) {
+    missing.push("transport");
+  }
+
+  return missing;
 }
 
 export function computeScheduleAlerts(
@@ -18,25 +43,28 @@ export function computeScheduleAlerts(
 
   for (const date of dates) {
     const items = groupsMap.get(date) ?? [];
-    const missing: AlertType[] = [];
-
-    if (isMultiDay && date !== lastDate) {
-      const hasHotel = items.some((item) => item.eventType === "hotel");
-      if (!hasHotel) missing.push("hotel");
-    }
-
-    const hasFood = items.some((item) => item.eventType === "food");
-    if (!hasFood) missing.push("food");
-
-    const hasTransport = items.some(
-      (item) => item.eventType === "flight" || item.eventType === "train"
-    );
-    if (!hasTransport) missing.push("transport");
-
+    const missing = findMissingAlerts(items, isMultiDay, date === lastDate);
     if (missing.length > 0) {
       alerts.push({ date, missing });
     }
   }
 
   return alerts;
+}
+
+export function useScheduleAlertsData(
+  groupsMap: Map<string, ScheduleItem[]>,
+  dates: string[],
+  selectedDate: string
+) {
+  const alerts = useMemo(() => computeScheduleAlerts(groupsMap, dates), [groupsMap, dates]);
+  const alertCountByDate = useMemo(
+    () => new Map(alerts.map((a) => [a.date, a.missing.length])),
+    [alerts]
+  );
+  const selectedMissing = useMemo(
+    () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
+    [alerts, selectedDate]
+  );
+  return { alerts, alertCountByDate, selectedMissing };
 }
