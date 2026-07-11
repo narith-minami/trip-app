@@ -21,6 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "build:mock": "vite build",
+    "deploy": "wrangler pages deploy dist",
     "check": "run-s typecheck format:check lint test build:mock",
     "check:full": "run-s typecheck format:check lint test build:mock knip",
     "deps:graph": "depcruise --config .dependency-cruiser.cjs src --output-type dot | dot -T svg > docs/dependency-graph.svg",
@@ -74,7 +75,8 @@
     "tailwindcss": "^4.3.1",
     "typescript": "^5.0.0",
     "vite": "^6.0.0",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "wrangler": "^3.0.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css}": [

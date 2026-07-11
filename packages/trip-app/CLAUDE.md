@@ -279,6 +279,17 @@ This project deploys to **Cloudflare Pages** with a **Cloudflare D1** database b
 - Configured in `app.config.ts` with `preset: "cloudflare-pages"`
 - Environment bindings for database configured in `wrangler.toml`
 - Build command runs `pnpm build`
+- Deploy command runs `pnpm run deploy` (uses `wrangler pages deploy dist`)
+
+### Cloudflare Pages dashboard settings
+
+When connecting this repo to Cloudflare Pages via the dashboard or git integration, use the following settings:
+
+- **Build command:** `pnpm --filter trip-app build`
+- **Deploy command:** `pnpm --filter trip-app run deploy`
+- **Build output directory:** `packages/trip-app/dist`
+
+If you prefer dashboard-managed automatic deployment, you can leave the **Deploy command** empty; Pages will deploy automatically after the build succeeds.
 
 ## Code Quality Standards
 
