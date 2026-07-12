@@ -8,9 +8,9 @@
 import { z } from "zod";
 
 /** Max characters for a base64 data URL (~1MB image). Keeps D1 rows within limits. */
-export const SCRAP_IMAGE_MAX_CHARS = 1_400_000;
+export const SCRAP_IMAGE_MAX_CHARS = 950_000;
 /** Max raw file size (bytes) accepted client-side before base64 encoding (~1MB). */
-export const SCRAP_IMAGE_MAX_BYTES = 1_000_000;
+export const SCRAP_IMAGE_MAX_BYTES = 700_000;
 /** Max characters for the scrap body text. */
 export const SCRAP_CONTENT_MAX = 5000;
 /** Max characters for a single tag. */
