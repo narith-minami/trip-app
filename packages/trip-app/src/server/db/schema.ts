@@ -93,6 +93,32 @@ export const tripMemos = sqliteTable("trip_memos", {
 });
 
 // ============================================================================
+// Scraps Table (standalone memo, NOT tied to a trip)
+// ============================================================================
+export const scraps = sqliteTable("scraps", {
+  id: text("id").primaryKey(),
+  content: text("content"), // nullable - image-only scraps are allowed
+  imageData: text("imageData"), // nullable - base64 data URL
+  authorId: text("authorId").notNull(), // User ID
+  createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+  updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+});
+
+// ============================================================================
+// Scrap Tags Table (composite primary key - free-form many-to-many)
+// ============================================================================
+export const scrapTags = sqliteTable(
+  "scrap_tags",
+  {
+    scrapId: text("scrapId").notNull(),
+    tag: text("tag").notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.scrapId, table.tag] }),
+  })
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -154,12 +180,28 @@ export const tripMemosRelations = relations(tripMemos, ({ one }) => ({
   }),
 }));
 
+export const scrapsRelations = relations(scraps, ({ one, many }) => ({
+  author: one(users, {
+    fields: [scraps.authorId],
+    references: [users.id],
+  }),
+  tags: many(scrapTags),
+}));
+
+export const scrapTagsRelations = relations(scrapTags, ({ one }) => ({
+  scrap: one(scraps, {
+    fields: [scrapTags.scrapId],
+    references: [scraps.id],
+  }),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   tripsOwned: many(trips),
   tripMemberships: many(tripMembers),
   schedulesUpdated: many(scheduleItems),
   todosAssigned: many(todos),
   memosUpdated: many(tripMemos),
+  scrapsAuthored: many(scraps),
 }));
 
 // ============================================================================
@@ -175,4 +217,8 @@ export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
 export type TripMemo = typeof tripMemos.$inferSelect;
 export type NewTripMemo = typeof tripMemos.$inferInsert;
+export type Scrap = typeof scraps.$inferSelect;
+export type NewScrap = typeof scraps.$inferInsert;
+export type ScrapTag = typeof scrapTags.$inferSelect;
+export type NewScrapTag = typeof scrapTags.$inferInsert;
 export type User = typeof users.$inferSelect;

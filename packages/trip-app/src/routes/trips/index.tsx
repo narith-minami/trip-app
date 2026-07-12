@@ -13,7 +13,13 @@ import { CreateTripModal } from "@/features/trips/components/CreateTripModal";
 import { TripCard, type TripCardData } from "@/features/trips/components/TripCard";
 import { useTrips } from "@/features/trips/hooks/useTrips";
 
-function TripsHeader({ onCreate }: { onCreate: () => void }) {
+function TripsHeader({
+  onCreate,
+  onOpenScraps,
+}: {
+  onCreate: () => void;
+  onOpenScraps: () => void;
+}) {
   return (
     <div className="bg-white shadow-sm">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
@@ -37,7 +43,12 @@ function TripsHeader({ onCreate }: { onCreate: () => void }) {
           </span>
           <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
         </div>
-        <Button onClick={onCreate}>+ 新しい旅行</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={onOpenScraps}>
+            スクラップ
+          </Button>
+          <Button onClick={onCreate}>+ 新しい旅行</Button>
+        </div>
       </div>
     </div>
   );
@@ -62,7 +73,10 @@ export function TripsPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <TripsHeader onCreate={() => setShowCreateModal(true)} />
+      <TripsHeader
+        onCreate={() => setShowCreateModal(true)}
+        onOpenScraps={() => navigate({ to: "/scraps" })}
+      />
       <div className="mx-auto max-w-4xl px-4 py-8">
         {trips.length === 0 ? (
           <div className="py-16 text-center">

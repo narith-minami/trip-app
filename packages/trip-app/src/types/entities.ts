@@ -62,6 +62,17 @@ export interface TripMemo {
   updatedAt: number;
 }
 
+export interface Scrap {
+  id: string;
+  content?: string | null;
+  imageData?: string | null; // base64 data URL
+  authorId: string;
+  author?: UserSummary | null;
+  tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export type TripMemberRole = "owner" | "member";
 
 export interface TripMember {

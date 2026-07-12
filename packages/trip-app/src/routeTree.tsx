@@ -14,6 +14,7 @@ import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { RootLayout } from "@/routes/__root";
 import { IndexPage } from "@/routes/index";
 import { LoginPage } from "@/routes/login";
+import { ScrapsPage } from "@/routes/scraps/index";
 import { SignupPage } from "@/routes/signup";
 import { TripDetailPage } from "@/routes/trips/$tripId/index";
 import { ScheduleEditPage } from "@/routes/trips/$tripId/schedule-edit";
@@ -47,6 +48,12 @@ const tripsIndexRoute = createRoute({
   component: TripsPage,
 });
 
+const scrapsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/scraps",
+  component: ScrapsPage,
+});
+
 // Layout route for a single trip; renders its child route via <Outlet />.
 const tripRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -74,5 +81,6 @@ export const routeTree = rootRoute.addChildren([
   loginRoute,
   signupRoute,
   tripsIndexRoute,
+  scrapsRoute,
   tripRoute.addChildren([tripDetailIndexRoute, scheduleEditRoute]),
 ]);
