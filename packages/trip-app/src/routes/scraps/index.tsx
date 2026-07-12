@@ -65,7 +65,7 @@ export function ScrapsPage() {
   const { data: session, isPending } = useSession();
   const currentUserId = session?.user?.id;
 
-  const { data: scraps, isLoading, error } = useScraps();
+  const { data: scraps, isLoading, error } = useScraps({ enabled: !!session });
 
   const [freeword, setFreeword] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
