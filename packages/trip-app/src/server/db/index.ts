@@ -12,11 +12,15 @@ import * as schema from "./schema";
 
 export type {
   NewScheduleItem,
+  NewScrap,
+  NewScrapTag,
   NewTodo,
   NewTrip,
   NewTripMember,
   NewTripMemo,
   ScheduleItem,
+  Scrap,
+  ScrapTag,
   Todo,
   Trip,
   TripMember,
@@ -26,6 +30,8 @@ export type {
 
 export {
   scheduleItems,
+  scraps,
+  scrapTags,
   todos,
   tripMembers,
   tripMemos,

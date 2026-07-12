@@ -57,6 +57,14 @@ const queryKeys = {
   },
 
   /**
+   * Scrap (standalone memo) queries
+   */
+  scraps: {
+    all: () => ["scraps"] as const,
+    list: () => [...queryKeys.scraps.all(), "list"] as const,
+  },
+
+  /**
    * Authentication and user queries
    */
   auth: {
