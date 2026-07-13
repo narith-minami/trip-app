@@ -6,18 +6,13 @@
  */
 
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { ScheduleFullList } from "@/features/schedule/components/ScheduleFullList";
-import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
 
 export function AllSchedulePage() {
   const { tripId } = useParams({ from: "/trips/$tripId/all-schedule" });
   const navigate = useNavigate();
-  const { data: trip, isLoading } = useTripDetail(tripId);
 
   const handleBack = () => navigate({ to: "/trips/$tripId/", params: { tripId } });
-
-  if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
 
   return (
     <div className="min-h-screen bg-cream">
@@ -29,9 +24,7 @@ export function AllSchedulePage() {
         <span className="w-10" />
       </header>
       <div className="mx-auto max-w-4xl px-4 py-6">
-        {trip && (
-          <ScheduleFullList tripId={tripId} startDate={trip.startDate} endDate={trip.endDate} />
-        )}
+        <ScheduleFullList tripId={tripId} />
       </div>
     </div>
   );

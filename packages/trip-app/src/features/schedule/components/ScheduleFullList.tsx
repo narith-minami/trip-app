@@ -23,20 +23,6 @@ function formatDayHeading(dateStr: string): string {
   return `${m}月${d}日（${dow}）`;
 }
 
-function generateDateRange(start: string, end: string): string[] {
-  const [sy, sm, sd] = start.split("-").map(Number);
-  const [ey, em, ed] = end.split("-").map(Number);
-  const dates: string[] = [];
-  const cur = new Date(sy, sm - 1, sd);
-  const last = new Date(ey, em - 1, ed);
-  while (cur <= last) {
-    const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
-    dates.push(iso);
-    cur.setDate(cur.getDate() + 1);
-  }
-  return dates;
-}
-
 interface ScheduleFullListRowProps {
   item: ScheduleItem;
   onSelect: (item: ScheduleItem) => void;
@@ -63,11 +49,9 @@ function ScheduleFullListRow({ item, onSelect }: ScheduleFullListRowProps) {
 
 export interface ScheduleFullListProps {
   tripId: string;
-  startDate: string;
-  endDate: string;
 }
 
-export function ScheduleFullList({ tripId, startDate, endDate }: ScheduleFullListProps) {
+export function ScheduleFullList({ tripId }: ScheduleFullListProps) {
   const { data: items, isLoading, error } = useScheduleItems(tripId);
   const [selected, setSelected] = useState<ScheduleItem | null>(null);
 
@@ -75,10 +59,7 @@ export function ScheduleFullList({ tripId, startDate, endDate }: ScheduleFullLis
   if (error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
 
   const groupsMap = groupByDate(items ?? []);
-  const dates =
-    startDate && endDate
-      ? generateDateRange(startDate, endDate).filter((d) => groupsMap.has(d))
-      : [];
+  const dates = Array.from(groupsMap.keys()).sort();
 
   if (dates.length === 0) {
     return (
