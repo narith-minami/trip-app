@@ -21,25 +21,34 @@ export function ScheduleToolbar({
   onAdd,
 }: ScheduleToolbarProps) {
   const navigate = useNavigate();
-  if (!canEdit) return null;
   return (
     <div className="flex justify-end gap-2">
       <Button
         variant="secondary"
-        onClick={() =>
-          navigate({
-            to: "/trips/$tripId/schedule-edit",
-            params: { tripId },
-            search: { date: selectedDate },
-          })
-        }
+        onClick={() => navigate({ to: "/trips/$tripId/all-schedule", params: { tripId } })}
       >
-        カレンダー編集
+        すべての予定を見る
       </Button>
-      <Button variant="secondary" onClick={onCopy} disabled={datesLength <= 1 || !hasItems}>
-        コピー
-      </Button>
-      <Button onClick={onAdd}>+ アイテム追加</Button>
+      {canEdit && (
+        <>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              navigate({
+                to: "/trips/$tripId/schedule-edit",
+                params: { tripId },
+                search: { date: selectedDate },
+              })
+            }
+          >
+            カレンダー編集
+          </Button>
+          <Button variant="secondary" onClick={onCopy} disabled={datesLength <= 1 || !hasItems}>
+            コピー
+          </Button>
+          <Button onClick={onAdd}>+ アイテム追加</Button>
+        </>
+      )}
     </div>
   );
 }

@@ -51,7 +51,7 @@ function GripIcon() {
   );
 }
 
-function EventThumb({ item }: { item: ScheduleItem }) {
+export function EventThumb({ item }: { item: ScheduleItem }) {
   const et = resolveEventType(item.eventType);
   const Icon = et.icon;
   return (
