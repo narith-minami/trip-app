@@ -10,7 +10,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
 import { generateId } from "@/lib/utils";
-import { getDb, tripMembers, trips } from "../db";
+import { getDb, tripMembers, trips, userSummaryColumns } from "../db";
 import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
 
@@ -76,10 +76,10 @@ const tripsRouter = new Hono<AuthContext>()
         where: (trips, { inArray }) => inArray(trips.id, tripIds),
         orderBy: desc(trips.createdAt),
         with: {
-          owner: true,
+          owner: { columns: userSummaryColumns },
           members: {
             with: {
-              user: true,
+              user: { columns: userSummaryColumns },
             },
           },
         },
@@ -153,10 +153,10 @@ const tripsRouter = new Hono<AuthContext>()
       const createdTrip = await db.query.trips.findFirst({
         where: eq(trips.id, tripId),
         with: {
-          owner: true,
+          owner: { columns: userSummaryColumns },
           members: {
             with: {
-              user: true,
+              user: { columns: userSummaryColumns },
             },
           },
         },
@@ -199,10 +199,10 @@ const tripsRouter = new Hono<AuthContext>()
       const trip = await db.query.trips.findFirst({
         where: eq(trips.id, tripId),
         with: {
-          owner: true,
+          owner: { columns: userSummaryColumns },
           members: {
             with: {
-              user: true,
+              user: { columns: userSummaryColumns },
             },
           },
         },
@@ -257,10 +257,10 @@ const tripsRouter = new Hono<AuthContext>()
         const updated = await db.query.trips.findFirst({
           where: eq(trips.id, tripId),
           with: {
-            owner: true,
+            owner: { columns: userSummaryColumns },
             members: {
               with: {
-                user: true,
+                user: { columns: userSummaryColumns },
               },
             },
           },

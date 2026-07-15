@@ -48,4 +48,17 @@ export function getDb(db: D1Database) {
   return drizzle(db, { schema });
 }
 
+/**
+ * Column selection for nested user relations (trip owner, member, assignee,
+ * author) matching `UserSummary` in src/types/entities.ts. Keeps
+ * `emailVerified`/`createdAt`/`updatedAt` — Better Auth-managed fields not
+ * part of the public trip API contract — out of these responses.
+ */
+export const userSummaryColumns = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+} as const;
+
 export type Database = ReturnType<typeof getDb>;

@@ -10,7 +10,7 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { generateId } from "@/lib/utils";
-import { getDb, todos } from "../db";
+import { getDb, todos, userSummaryColumns } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -55,7 +55,7 @@ const todosRouter = new Hono<TripMemberContext>()
       const items = await db.query.todos.findMany({
         where: eq(todos.tripId, tripId),
         with: {
-          assignee: true,
+          assignee: { columns: userSummaryColumns },
         },
       });
 
@@ -86,7 +86,7 @@ const todosRouter = new Hono<TripMemberContext>()
       const created = await db.query.todos.findFirst({
         where: eq(todos.id, todoId),
         with: {
-          assignee: true,
+          assignee: { columns: userSummaryColumns },
         },
       });
 
@@ -134,7 +134,7 @@ const todosRouter = new Hono<TripMemberContext>()
         const updated = await db.query.todos.findFirst({
           where: eq(todos.id, todoId),
           with: {
-            assignee: true,
+            assignee: { columns: userSummaryColumns },
           },
         });
 

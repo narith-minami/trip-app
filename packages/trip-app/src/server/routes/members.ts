@@ -7,7 +7,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { getDb, tripMembers, trips } from "../db";
+import { getDb, tripMembers, trips, userSummaryColumns } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -25,7 +25,7 @@ const membersRouter = new Hono<TripMemberContext>()
       const members = await db.query.tripMembers.findMany({
         where: eq(tripMembers.tripId, tripId),
         with: {
-          user: true,
+          user: { columns: userSummaryColumns },
         },
       });
 

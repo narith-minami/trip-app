@@ -30,6 +30,31 @@ export type AuthContext = {
   Bindings: Env;
 };
 
+/**
+ * Better Auth always returns createdAt/updatedAt/expiresAt as `Date`
+ * instances. The app's public API contract exposes these as millisecond
+ * epoch numbers, so convert at this boundary.
+ */
+function toSessionUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): Session["user"] {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    image: user.image ?? undefined,
+    createdAt: user.createdAt.getTime(),
+    updatedAt: user.updatedAt.getTime(),
+  };
+}
+
 export function requireSession() {
   return async (c: Context<AuthContext>, next: Next): Promise<Response | undefined> => {
     try {
@@ -40,8 +65,21 @@ export function requireSession() {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      c.set("session", sessionData.session as unknown as Session);
-      c.set("user", sessionData.user as unknown as Session["user"]);
+      const { session, user } = sessionData;
+      const sessionUser = toSessionUser(user);
+
+      c.set("session", {
+        id: session.id,
+        userId: session.userId,
+        token: session.token,
+        expiresAt: session.expiresAt.getTime(),
+        ipAddress: session.ipAddress ?? undefined,
+        userAgent: session.userAgent ?? undefined,
+        createdAt: session.createdAt.getTime(),
+        updatedAt: session.updatedAt.getTime(),
+        user: sessionUser,
+      });
+      c.set("user", sessionUser);
       await next();
     } catch (_error) {
       return c.json({ error: "Unauthorized" }, 401);

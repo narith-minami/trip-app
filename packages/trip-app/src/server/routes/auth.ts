@@ -9,8 +9,21 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "../db";
-import { accounts, authUsers, sessions, verifications } from "../db/auth-schema";
+import { accounts, sessions, users, verifications } from "../db/auth-schema";
 import type { Env } from "../env";
+
+/**
+ * The 4 Drizzle table models Better Auth's adapter reads/writes.
+ * `users` is the single shared definition also used by the trip features
+ * (see src/server/db/schema.ts) — exported so the mapping can be
+ * unit-tested without a live database.
+ */
+export const authDrizzleSchema = {
+  user: users,
+  session: sessions,
+  account: accounts,
+  verification: verifications,
+};
 
 /**
  * Create and export Better Auth instance
@@ -22,12 +35,7 @@ export function createAuth(env: Env) {
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "sqlite",
-      schema: {
-        user: authUsers,
-        session: sessions,
-        account: accounts,
-        verification: verifications,
-      },
+      schema: authDrizzleSchema,
     }),
     secret: env.AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
