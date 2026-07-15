@@ -97,7 +97,8 @@ export function ScrapsPage() {
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
 
-  if (isPending || isLoading) return <LoadingSpinner fullScreen label="スクラップを読み込み中..." />;
+  if (isPending || isLoading)
+    return <LoadingSpinner fullScreen label="スクラップを読み込み中..." />;
 
   return (
     <div className="min-h-screen bg-cream">

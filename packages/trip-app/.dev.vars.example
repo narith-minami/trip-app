@@ -1,0 +1,20 @@
+# =============================================================================
+# Local development secrets for wrangler dev.
+# Copy this file to .dev.vars and fill in real values.
+# .dev.vars is git-ignored — never commit real credentials.
+# =============================================================================
+
+# Required: Auth session signing secret.
+# Generate with: openssl rand -base64 32
+AUTH_SECRET=""
+
+# Required: The canonical browser URL for local development.
+# Vite serves the frontend on 5173; the Worker API (8787) is accessed
+# only through the Vite /api proxy, so Better Auth's baseURL must be 5173.
+BETTER_AUTH_URL="http://localhost:5173"
+
+# Optional: Google OAuth credentials.
+# When both are set, the Google social provider is enabled automatically.
+# When omitted, only email/password authentication is available.
+# GOOGLE_CLIENT_ID=""
+# GOOGLE_CLIENT_SECRET=""

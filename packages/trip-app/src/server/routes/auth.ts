@@ -9,8 +9,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "../db";
-import { accounts, sessions, verifications } from "../db/auth-schema";
-import * as schema from "../db/schema";
+import { accounts, authUsers, sessions, verifications } from "../db/auth-schema";
 import type { Env } from "../env";
 
 /**
@@ -23,19 +22,28 @@ export function createAuth(env: Env) {
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "sqlite",
-      schema: { ...schema, sessions, accounts, verifications },
+      schema: {
+        user: authUsers,
+        session: sessions,
+        account: accounts,
+        verification: verifications,
+      },
     }),
     secret: env.AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     emailAndPassword: {
       enabled: true,
     },
-    socialProviders: {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-    },
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+      ? {
+          socialProviders: {
+            google: {
+              clientId: env.GOOGLE_CLIENT_ID,
+              clientSecret: env.GOOGLE_CLIENT_SECRET,
+            },
+          },
+        }
+      : {}),
   });
 }
 
