@@ -11,7 +11,7 @@ import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { CreateScrapSchema, UpdateScrapSchema } from "@/lib/schemas/scrap";
 import { generateId } from "@/lib/utils";
-import { getDb, scraps, scrapTags } from "../db";
+import { getDb, scraps, scrapTags, userSummaryColumns } from "../db";
 import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
 
@@ -61,7 +61,7 @@ function insertTagsStmt(db: Db, scrapId: string, tags: string[]) {
 async function findScrap(db: Db, scrapId: string) {
   return db.query.scraps.findFirst({
     where: eq(scraps.id, scrapId),
-    with: { author: true, tags: true },
+    with: { author: { columns: userSummaryColumns }, tags: true },
   });
 }
 
@@ -90,7 +90,7 @@ const scrapsRouter = new Hono<AuthContext>()
     try {
       const db = getDb(c.env.DB);
       const items = await db.query.scraps.findMany({
-        with: { author: true, tags: true },
+        with: { author: { columns: userSummaryColumns }, tags: true },
         orderBy: [desc(scraps.createdAt)],
       });
       return c.json({ data: items.map((item) => serialize(item as ScrapWithRelations)) });
