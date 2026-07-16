@@ -60,6 +60,29 @@ function SwatchRow({ presets, value, onSelect, labelPrefix }: SwatchRowProps) {
   );
 }
 
+interface ColorPickerFieldProps {
+  id: string;
+  value: string;
+  onChange: (color: string) => void;
+  ariaLabel: string;
+}
+
+function ColorPickerField({ id, value, onChange, ariaLabel }: ColorPickerFieldProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        id={id}
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={ariaLabel}
+        className="h-10 w-14 shrink-0 cursor-pointer rounded-lg border border-cream-dark bg-white p-1"
+      />
+      <span className="font-mono text-sm text-ink-muted">{value}</span>
+    </div>
+  );
+}
+
 /**
  * Inner form. Rendered only while the dialog is open (Dialog returns null when
  * closed), so its draft state is freshly initialized from props on each open —
@@ -74,9 +97,12 @@ function ColorSettingsForm({
 }: Omit<TripColorSettingsProps, "open">) {
   const [bg, setBg] = useState(backgroundColor ?? DEFAULT_BACKGROUND);
   const [header, setHeader] = useState(headerColor ?? HEADER_PICKER_DEFAULT);
+  // When off, the header keeps its default gradient instead of a solid color, so
+  // changing only the background never clobbers the gradient.
+  const [customizeHeader, setCustomizeHeader] = useState(headerColor !== null);
 
   const handleSave = () => {
-    onSave({ backgroundColor: bg, headerColor: header });
+    onSave({ backgroundColor: bg, headerColor: customizeHeader ? header : null });
     toast.success("配色を保存しました");
     onClose();
   };
@@ -91,39 +117,39 @@ function ColorSettingsForm({
     <div className="space-y-5">
       <div>
         <Label htmlFor="trip-bg-color">背景色</Label>
-        <div className="flex items-center gap-3">
-          <input
-            id="trip-bg-color"
-            type="color"
-            value={bg}
-            onChange={(e) => setBg(e.target.value)}
-            aria-label="背景色を選択"
-            className="h-10 w-14 shrink-0 cursor-pointer rounded-lg border border-cream-dark bg-white p-1"
-          />
-          <span className="font-mono text-sm text-ink-muted">{bg}</span>
-        </div>
+        <ColorPickerField id="trip-bg-color" value={bg} onChange={setBg} ariaLabel="背景色を選択" />
         <SwatchRow presets={BACKGROUND_PRESETS} value={bg} onSelect={setBg} labelPrefix="背景色" />
       </div>
 
-      <div>
-        <Label htmlFor="trip-header-color">ヘッダー色</Label>
-        <div className="flex items-center gap-3">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
           <input
-            id="trip-header-color"
-            type="color"
-            value={header}
-            onChange={(e) => setHeader(e.target.value)}
-            aria-label="ヘッダー色を選択"
-            className="h-10 w-14 shrink-0 cursor-pointer rounded-lg border border-cream-dark bg-white p-1"
+            id="customize-header"
+            type="checkbox"
+            checked={customizeHeader}
+            onChange={(e) => setCustomizeHeader(e.target.checked)}
+            className="h-4 w-4 shrink-0 cursor-pointer rounded border-cream-dark text-coral focus:ring-coral"
           />
-          <span className="font-mono text-sm text-ink-muted">{header}</span>
+          <Label htmlFor="customize-header" className="mb-0 cursor-pointer">
+            ヘッダーの色をカスタマイズする
+          </Label>
         </div>
-        <SwatchRow
-          presets={HEADER_PRESETS}
-          value={header}
-          onSelect={setHeader}
-          labelPrefix="ヘッダー色"
-        />
+        {customizeHeader && (
+          <div className="space-y-2 pl-6">
+            <ColorPickerField
+              id="trip-header-color"
+              value={header}
+              onChange={setHeader}
+              ariaLabel="ヘッダー色を選択"
+            />
+            <SwatchRow
+              presets={HEADER_PRESETS}
+              value={header}
+              onSelect={setHeader}
+              labelPrefix="ヘッダー色"
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-2">

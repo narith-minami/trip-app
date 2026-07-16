@@ -41,7 +41,13 @@ export function parseStoredColors(raw: string | null): TripColors {
 
 function readColors(tripId: string): TripColors {
   if (typeof window === "undefined") return EMPTY_COLORS;
-  return parseStoredColors(window.localStorage.getItem(storageKey(tripId)));
+  try {
+    return parseStoredColors(window.localStorage.getItem(storageKey(tripId)));
+  } catch {
+    // Accessing localStorage can throw (SecurityError in private mode / blocked
+    // storage) — fall back to defaults instead of crashing on mount.
+    return EMPTY_COLORS;
+  }
 }
 
 export interface UseTripColorsResult extends TripColors {
@@ -54,6 +60,16 @@ export interface UseTripColorsResult extends TripColors {
 export function useTripColors(tripId: string): UseTripColorsResult {
   // Lazy initializer reads localStorage once (guarded for SSR / no-window).
   const [colors, setColorsState] = useState<TripColors>(() => readColors(tripId));
+  const [loadedTripId, setLoadedTripId] = useState(tripId);
+
+  // Re-read when the trip changes without a remount (e.g. trip→trip navigation).
+  // Adjusting state during render is React's recommended pattern here — it avoids
+  // both the useEffect props→state sync (AGENTS.md #2) and the color flash a
+  // post-render effect would cause.
+  if (tripId !== loadedTripId) {
+    setLoadedTripId(tripId);
+    setColorsState(readColors(tripId));
+  }
 
   const setColors = useCallback(
     (partial: Partial<TripColors>) => {
