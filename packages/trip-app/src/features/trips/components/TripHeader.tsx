@@ -5,9 +5,12 @@
  * Gradient background with countdown badge, title, date range and member avatars.
  */
 
+import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { TripColorSettings } from "@/features/trips/components/TripColorSettings";
+import type { TripColors } from "@/features/trips/hooks/useTripColors";
 import type { useTripEditor } from "@/features/trips/hooks/useTripEditor";
 import { cn } from "@/lib/cn";
 import type { TripMember } from "@/types/entities";
@@ -45,7 +48,21 @@ export interface TripHeaderProps {
   editor: TripEditor;
   members?: TripMember[];
   onBack: () => void;
+  /** User-chosen header color. When null/undefined the default gradient is used. */
+  headerColor?: string | null;
+  /**
+   * Enables the color customization UI (🎨 button + dialog). When omitted the
+   * customizer is hidden. The dialog edits both the page background and the
+   * header color; `backgroundColor` reflects the current saved page background.
+   */
+  colorControls?: {
+    backgroundColor: string | null;
+    onSave: (partial: Partial<TripColors>) => void;
+    onReset: () => void;
+  };
 }
+
+const DEFAULT_HEADER_BACKGROUND = "linear-gradient(160deg, #5B8A6F 0%, #243D5C 55%, #0F1C2E 100%)";
 
 function MemberStack({ members }: { members: TripMember[] }) {
   const visible = members.slice(0, 3);
@@ -158,11 +175,13 @@ function TripHeaderTopBar({
   editor,
   onEdit,
   onBack,
+  onOpenColorSettings,
 }: {
   isOwner: boolean;
   editor: TripEditor;
   onEdit: () => void;
   onBack: () => void;
+  onOpenColorSettings?: () => void;
 }) {
   return (
     <div className="mb-5 flex items-center justify-between">
@@ -173,16 +192,34 @@ function TripHeaderTopBar({
       >
         ← 戻る
       </Button>
-      {isOwner && (
-        <div className="flex gap-2">
-          <OwnerActions editor={editor} onEdit={onEdit} />
-        </div>
-      )}
+      <div className="flex gap-2">
+        {onOpenColorSettings && !editor.isEditing && (
+          <Button
+            variant="ghost"
+            onClick={onOpenColorSettings}
+            aria-label="配色をカスタマイズ"
+            className="text-white/80 hover:bg-white/10 hover:text-white"
+          >
+            🎨 配色
+          </Button>
+        )}
+        {isOwner && <OwnerActions editor={editor} onEdit={onEdit} />}
+      </div>
     </div>
   );
 }
 
-export function TripHeader({ trip, isOwner, editor, members, onBack }: TripHeaderProps) {
+export function TripHeader({
+  trip,
+  isOwner,
+  editor,
+  members,
+  onBack,
+  headerColor,
+  colorControls,
+}: TripHeaderProps) {
+  const [colorDialogOpen, setColorDialogOpen] = useState(false);
+
   const handleEdit = () =>
     editor.startEdit({
       title: trip.title,
@@ -196,11 +233,27 @@ export function TripHeader({ trip, isOwner, editor, members, onBack }: TripHeade
   return (
     <div
       className="relative overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #5B8A6F 0%, #243D5C 55%, #0F1C2E 100%)" }}
+      style={{ background: headerColor ?? DEFAULT_HEADER_BACKGROUND }}
     >
+      {colorControls && (
+        <TripColorSettings
+          open={colorDialogOpen}
+          onClose={() => setColorDialogOpen(false)}
+          backgroundColor={colorControls.backgroundColor}
+          headerColor={headerColor ?? null}
+          onSave={colorControls.onSave}
+          onReset={colorControls.onReset}
+        />
+      )}
       <TripHeaderBackground />
       <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-4">
-        <TripHeaderTopBar isOwner={isOwner} editor={editor} onEdit={handleEdit} onBack={onBack} />
+        <TripHeaderTopBar
+          isOwner={isOwner}
+          editor={editor}
+          onEdit={handleEdit}
+          onBack={onBack}
+          onOpenColorSettings={colorControls ? () => setColorDialogOpen(true) : undefined}
+        />
         {days > 0 && (
           <span className="mb-3 inline-block rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">
             {days}日後出発

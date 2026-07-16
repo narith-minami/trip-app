@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { TripHeader } from "@/features/trips/components/TripHeader";
+import { useTripColors } from "@/features/trips/hooks/useTripColors";
 import { useTripDetail } from "@/features/trips/hooks/useTripDetail";
 import { useTripEditor } from "@/features/trips/hooks/useTripEditor";
 import type { TripMember } from "@/types/entities";
@@ -29,6 +30,7 @@ export function TripDetailPage() {
   const { data: trip, isLoading, error } = useTripDetail(tripId);
   const [activeTab, setActiveTab] = useState("schedule");
   const editor = useTripEditor(tripId);
+  const { backgroundColor, headerColor, setColors, reset } = useTripColors(tripId);
 
   if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
 
@@ -48,13 +50,18 @@ export function TripDetailPage() {
   const isOwner = trip.ownerId === trip.owner?.id;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div
+      className={backgroundColor ? "min-h-screen" : "min-h-screen bg-cream"}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <TripHeader
         trip={trip}
         isOwner={isOwner}
         editor={editor}
         members={trip.members as TripMember[] | undefined}
         onBack={() => navigate({ to: "/trips" })}
+        headerColor={headerColor}
+        colorControls={{ backgroundColor, onSave: setColors, onReset: reset }}
       />
 
       {/* Tab bar on white band */}
