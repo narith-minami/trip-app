@@ -44,6 +44,8 @@ export interface ScheduleItem {
   updatedAt: number;
 }
 
+export type TodoPriority = "high" | "medium" | "low";
+
 export interface Todo {
   id: string;
   tripId: string;
@@ -51,6 +53,8 @@ export interface Todo {
   isDone: number; // 0 | 1
   assigneeId?: string | null;
   assignee?: UserSummary | null;
+  priority: TodoPriority;
+  tags: string[];
   createdAt: number;
   updatedAt: number;
 }
