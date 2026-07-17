@@ -162,8 +162,11 @@ const todosRouter = new Hono<TripMemberContext>()
       await (tagStmt ? db.batch([insertTodo, tagStmt]) : insertTodo);
 
       const created = await findTodo(db, todoId);
+      if (!created) {
+        return c.json({ error: "作成されたTodoの取得に失敗しました" }, 500);
+      }
 
-      return c.json(created ? serialize(created as TodoWithRelations) : null, 201);
+      return c.json(serialize(created as TodoWithRelations), 201);
     } catch (error) {
       if (error instanceof Error && error.message.includes("validation")) {
         return c.json({ error: error.message }, 400);
@@ -203,8 +206,11 @@ const todosRouter = new Hono<TripMemberContext>()
         await persistTodoUpdate(db, todoId, validated);
 
         const updated = await findTodo(db, todoId);
+        if (!updated) {
+          return c.json({ error: "更新されたTodoの取得に失敗しました" }, 500);
+        }
 
-        return c.json(updated ? serialize(updated as TodoWithRelations) : null);
+        return c.json(serialize(updated as TodoWithRelations));
       } catch (error) {
         if (error instanceof Error && error.message.includes("validation")) {
           return c.json({ error: error.message }, 400);
