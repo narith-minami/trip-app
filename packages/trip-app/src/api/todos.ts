@@ -4,6 +4,7 @@
  * Todos API query functions.
  */
 
+import type { TodoPriority } from "@/types/entities";
 import { apiClient } from "./client";
 
 /**
@@ -27,6 +28,8 @@ export async function createTodo(
   data: {
     title: string;
     assigneeId?: string;
+    priority?: TodoPriority;
+    tags?: string[];
   }
 ) {
   const res = await apiClient.api.trips[":tripId"].todos.$post({
@@ -49,6 +52,8 @@ export async function updateTodo(
     title: string;
     isDone: boolean;
     assigneeId: string | null;
+    priority: TodoPriority;
+    tags: string[];
   }>
 ) {
   const res = await apiClient.api.trips[":tripId"].todos[":todoId"].$put({

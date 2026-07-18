@@ -4,7 +4,7 @@
  * Mock todos API. CRUD operations on todos.
  */
 
-import type { Todo } from "@/types/entities";
+import type { Todo, TodoPriority } from "@/types/entities";
 
 const mockUser = { id: "user-1", name: "Dev User", email: "dev@example.com", image: null };
 const now = Date.now();
@@ -19,6 +19,8 @@ const mockTodos: MockTodo[] = [
     isDone: 1,
     assigneeId: "user-1",
     assignee: mockUser,
+    priority: "high",
+    tags: ["持ち物"],
     createdAt: now - 3 * 24 * 60 * 60 * 1000,
     updatedAt: now - 3 * 24 * 60 * 60 * 1000,
   },
@@ -29,6 +31,8 @@ const mockTodos: MockTodo[] = [
     isDone: 1,
     assigneeId: "user-1",
     assignee: mockUser,
+    priority: "medium",
+    tags: ["ホテル"],
     createdAt: now - 3 * 24 * 60 * 60 * 1000,
     updatedAt: now - 2 * 24 * 60 * 60 * 1000,
   },
@@ -37,8 +41,10 @@ const mockTodos: MockTodo[] = [
     tripId: "trip-1",
     title: "成田エクスプレスのチケット購入",
     isDone: 0,
-    assigneeId: "user-1",
-    assignee: mockUser,
+    assigneeId: null,
+    assignee: null,
+    priority: "high",
+    tags: ["移動"],
     createdAt: now - 2 * 24 * 60 * 60 * 1000,
     updatedAt: now - 2 * 24 * 60 * 60 * 1000,
   },
@@ -56,6 +62,8 @@ export async function createTodo(
   data: {
     title: string;
     assigneeId?: string;
+    priority?: TodoPriority;
+    tags?: string[];
   }
 ) {
   const newTodo: MockTodo = {
@@ -65,6 +73,8 @@ export async function createTodo(
     isDone: 0,
     assigneeId: data.assigneeId ?? null,
     assignee: data.assigneeId === "user-1" ? mockUser : null,
+    priority: data.priority ?? "medium",
+    tags: [...new Set(data.tags ?? [])],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -80,6 +90,8 @@ export async function updateTodo(
     title: string;
     isDone: boolean;
     assigneeId: string | null;
+    priority: TodoPriority;
+    tags: string[];
   }>
 ) {
   const todo = todos.find((t) => t.id === todoId && t.tripId === tripId);
@@ -91,6 +103,9 @@ export async function updateTodo(
   }
   if ("assigneeId" in data && data.assigneeId) {
     updates.assignee = data.assigneeId === "user-1" ? mockUser : null;
+  }
+  if ("tags" in data && data.tags) {
+    updates.tags = [...new Set(data.tags)];
   }
 
   Object.assign(todo, updates, { updatedAt: Date.now() });

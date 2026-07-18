@@ -81,10 +81,27 @@ export const todos = sqliteTable("todos", {
   tripId: text("tripId").notNull(),
   title: text("title").notNull(),
   isDone: integer("isDone").notNull().default(0), // 0 | 1
-  assigneeId: text("assigneeId"), // User ID, nullable
+  assigneeId: text("assigneeId"), // User ID, nullable (assignment is optional)
+  priority: text("priority", { enum: ["high", "medium", "low"] })
+    .notNull()
+    .default("medium"),
   createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
 });
+
+// ============================================================================
+// Todo Tags Table (composite primary key - free-form many-to-many)
+// ============================================================================
+export const todoTags = sqliteTable(
+  "todo_tags",
+  {
+    todoId: text("todoId").notNull(),
+    tag: text("tag").notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.todoId, table.tag] }),
+  })
+);
 
 // ============================================================================
 // Trip Memos Table (tripId as primary key - 1 memo per trip)
@@ -162,7 +179,7 @@ export const scheduleItemsRelations = relations(scheduleItems, ({ one }) => ({
   }),
 }));
 
-export const todosRelations = relations(todos, ({ one }) => ({
+export const todosRelations = relations(todos, ({ one, many }) => ({
   trip: one(trips, {
     fields: [todos.tripId],
     references: [trips.id],
@@ -170,6 +187,14 @@ export const todosRelations = relations(todos, ({ one }) => ({
   assignee: one(users, {
     fields: [todos.assigneeId],
     references: [users.id],
+  }),
+  tags: many(todoTags),
+}));
+
+export const todoTagsRelations = relations(todoTags, ({ one }) => ({
+  todo: one(todos, {
+    fields: [todoTags.todoId],
+    references: [todos.id],
   }),
 }));
 
@@ -219,6 +244,8 @@ export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type NewScheduleItem = typeof scheduleItems.$inferInsert;
 export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
+export type TodoTag = typeof todoTags.$inferSelect;
+export type NewTodoTag = typeof todoTags.$inferInsert;
 export type TripMemo = typeof tripMemos.$inferSelect;
 export type NewTripMemo = typeof tripMemos.$inferInsert;
 export type Scrap = typeof scraps.$inferSelect;

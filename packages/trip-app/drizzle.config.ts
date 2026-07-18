@@ -17,6 +17,7 @@ export default defineConfig({
     "trip_members",
     "schedule_items",
     "todos",
+    "todo_tags",
     "trip_memos",
     "scraps",
     "scrap_tags",
