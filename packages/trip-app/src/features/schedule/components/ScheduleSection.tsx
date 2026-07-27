@@ -8,26 +8,13 @@ import { useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { useScheduleAlertsData } from "@/features/schedule/hooks/useScheduleAlerts";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
+import { generateDateRange } from "@/lib/utils";
 import { DatePicker } from "./DatePicker";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
 import { ScheduleItemFormDialog } from "./ScheduleItemFormDialog";
 import { ScheduleTimeline } from "./ScheduleTimeline";
 import { ScheduleToolbar } from "./ScheduleToolbar";
-
-function generateDateRange(start: string, end: string): string[] {
-  const [sy, sm, sd] = start.split("-").map(Number);
-  const [ey, em, ed] = end.split("-").map(Number);
-  const dates: string[] = [];
-  const cur = new Date(sy, sm - 1, sd);
-  const last = new Date(ey, em - 1, ed);
-  while (cur <= last) {
-    const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
-    dates.push(iso);
-    cur.setDate(cur.getDate() + 1);
-  }
-  return dates;
-}
 
 export interface ScheduleSectionProps {
   tripId: string;

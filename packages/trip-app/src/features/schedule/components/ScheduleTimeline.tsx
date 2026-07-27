@@ -32,7 +32,7 @@ import { ScheduleItemCard } from "./ScheduleItemCard";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
-function formatDayHeading(dateStr: string): string {
+export function formatDayHeading(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
   const dow = DOW[new Date(y, m - 1, d).getDay()];
   return `${m}月${d}日（${dow}）`;
@@ -151,6 +151,8 @@ export interface ScheduleTimelineProps {
   date: string;
   items: ScheduleItem[];
   canEdit?: boolean;
+  /** Set to false to suppress the built-in day heading when the caller renders its own. */
+  showHeading?: boolean;
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   onReorder?: (items: Array<{ id: string; orderIndex: number }>) => void;
@@ -158,6 +160,7 @@ export interface ScheduleTimelineProps {
 
 interface TimelineContentProps {
   date: string;
+  showHeading: boolean;
   localItems: ScheduleItem[];
   showDragHandle: boolean;
   activeId: string | null;
@@ -172,6 +175,7 @@ interface TimelineContentProps {
 
 function TimelineContent({
   date,
+  showHeading,
   localItems,
   showDragHandle,
   activeId,
@@ -186,7 +190,7 @@ function TimelineContent({
   const activeItem = activeId ? localItems.find((i) => i.id === activeId) : null;
   return (
     <div>
-      {date && (
+      {showHeading && date && (
         <div className="mb-5 flex items-center gap-3">
           <h3 className="shrink-0 text-lg font-bold text-ink">{formatDayHeading(date)}</h3>
           <div className="h-px flex-1 bg-cream-dark" />
@@ -235,6 +239,7 @@ export function ScheduleTimeline({
   date,
   items,
   canEdit = false,
+  showHeading = true,
   onEdit,
   onDelete,
   onReorder,
@@ -280,6 +285,7 @@ export function ScheduleTimeline({
   return (
     <TimelineContent
       date={date}
+      showHeading={showHeading}
       localItems={localItems}
       showDragHandle={!!onReorder}
       activeId={activeId}

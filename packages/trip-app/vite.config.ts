@@ -43,6 +43,12 @@ export default defineConfig(({ mode }) => {
                 replacement: fileURLToPath(new URL("./src/mocks/api/todos.ts", import.meta.url)),
               },
               {
+                find: "@/api/todoComments",
+                replacement: fileURLToPath(
+                  new URL("./src/mocks/api/todoComments.ts", import.meta.url)
+                ),
+              },
+              {
                 find: "@/api/memo",
                 replacement: fileURLToPath(new URL("./src/mocks/api/memo.ts", import.meta.url)),
               },

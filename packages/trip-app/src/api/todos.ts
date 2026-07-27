@@ -4,7 +4,7 @@
  * Todos API query functions.
  */
 
-import type { TodoPriority } from "@/types/entities";
+import type { Todo, TodoComment, TodoPriority } from "@/types/entities";
 import { apiClient } from "./client";
 
 /**
@@ -21,12 +21,27 @@ export async function fetchTodos(tripId: string) {
 }
 
 /**
+ * Fetch a single todo with comments (detail view)
+ */
+export async function fetchTodoDetail(tripId: string, todoId: string) {
+  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].$get({
+    param: { tripId, todoId },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch todo detail");
+  }
+  return res.json() as Promise<Todo & { comments: TodoComment[] }>;
+}
+
+/**
  * Create todo
  */
 export async function createTodo(
   tripId: string,
   data: {
     title: string;
+    description?: string | null;
+    dueDate?: string | null;
     assigneeId?: string;
     priority?: TodoPriority;
     tags?: string[];
@@ -50,6 +65,8 @@ export async function updateTodo(
   todoId: string,
   data: Partial<{
     title: string;
+    description: string | null;
+    dueDate: string | null;
     isDone: boolean;
     assigneeId: string | null;
     priority: TodoPriority;

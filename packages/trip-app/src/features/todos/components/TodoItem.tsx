@@ -4,11 +4,13 @@
  * Single todo row with a checkbox, priority, tags, assignee and delete control.
  */
 
+import { useNavigate } from "@tanstack/react-router";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { resolveTodoPriority } from "@/lib/todoPriority";
 import { resolveTodoTag } from "@/lib/todoTags";
+import { formatDueDate } from "@/lib/utils";
 import type { Todo } from "@/types/entities";
 
 export interface TodoItemProps {
@@ -46,29 +48,47 @@ function TagChip({ tag }: { tag: string }) {
 }
 
 export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoItemProps) {
+  const navigate = useNavigate();
   const done = todo.isDone === 1;
   const hasMeta = todo.tags.length > 0;
 
+  const openDetail = () => {
+    void navigate({
+      to: "/trips/$tripId/todos/$todoId",
+      params: { tripId: todo.tripId, todoId: todo.id },
+    });
+  };
+
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-cream-dark bg-white p-3">
-      <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
         <input
           type="checkbox"
           checked={done}
           disabled={disabled}
           onChange={() => onToggle(todo)}
-          className="mt-1 h-4 w-4 rounded border-cream-dark text-coral focus:ring-coral"
+          aria-label={`「${todo.title}」を完了にする`}
+          className="mt-1 h-4 w-4 shrink-0 rounded border-cream-dark text-coral focus:ring-coral"
         />
         <span className="flex min-w-0 flex-col gap-1">
-          <span className={cn("truncate", done ? "text-ink-light line-through" : "text-ink")}>
+          <button
+            type="button"
+            onClick={openDetail}
+            className={cn("truncate text-left", done ? "text-ink-light line-through" : "text-ink")}
+          >
             {todo.title}
-          </span>
+          </button>
           <span className="flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={todo.priority} />
+            {todo.dueDate && (
+              <span className="inline-flex items-center rounded-full bg-cream-mid px-2 py-0.5 text-xs font-medium text-navy">
+                期日 {formatDueDate(todo.dueDate)}
+              </span>
+            )}
             {hasMeta && todo.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
           </span>
         </span>
-      </label>
+      </div>
 
       <div className="flex shrink-0 items-center gap-2">
         {todo.assignee && (
