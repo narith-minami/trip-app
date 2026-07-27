@@ -65,7 +65,8 @@ export async function requireMember(
     c.set("tripId", tripId);
 
     await next();
-  } catch (_error) {
+  } catch (error) {
+    console.error("requireMember middleware failed", error);
     return c.json({ error: "Internal server error" }, 500);
   }
 }

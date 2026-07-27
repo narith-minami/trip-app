@@ -41,3 +41,25 @@ export function isValidDateString(dateStr: string): boolean {
   const date = new Date(dateStr);
   return date instanceof Date && !Number.isNaN(date.getTime());
 }
+
+/** Format a YYYY-MM-DD due date to "M月D日" without timezone shift (AGENTS.md #5). */
+export function formatDueDate(dateStr: string): string {
+  const [, m, d] = dateStr.split("-").map(Number);
+  if (!m || !d) return dateStr;
+  return `${m}月${d}日`;
+}
+
+/** Enumerate every YYYY-MM-DD date from `start` to `end`, inclusive. */
+export function generateDateRange(start: string, end: string): string[] {
+  const [sy, sm, sd] = start.split("-").map(Number);
+  const [ey, em, ed] = end.split("-").map(Number);
+  const dates: string[] = [];
+  const cur = new Date(sy, sm - 1, sd);
+  const last = new Date(ey, em - 1, ed);
+  while (cur <= last) {
+    const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
+    dates.push(iso);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}

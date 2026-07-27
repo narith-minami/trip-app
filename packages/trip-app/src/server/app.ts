@@ -14,6 +14,7 @@ import membersRouter from "./routes/members";
 import memoRouter from "./routes/memo";
 import scheduleRouter from "./routes/schedule";
 import scrapsRouter from "./routes/scraps";
+import todoCommentsRouter from "./routes/todoComments";
 import todosRouter from "./routes/todos";
 import tripsRouter from "./routes/trips";
 import usersRouter from "./routes/users";
@@ -53,6 +54,7 @@ const routes = app
   .route("/api/users", usersRouter)
   .route("/api/scraps", scrapsRouter)
   .route("/api/trips/:tripId/schedule", scheduleRouter)
+  .route("/api/trips/:tripId/todos/:todoId/comments", todoCommentsRouter)
   .route("/api/trips/:tripId/todos", todosRouter)
   .route("/api/trips/:tripId/memo", memoRouter)
   .route("/api/trips/:tripId/members", membersRouter)

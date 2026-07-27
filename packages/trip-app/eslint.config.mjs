@@ -254,6 +254,21 @@ export default [
     },
   },
 
+  // --- import/max-dependencies 適用除外: 構成ルートファイル ---
+  // ルート定義 / ルーター集約 / 複数ダイアログの調整役など、ファイルの
+  // 唯一の責務が「まとめること」であるファイルは、依存数が機能の追加に
+  // 比例して増えるのが自然であり、多重責務のシグナルにはならない。
+  {
+    files: [
+      "src/routeTree.tsx",
+      "src/server/app.ts",
+      "src/features/schedule/components/ScheduleSection.tsx",
+    ],
+    rules: {
+      "import/max-dependencies": "off",
+    },
+  },
+
   // --- max-lines-per-function: TSX は JSX の冗長性を考慮して緩め ---
   {
     files: ["src/**/*.tsx"],

@@ -80,6 +80,8 @@ export const todos = sqliteTable("todos", {
   id: text("id").primaryKey(),
   tripId: text("tripId").notNull(),
   title: text("title").notNull(),
+  description: text("description"), // optional long-form detail, nullable (AGENTS.md #1)
+  dueDate: text("dueDate"), // optional YYYY-MM-DD, nullable (AGENTS.md #1)
   isDone: integer("isDone").notNull().default(0), // 0 | 1
   assigneeId: text("assigneeId"), // User ID, nullable (assignment is optional)
   priority: text("priority", { enum: ["high", "medium", "low"] })
@@ -102,6 +104,22 @@ export const todoTags = sqliteTable(
     pk: primaryKey({ columns: [table.todoId, table.tag] }),
   })
 );
+
+// ============================================================================
+// Todo Comments Table (chat-style discussion on a todo, all trip members)
+// ============================================================================
+export const todoComments = sqliteTable("todo_comments", {
+  id: text("id").primaryKey(),
+  todoId: text("todoId")
+    .notNull()
+    .references(() => todos.id, { onDelete: "cascade" }),
+  authorId: text("authorId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+  updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+});
 
 // ============================================================================
 // Trip Memos Table (tripId as primary key - 1 memo per trip)
@@ -189,12 +207,24 @@ export const todosRelations = relations(todos, ({ one, many }) => ({
     references: [users.id],
   }),
   tags: many(todoTags),
+  comments: many(todoComments),
 }));
 
 export const todoTagsRelations = relations(todoTags, ({ one }) => ({
   todo: one(todos, {
     fields: [todoTags.todoId],
     references: [todos.id],
+  }),
+}));
+
+export const todoCommentsRelations = relations(todoComments, ({ one }) => ({
+  todo: one(todos, {
+    fields: [todoComments.todoId],
+    references: [todos.id],
+  }),
+  author: one(users, {
+    fields: [todoComments.authorId],
+    references: [users.id],
   }),
 }));
 
@@ -231,6 +261,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   todosAssigned: many(todos),
   memosUpdated: many(tripMemos),
   scrapsAuthored: many(scraps),
+  todoComments: many(todoComments),
 }));
 
 // ============================================================================
@@ -246,6 +277,8 @@ export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
 export type TodoTag = typeof todoTags.$inferSelect;
 export type NewTodoTag = typeof todoTags.$inferInsert;
+export type TodoComment = typeof todoComments.$inferSelect;
+export type NewTodoComment = typeof todoComments.$inferInsert;
 export type TripMemo = typeof tripMemos.$inferSelect;
 export type NewTripMemo = typeof tripMemos.$inferInsert;
 export type Scrap = typeof scraps.$inferSelect;

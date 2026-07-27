@@ -50,11 +50,23 @@ export interface Todo {
   id: string;
   tripId: string;
   title: string;
+  description?: string | null;
+  dueDate?: string | null; // YYYY-MM-DD
   isDone: number; // 0 | 1
   assigneeId?: string | null;
   assignee?: UserSummary | null;
   priority: TodoPriority;
   tags: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface TodoComment {
+  id: string;
+  todoId: string;
+  authorId: string;
+  author?: UserSummary | null;
+  content: string;
   createdAt: number;
   updatedAt: number;
 }

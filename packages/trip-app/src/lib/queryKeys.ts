@@ -36,6 +36,8 @@ const queryKeys = {
   todos: {
     all: (tripId: string) => ["todos", tripId] as const,
     list: (tripId: string) => [...queryKeys.todos.all(tripId), "list"] as const,
+    detail: (tripId: string, todoId: string) =>
+      [...queryKeys.todos.all(tripId), "detail", todoId] as const,
     byAssignee: (tripId: string, userId: string) =>
       [...queryKeys.todos.all(tripId), "assignee", userId] as const,
   },

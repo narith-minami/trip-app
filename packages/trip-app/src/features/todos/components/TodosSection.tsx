@@ -4,11 +4,11 @@
  * Container for the trip detail "Todos" tab.
  */
 
-import { useState } from "react";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { useTodoMutations } from "@/features/todos/hooks/useTodoMutations";
 import { useTodos } from "@/features/todos/hooks/useTodos";
+import { usePendingIds } from "@/hooks/usePendingIds";
 import type { Todo, TripMember } from "@/types/entities";
 import { TodoForm, type TodoFormValues } from "./TodoForm";
 import { TodoList } from "./TodoList";
@@ -21,17 +21,7 @@ export interface TodosSectionProps {
 export function TodosSection({ tripId, members }: TodosSectionProps) {
   const { data: todos, isLoading, error } = useTodos(tripId);
   const { create, update, remove } = useTodoMutations(tripId);
-  // Track every in-flight todo id so rapid toggles don't clear each other's
-  // pending state (a single string would race).
-  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
-
-  const addPending = (id: string) => setPendingIds((prev) => new Set(prev).add(id));
-  const clearPending = (id: string) =>
-    setPendingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+  const { pendingIds, addPending, clearPending } = usePendingIds();
 
   const handleCreate = async (values: TodoFormValues) => {
     try {

@@ -18,6 +18,7 @@ export default defineConfig({
     "schedule_items",
     "todos",
     "todo_tags",
+    "todo_comments",
     "trip_memos",
     "scraps",
     "scrap_tags",

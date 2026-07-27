@@ -7,13 +7,13 @@
  */
 
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { TodoTagsSchema } from "@/lib/schemas/todo";
+import { TodoDescriptionSchema, TodoDueDateSchema, TodoTagsSchema } from "@/lib/schemas/todo";
 import { TODO_PRIORITY_KEYS } from "@/lib/todoPriority";
 import { generateId } from "@/lib/utils";
-import { getDb, todos, todoTags, userSummaryColumns } from "../db";
+import { getDb, todoComments, todos, todoTags, userSummaryColumns } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -23,6 +23,8 @@ type Db = ReturnType<typeof getDb>;
 // Schemas for todos
 const CreateTodoSchema = z.object({
   title: z.string().min(1),
+  description: TodoDescriptionSchema,
+  dueDate: TodoDueDateSchema,
   assigneeId: z.string().optional(),
   priority: z.enum(TODO_PRIORITY_KEYS).optional(),
   tags: TodoTagsSchema.optional(),
@@ -30,6 +32,8 @@ const CreateTodoSchema = z.object({
 
 const UpdateTodoSchema = z.object({
   title: z.string().min(1).optional(),
+  description: TodoDescriptionSchema,
+  dueDate: TodoDueDateSchema,
   isDone: z.boolean().optional(),
   assigneeId: z.string().optional().nullable(),
   priority: z.enum(TODO_PRIORITY_KEYS).optional(),
@@ -43,14 +47,28 @@ type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 type TodoWithRelations = typeof todos.$inferSelect & {
   assignee?: unknown;
   tags: { todoId: string; tag: string }[];
+  comments?: unknown;
+};
+
+type TodoDetailWithRelations = TodoWithRelations & {
+  comments: (typeof todoComments.$inferSelect & { author?: unknown })[];
 };
 
 /**
  * Flatten the `todo_tags` join rows into a plain string[] for the client.
+ * Strips the comments relation (only attached for the detail endpoint).
  */
 function serialize(todo: TodoWithRelations) {
-  const { tags, ...rest } = todo;
+  const { tags, comments: _comments, ...rest } = todo;
   return { ...rest, tags: tags.map((t) => t.tag) };
+}
+
+/**
+ * Like {@link serialize} but keeps the comment timeline, which the detail view
+ * renders inline (it never fetches comments separately).
+ */
+function serializeDetail(todo: TodoDetailWithRelations) {
+  return { ...serialize(todo), comments: todo.comments };
 }
 
 /**
@@ -69,7 +87,7 @@ function insertTagsStmt(db: Db, todoId: string, tags: string[]) {
 }
 
 /**
- * Fetch a single todo with its assignee and tags.
+ * Fetch a single todo with its assignee and tags (no comments).
  */
 async function findTodo(db: Db, todoId: string) {
   return db.query.todos.findFirst({
@@ -79,11 +97,30 @@ async function findTodo(db: Db, todoId: string) {
 }
 
 /**
+ * Fetch a single todo with assignee, tags and comments (for detail endpoint).
+ */
+async function findTodoDetail(db: Db, todoId: string) {
+  return db.query.todos.findFirst({
+    where: eq(todos.id, todoId),
+    with: {
+      assignee: { columns: userSummaryColumns },
+      tags: true,
+      comments: {
+        orderBy: [asc(todoComments.createdAt)],
+        with: { author: { columns: userSummaryColumns } },
+      },
+    },
+  });
+}
+
+/**
  * Build the todo fields to update from validated input.
  */
 function buildTodoUpdate(validated: z.infer<typeof UpdateTodoSchema>): TodoUpdateInput {
   const updateData: TodoUpdateInput = { updatedAt: Date.now() };
   if (validated.title) updateData.title = validated.title;
+  if (validated.description !== undefined) updateData.description = validated.description;
+  if (validated.dueDate !== undefined) updateData.dueDate = validated.dueDate;
   if (validated.isDone !== undefined) updateData.isDone = validated.isDone ? 1 : 0;
   if (validated.assigneeId !== undefined) updateData.assigneeId = validated.assigneeId;
   if (validated.priority !== undefined) updateData.priority = validated.priority;
@@ -131,7 +168,32 @@ const todosRouter = new Hono<TripMemberContext>()
       });
 
       return c.json({ data: items.map((item) => serialize(item as TodoWithRelations)) });
-    } catch (_error) {
+    } catch (error) {
+      console.error("GET /api/trips/:tripId/todos failed", error);
+      return c.json({ error: ERR_INTERNAL }, 500);
+    }
+  })
+  /**
+   * GET /api/trips/:tripId/todos/:todoId
+   * Fetch a single todo with its assignee, tags and comments (detail view).
+   */
+  .get("/:todoId", requireSession(), requireMember, async (c) => {
+    try {
+      const tripId = c.get("tripId");
+      const todoId = c.req.param("todoId");
+      if (!todoId) {
+        return c.json({ error: "TodoのIDが必要です" }, 400);
+      }
+      const db = getDb(c.env.DB);
+
+      const todo = await findTodoDetail(db, todoId);
+      if (!todo || todo.tripId !== tripId) {
+        return c.json({ error: "Todoが見つかりません" }, 404);
+      }
+
+      return c.json(serializeDetail(todo as TodoDetailWithRelations));
+    } catch (error) {
+      console.error("GET /api/trips/:tripId/todos/:todoId failed", error);
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
@@ -152,6 +214,8 @@ const todosRouter = new Hono<TripMemberContext>()
         id: todoId,
         tripId,
         title: validated.title,
+        description: validated.description ?? null,
+        dueDate: validated.dueDate ?? null,
         assigneeId: validated.assigneeId,
         priority: validated.priority ?? "medium",
       });
@@ -242,12 +306,14 @@ const todosRouter = new Hono<TripMemberContext>()
       }
 
       await db.batch([
+        db.delete(todoComments).where(eq(todoComments.todoId, todoId)),
         db.delete(todoTags).where(eq(todoTags.todoId, todoId)),
         db.delete(todos).where(eq(todos.id, todoId)),
       ]);
 
       return c.json({ success: true });
-    } catch (_error) {
+    } catch (error) {
+      console.error("DELETE /api/trips/:tripId/todos/:todoId failed", error);
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   });
