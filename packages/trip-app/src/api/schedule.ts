@@ -121,3 +121,38 @@ export async function deleteScheduleItem(tripId: string, itemId: string) {
   }
   return res.json();
 }
+
+/**
+ * Upload a photo for a schedule item.
+ *
+ * Uses a raw `fetch` instead of the Hono RPC client: the server handler reads
+ * `c.req.formData()` directly (no `zValidator("form", ...)`), so `hc` has no
+ * typed multipart body to offer here — the same reason `cover.ts` has no RPC
+ * client wrapper.
+ */
+export async function uploadScheduleItemImage(tripId: string, itemId: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`/api/trips/${tripId}/schedule/${itemId}/image`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    throw new Error("Failed to upload schedule item image");
+  }
+  return res.json();
+}
+
+/**
+ * Delete the photo attached to a schedule item
+ */
+export async function deleteScheduleItemImage(tripId: string, itemId: string) {
+  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].image.$delete({
+    param: { tripId, itemId },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to delete schedule item image");
+  }
+  return res.json();
+}

@@ -10,9 +10,11 @@ import { Hono } from "hono";
 import type { Env } from "./env";
 import { createAuth } from "./routes/auth";
 import coverRouter from "./routes/cover";
+import inviteRouter from "./routes/invite";
 import membersRouter from "./routes/members";
 import memoRouter from "./routes/memo";
 import scheduleRouter from "./routes/schedule";
+import scheduleImageRouter from "./routes/scheduleImage";
 import scrapsRouter from "./routes/scraps";
 import todoCommentsRouter from "./routes/todoComments";
 import todosRouter from "./routes/todos";
@@ -53,7 +55,9 @@ const routes = app
   .route("/api/trips", tripsRouter)
   .route("/api/users", usersRouter)
   .route("/api/scraps", scrapsRouter)
+  .route("/api/invite", inviteRouter)
   .route("/api/trips/:tripId/schedule", scheduleRouter)
+  .route("/api/trips/:tripId/schedule", scheduleImageRouter)
   .route("/api/trips/:tripId/todos/:todoId/comments", todoCommentsRouter)
   .route("/api/trips/:tripId/todos", todosRouter)
   .route("/api/trips/:tripId/memo", memoRouter)

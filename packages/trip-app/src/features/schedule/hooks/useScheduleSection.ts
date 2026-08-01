@@ -69,6 +69,33 @@ function makeHandleReorder(reorder: ReturnType<typeof useScheduleMutations>["reo
   };
 }
 
+function makeHandleUploadImage(
+  uploadImage: ReturnType<typeof useScheduleMutations>["uploadImage"]
+) {
+  return async (itemId: string, file: File) => {
+    try {
+      await uploadImage.mutateAsync({ itemId, file });
+      toast.success("写真をアップロードしました");
+    } catch {
+      toast.error("写真のアップロードに失敗しました");
+    }
+  };
+}
+
+function makeHandleDeleteImage(
+  deleteImage: ReturnType<typeof useScheduleMutations>["deleteImage"]
+) {
+  return async (itemId: string) => {
+    if (!window.confirm("写真を削除しますか？")) return;
+    try {
+      await deleteImage.mutateAsync(itemId);
+      toast.success("写真を削除しました");
+    } catch {
+      toast.error("写真の削除に失敗しました");
+    }
+  };
+}
+
 function makeHandleCopy(
   copy: ReturnType<typeof useScheduleMutations>["copy"],
   setCopyOpen: (v: boolean) => void
@@ -113,6 +140,8 @@ export function useScheduleSection(tripId: string) {
     handleSubmit: makeHandleSubmit(editing, m.create, m.update, setIsOpen),
     handleDelete: makeHandleDelete(m.remove),
     handleReorder: makeHandleReorder(m.reorder),
+    handleUploadImage: makeHandleUploadImage(m.uploadImage),
+    handleDeleteImage: makeHandleDeleteImage(m.deleteImage),
     isSubmitting: m.create.isPending || m.update.isPending,
     groupsMap: groupByDate(items ?? []),
     copyOpen,

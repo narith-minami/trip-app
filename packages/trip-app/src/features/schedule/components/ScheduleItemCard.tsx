@@ -5,6 +5,7 @@
  * Layout (thumbnail + connecting line) is handled by ScheduleTimeline.
  */
 
+import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { resolveEventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
@@ -25,6 +26,87 @@ export interface ScheduleItemCardProps {
   canEdit?: boolean;
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+  onDeleteImage?: (itemId: string) => Promise<void>;
+}
+
+interface CardImageProps {
+  item: ScheduleItem;
+  canEdit: boolean;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+  onDeleteImage?: (itemId: string) => Promise<void>;
+}
+
+function CardImage({ item, canEdit, onUploadImage, onDeleteImage }: CardImageProps) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  if (!canEdit && !item.imageUrl) return null;
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !onUploadImage) return;
+    setIsUploading(true);
+    await onUploadImage(item.id, file);
+    setIsUploading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!onDeleteImage) return;
+    setIsDeleting(true);
+    await onDeleteImage(item.id);
+    setIsDeleting(false);
+  };
+
+  if (item.imageUrl) {
+    return (
+      <div className="relative mt-2">
+        <img src={item.imageUrl} alt={item.title} className="h-32 w-full rounded-xl object-cover" />
+        {canEdit && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="absolute right-2 top-2"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "削除中..." : "写真を削除"}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  if (!canEdit) return null;
+
+  return (
+    <div className="mt-2">
+      <label htmlFor={inputId} className="sr-only">
+        写真を追加
+      </label>
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={isUploading}
+      />
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={() => inputRef.current?.click()}
+        disabled={isUploading}
+      >
+        {isUploading ? "アップロード中..." : "📷 写真を追加"}
+      </Button>
+    </div>
+  );
 }
 
 function CardFooter({ item }: { item: ScheduleItem }) {
@@ -53,6 +135,8 @@ export function ScheduleItemCard({
   canEdit = false,
   onEdit,
   onDelete,
+  onUploadImage,
+  onDeleteImage,
 }: ScheduleItemCardProps) {
   const eventType = resolveEventType(item.eventType);
   const Icon = eventType.icon;
@@ -92,13 +176,12 @@ export function ScheduleItemCard({
             {item.memo}
           </div>
         )}
-        {item.imageUrl && (
-          <img
-            src={item.imageUrl}
-            alt={item.title}
-            className="mt-2 h-32 w-full rounded-xl object-cover"
-          />
-        )}
+        <CardImage
+          item={item}
+          canEdit={canEdit}
+          onUploadImage={onUploadImage}
+          onDeleteImage={onDeleteImage}
+        />
       </div>
       <CardFooter item={item} />
     </div>

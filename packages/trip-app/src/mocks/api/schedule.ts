@@ -150,3 +150,32 @@ export async function deleteScheduleItem(tripId: string, itemId: string) {
   scheduleItems.splice(index, 1);
   return { success: true };
 }
+
+/**
+ * Mock image upload: reads the file as a base64 data URL (no R2 in mock mode)
+ * and stores it directly on the item, mirroring how `scraps.imageData` works.
+ */
+export async function uploadScheduleItemImage(tripId: string, itemId: string, file: File) {
+  const item = scheduleItems.find((s) => s.id === itemId && s.tripId === tripId);
+  if (!item) throw new Error(`Schedule item ${itemId} not found`);
+
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  item.imageUrl = dataUrl;
+  item.updatedAt = Date.now();
+  return item;
+}
+
+export async function deleteScheduleItemImage(tripId: string, itemId: string) {
+  const item = scheduleItems.find((s) => s.id === itemId && s.tripId === tripId);
+  if (!item) throw new Error(`Schedule item ${itemId} not found`);
+
+  item.imageUrl = null;
+  item.updatedAt = Date.now();
+  return item;
+}

@@ -10,8 +10,10 @@ import {
   copyScheduleItems,
   createScheduleItem,
   deleteScheduleItem,
+  deleteScheduleItemImage,
   reorderScheduleItems,
   updateScheduleItem,
+  uploadScheduleItemImage,
 } from "@/api/schedule";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 import type { ScheduleItem } from "@/types/entities";
@@ -74,5 +76,16 @@ export function useScheduleMutations(tripId: string) {
     onSuccess: invalidate,
   });
 
-  return { create, update, remove, reorder, copy };
+  const uploadImage = useMutation({
+    mutationFn: ({ itemId, file }: { itemId: string; file: File }) =>
+      uploadScheduleItemImage(tripId, itemId, file),
+    onSuccess: invalidate,
+  });
+
+  const deleteImage = useMutation({
+    mutationFn: (itemId: string) => deleteScheduleItemImage(tripId, itemId),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, remove, reorder, copy, uploadImage, deleteImage };
 }

@@ -84,6 +84,8 @@ interface SortableScheduleRowProps {
   showDragHandle: boolean;
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+  onDeleteImage?: (itemId: string) => Promise<void>;
 }
 
 function SortableScheduleRow({
@@ -92,6 +94,8 @@ function SortableScheduleRow({
   showDragHandle,
   onEdit,
   onDelete,
+  onUploadImage,
+  onDeleteImage,
 }: SortableScheduleRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
@@ -124,7 +128,14 @@ function SortableScheduleRow({
 
       {/* Right: card */}
       <div className="min-w-0 flex-1">
-        <ScheduleItemCard item={item} canEdit={canEdit} onEdit={onEdit} onDelete={onDelete} />
+        <ScheduleItemCard
+          item={item}
+          canEdit={canEdit}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onUploadImage={onUploadImage}
+          onDeleteImage={onDeleteImage}
+        />
       </div>
     </div>
   );
@@ -156,6 +167,8 @@ export interface ScheduleTimelineProps {
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   onReorder?: (items: Array<{ id: string; orderIndex: number }>) => void;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+  onDeleteImage?: (itemId: string) => Promise<void>;
 }
 
 interface TimelineContentProps {
@@ -167,6 +180,8 @@ interface TimelineContentProps {
   canEdit: boolean;
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+  onDeleteImage?: (itemId: string) => Promise<void>;
   sensors: ReturnType<typeof useSensors>;
   onActiveIdChange: (id: string) => void;
   onDragEnd: (e: DragEndEvent) => void;
@@ -182,6 +197,8 @@ function TimelineContent({
   canEdit,
   onEdit,
   onDelete,
+  onUploadImage,
+  onDeleteImage,
   sensors,
   onActiveIdChange,
   onDragEnd,
@@ -224,6 +241,8 @@ function TimelineContent({
                   showDragHandle={showDragHandle}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onUploadImage={onUploadImage}
+                  onDeleteImage={onDeleteImage}
                 />
               ))}
             </div>
@@ -243,6 +262,8 @@ export function ScheduleTimeline({
   onEdit,
   onDelete,
   onReorder,
+  onUploadImage,
+  onDeleteImage,
 }: ScheduleTimelineProps) {
   const [localItems, setLocalItems] = useState<ScheduleItem[]>(items);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -292,6 +313,8 @@ export function ScheduleTimeline({
       canEdit={canEdit}
       onEdit={onEdit}
       onDelete={onDelete}
+      onUploadImage={onUploadImage}
+      onDeleteImage={onDeleteImage}
       sensors={sensors}
       onActiveIdChange={setActiveId}
       onDragEnd={handleDragEnd}
