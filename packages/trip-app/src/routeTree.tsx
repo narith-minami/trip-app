@@ -13,6 +13,7 @@
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { RootLayout } from "@/routes/__root";
 import { IndexPage } from "@/routes/index";
+import { InvitePage } from "@/routes/invite/$token";
 import { LoginPage } from "@/routes/login";
 import { ScrapsPage } from "@/routes/scraps/index";
 import { SignupPage } from "@/routes/signup";
@@ -56,6 +57,12 @@ const scrapsRoute = createRoute({
   component: ScrapsPage,
 });
 
+const inviteRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/invite/$token",
+  component: InvitePage,
+});
+
 // Layout route for a single trip; renders its child route via <Outlet />.
 const tripRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -96,5 +103,6 @@ export const routeTree = rootRoute.addChildren([
   signupRoute,
   tripsIndexRoute,
   scrapsRoute,
+  inviteRoute,
   tripRoute.addChildren([tripDetailIndexRoute, scheduleEditRoute, itineraryRoute, todoDetailRoute]),
 ]);

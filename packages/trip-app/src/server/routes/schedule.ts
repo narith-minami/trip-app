@@ -6,11 +6,11 @@
  */
 
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { generateId } from "@/lib/utils";
-import { getDb, scheduleItems } from "../db";
+import { getDb, scheduleItemImages, scheduleItems } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -57,6 +57,11 @@ const CopyScheduleItemsSchema = z.object({
 
 type ScheduleUpdateInput = Partial<typeof scheduleItems.$inferInsert>;
 
+/** Always embed a schedule item's photos, ordered for display. */
+function withImages() {
+  return { images: { orderBy: [asc(scheduleItemImages.orderIndex)] } };
+}
+
 /**
  * Build the schedule-item fields to update from validated input.
  * `!== undefined` checks let callers explicitly clear nullable fields.
@@ -94,6 +99,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       const items = await db.query.scheduleItems.findMany({
         where: eq(scheduleItems.tripId, tripId),
         orderBy: (items, { asc }) => [asc(items.date), asc(items.orderIndex)],
+        with: withImages(),
       });
 
       return c.json({ data: items });
@@ -136,6 +142,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
 
         const created = await db.query.scheduleItems.findFirst({
           where: eq(scheduleItems.id, itemId),
+          with: withImages(),
         });
 
         return c.json(created, 201);
@@ -183,6 +190,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
 
         const updated = await db.query.scheduleItems.findFirst({
           where: eq(scheduleItems.id, itemId),
+          with: withImages(),
         });
 
         return c.json(updated);
@@ -288,7 +296,11 @@ const scheduleRouter = new Hono<TripMemberContext>()
           ),
         });
 
-        return c.json({ data: created, count: created.length }, 201);
+        // Photos are never copied along with the item, so the relation is
+        // always empty here — no need to query it.
+        const createdWithImages = created.map((item) => ({ ...item, images: [] }));
+
+        return c.json({ data: createdWithImages, count: createdWithImages.length }, 201);
       } catch (_error) {
         return c.json({ error: ERR_INTERNAL }, 500);
       }
@@ -316,7 +328,10 @@ const scheduleRouter = new Hono<TripMemberContext>()
         return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
       }
 
-      await db.delete(scheduleItems).where(eq(scheduleItems.id, itemId));
+      await db.batch([
+        db.delete(scheduleItemImages).where(eq(scheduleItemImages.scheduleItemId, itemId)),
+        db.delete(scheduleItems).where(eq(scheduleItems.id, itemId)),
+      ]);
 
       return c.json({ success: true });
     } catch (_error) {

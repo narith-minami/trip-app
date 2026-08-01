@@ -43,6 +43,13 @@
       "when": 1785179485639,
       "tag": "0005_cynical_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1785557716938,
+      "tag": "0006_good_punisher",
+      "breakpoints": true
     }
   ]
 }

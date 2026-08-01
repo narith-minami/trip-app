@@ -66,11 +66,23 @@ export const scheduleItems = sqliteTable("schedule_items", {
   placeUrl: text("placeUrl"),
   memo: text("memo"),
   eventType: text("eventType"), // EventType key, nullable
-  imageUrl: text("imageUrl"), // R2 object key
   orderIndex: integer("orderIndex").notNull().default(0),
   updatedBy: text("updatedBy"), // User ID, nullable
   createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+});
+
+// ============================================================================
+// Schedule Item Images Table (many photos per schedule item)
+// ============================================================================
+export const scheduleItemImages = sqliteTable("schedule_item_images", {
+  id: text("id").primaryKey(),
+  scheduleItemId: text("scheduleItemId")
+    .notNull()
+    .references(() => scheduleItems.id, { onDelete: "cascade" }),
+  imageUrl: text("imageUrl").notNull(), // R2 object key
+  orderIndex: integer("orderIndex").notNull().default(0),
+  createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
 });
 
 // ============================================================================
@@ -186,7 +198,7 @@ export const tripMembersRelations = relations(tripMembers, ({ one }) => ({
   }),
 }));
 
-export const scheduleItemsRelations = relations(scheduleItems, ({ one }) => ({
+export const scheduleItemsRelations = relations(scheduleItems, ({ one, many }) => ({
   trip: one(trips, {
     fields: [scheduleItems.tripId],
     references: [trips.id],
@@ -194,6 +206,14 @@ export const scheduleItemsRelations = relations(scheduleItems, ({ one }) => ({
   updater: one(users, {
     fields: [scheduleItems.updatedBy],
     references: [users.id],
+  }),
+  images: many(scheduleItemImages),
+}));
+
+export const scheduleItemImagesRelations = relations(scheduleItemImages, ({ one }) => ({
+  scheduleItem: one(scheduleItems, {
+    fields: [scheduleItemImages.scheduleItemId],
+    references: [scheduleItems.id],
   }),
 }));
 
@@ -273,6 +293,8 @@ export type TripMember = typeof tripMembers.$inferSelect;
 export type NewTripMember = typeof tripMembers.$inferInsert;
 export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type NewScheduleItem = typeof scheduleItems.$inferInsert;
+export type ScheduleItemImage = typeof scheduleItemImages.$inferSelect;
+export type NewScheduleItemImage = typeof scheduleItemImages.$inferInsert;
 export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
 export type TodoTag = typeof todoTags.$inferSelect;

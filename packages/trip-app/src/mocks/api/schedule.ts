@@ -19,7 +19,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeName: "羽田空港",
     placeUrl: "https://www.haneda-airport.jp",
     memo: "ANA NH101 で到着予定",
-    imageUrl: null,
+    images: [],
     orderIndex: 0,
     updatedBy: null,
     createdAt: now - 5 * 24 * 60 * 60 * 1000,
@@ -35,7 +35,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeName: "渋谷スクランブル交差点周辺",
     placeUrl: null,
     memo: "おしゃれなカフェを探す",
-    imageUrl: null,
+    images: [],
     orderIndex: 1,
     updatedBy: null,
     createdAt: now - 5 * 24 * 60 * 60 * 1000,
@@ -81,7 +81,7 @@ export async function createScheduleItem(
     placeName: data.placeName ?? null,
     placeUrl: data.placeUrl ?? null,
     memo: data.memo ?? null,
-    imageUrl: null,
+    images: [],
     orderIndex: data.orderIndex ?? 0,
     updatedBy: null,
     createdAt: Date.now(),
@@ -135,7 +135,7 @@ export async function copyScheduleItems(
     ...item,
     id: `schedule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     date: data.targetDate,
-    imageUrl: null,
+    images: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }));
@@ -148,5 +148,42 @@ export async function deleteScheduleItem(tripId: string, itemId: string) {
   if (index === -1) throw new Error(`Schedule item ${itemId} not found`);
 
   scheduleItems.splice(index, 1);
+  return { success: true };
+}
+
+/**
+ * Mock image upload: reads the file as a base64 data URL (no R2 in mock mode)
+ * and appends it to the item's photo list, mirroring how `scraps.imageData`
+ * works but keeping every upload instead of replacing the last one.
+ */
+export async function uploadScheduleItemImage(tripId: string, itemId: string, file: File) {
+  const item = scheduleItems.find((s) => s.id === itemId && s.tripId === tripId);
+  if (!item) throw new Error(`Schedule item ${itemId} not found`);
+
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  const image = {
+    id: `scheduleImage-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    scheduleItemId: itemId,
+    imageUrl: dataUrl,
+    orderIndex: item.images.length,
+    createdAt: Date.now(),
+  };
+  item.images.push(image);
+  item.updatedAt = Date.now();
+  return image;
+}
+
+export async function deleteScheduleItemImage(tripId: string, itemId: string, imageId: string) {
+  const item = scheduleItems.find((s) => s.id === itemId && s.tripId === tripId);
+  if (!item) throw new Error(`Schedule item ${itemId} not found`);
+
+  item.images = item.images.filter((image) => image.id !== imageId);
+  item.updatedAt = Date.now();
   return { success: true };
 }

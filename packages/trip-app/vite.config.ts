@@ -61,6 +61,10 @@ export default defineConfig(({ mode }) => {
                 replacement: fileURLToPath(new URL("./src/mocks/api/scraps.ts", import.meta.url)),
               },
               {
+                find: "@/api/invite",
+                replacement: fileURLToPath(new URL("./src/mocks/api/invite.ts", import.meta.url)),
+              },
+              {
                 find: "@/lib/auth-client",
                 replacement: fileURLToPath(new URL("./src/mocks/auth-client.ts", import.meta.url)),
               },

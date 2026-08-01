@@ -26,6 +26,14 @@ export interface Trip {
   updatedAt: number;
 }
 
+export interface ScheduleItemImage {
+  id: string;
+  scheduleItemId: string;
+  imageUrl: string;
+  orderIndex: number;
+  createdAt: number;
+}
+
 export interface ScheduleItem {
   id: string;
   tripId: string;
@@ -37,7 +45,7 @@ export interface ScheduleItem {
   placeName?: string | null;
   placeUrl?: string | null;
   memo?: string | null;
-  imageUrl?: string | null;
+  images: ScheduleItemImage[];
   orderIndex: number;
   updatedBy?: string | null;
   createdAt: number;

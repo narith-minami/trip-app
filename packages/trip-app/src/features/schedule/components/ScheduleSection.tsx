@@ -72,6 +72,8 @@ export function ScheduleSection({
         onEdit={sec.openEdit}
         onDelete={sec.handleDelete}
         onReorder={canEdit ? sec.handleReorder : undefined}
+        onUploadImage={sec.handleUploadImage}
+        onDeleteImage={sec.handleDeleteImage}
       />
       <ScheduleItemFormDialog
         isOpen={sec.isOpen}
