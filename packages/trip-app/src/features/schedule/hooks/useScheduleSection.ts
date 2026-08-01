@@ -85,10 +85,10 @@ function makeHandleUploadImage(
 function makeHandleDeleteImage(
   deleteImage: ReturnType<typeof useScheduleMutations>["deleteImage"]
 ) {
-  return async (itemId: string) => {
+  return async (itemId: string, imageId: string) => {
     if (!window.confirm("写真を削除しますか？")) return;
     try {
-      await deleteImage.mutateAsync(itemId);
+      await deleteImage.mutateAsync({ itemId, imageId });
       toast.success("写真を削除しました");
     } catch {
       toast.error("写真の削除に失敗しました");

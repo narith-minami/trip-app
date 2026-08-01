@@ -134,7 +134,7 @@ export async function uploadScheduleItemImage(tripId: string, itemId: string, fi
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`/api/trips/${tripId}/schedule/${itemId}/image`, {
+  const res = await fetch(`/api/trips/${tripId}/schedule/${itemId}/images`, {
     method: "POST",
     body: formData,
   });
@@ -145,11 +145,11 @@ export async function uploadScheduleItemImage(tripId: string, itemId: string, fi
 }
 
 /**
- * Delete the photo attached to a schedule item
+ * Delete a single photo from a schedule item
  */
-export async function deleteScheduleItemImage(tripId: string, itemId: string) {
-  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].image.$delete({
-    param: { tripId, itemId },
+export async function deleteScheduleItemImage(tripId: string, itemId: string, imageId: string) {
+  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].images[":imageId"].$delete({
+    param: { tripId, itemId, imageId },
   });
   if (!res.ok) {
     throw new Error("Failed to delete schedule item image");

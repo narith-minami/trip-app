@@ -85,7 +85,7 @@ interface SortableScheduleRowProps {
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
-  onDeleteImage?: (itemId: string) => Promise<void>;
+  onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
 }
 
 function SortableScheduleRow({
@@ -168,7 +168,7 @@ export interface ScheduleTimelineProps {
   onDelete?: (item: ScheduleItem) => void;
   onReorder?: (items: Array<{ id: string; orderIndex: number }>) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
-  onDeleteImage?: (itemId: string) => Promise<void>;
+  onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
 }
 
 interface TimelineContentProps {
@@ -181,7 +181,7 @@ interface TimelineContentProps {
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
-  onDeleteImage?: (itemId: string) => Promise<void>;
+  onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
   sensors: ReturnType<typeof useSensors>;
   onActiveIdChange: (id: string) => void;
   onDragEnd: (e: DragEndEvent) => void;

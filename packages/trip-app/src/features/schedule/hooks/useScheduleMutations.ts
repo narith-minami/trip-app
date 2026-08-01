@@ -83,7 +83,8 @@ export function useScheduleMutations(tripId: string) {
   });
 
   const deleteImage = useMutation({
-    mutationFn: (itemId: string) => deleteScheduleItemImage(tripId, itemId),
+    mutationFn: ({ itemId, imageId }: { itemId: string; imageId: string }) =>
+      deleteScheduleItemImage(tripId, itemId, imageId),
     onSuccess: invalidate,
   });
 
