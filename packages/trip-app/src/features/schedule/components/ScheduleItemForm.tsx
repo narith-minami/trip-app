@@ -4,6 +4,7 @@
  * Controlled form for creating or editing a schedule item.
  */
 
+import { CircleDashed } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,26 @@ function EventTypeSelector({ values, set }: FieldsProps) {
   );
 }
 
+function TentativeToggle({ values, set }: FieldsProps) {
+  const active = values.isTentative;
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={() => set("isTentative", !active)}
+      className={cn(
+        "flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+        active
+          ? "border-dashed border-ink-light bg-cream text-ink-muted"
+          : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"
+      )}
+    >
+      <CircleDashed size={16} />
+      <span className="flex-1 text-left">仮予定にする（まだ確定していません）</span>
+    </button>
+  );
+}
+
 function ScheduleDateTitleFields({ values, set }: FieldsProps) {
   const handleStartTimeChange = (value: string) => {
     set("startTime", value);
@@ -139,15 +160,7 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-ink">
-        <input
-          type="checkbox"
-          checked={values.isTentative}
-          onChange={(e) => set("isTentative", e.target.checked)}
-          className="h-4 w-4 shrink-0 rounded border-cream-dark text-coral focus:ring-coral"
-        />
-        仮予定にする（まだ確定していません）
-      </label>
+      <TentativeToggle values={values} set={set} />
     </>
   );
 }
