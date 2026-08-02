@@ -19,6 +19,7 @@ function toPayload(values: ScheduleFormValues) {
     endTime: values.endTime || null,
     title: values.title,
     eventType: values.eventType || null,
+    isTentative: values.isTentative,
     placeName: values.placeName || null,
     placeUrl: values.placeUrl || null,
     memo: values.memo || null,

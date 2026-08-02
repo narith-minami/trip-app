@@ -7,6 +7,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 import { resolveEventType } from "@/lib/eventTypes";
 import type { ScheduleItem, ScheduleItemImage } from "@/types/entities";
 
@@ -218,11 +219,16 @@ export function ScheduleItemCard({
   const Icon = eventType.icon;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-cream-dark bg-white shadow-sm">
+    <div
+      className={cn(
+        "overflow-hidden rounded-2xl border bg-white shadow-sm",
+        item.isTentative === 1 ? "border-dashed border-ink-light opacity-60" : "border-cream-dark"
+      )}
+    >
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span
                 className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
                 style={{ backgroundColor: `${eventType.color}20`, color: eventType.color }}
@@ -232,6 +238,11 @@ export function ScheduleItemCard({
               <span className="text-xs font-medium" style={{ color: eventType.color }}>
                 {eventType.label}
               </span>
+              {item.isTentative === 1 && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-light bg-cream px-2 py-0.5 text-xs font-medium text-ink-muted">
+                  仮予定
+                </span>
+              )}
             </div>
             <h4 className="mt-1 font-semibold text-ink">{item.title}</h4>
             {item.placeName && <p className="mt-0.5 text-sm text-ink-muted">📍 {item.placeName}</p>}

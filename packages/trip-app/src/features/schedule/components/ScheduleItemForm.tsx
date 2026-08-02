@@ -18,6 +18,7 @@ export interface ScheduleFormValues {
   endTime: string;
   title: string;
   eventType: EventType | "";
+  isTentative: boolean;
   placeName: string;
   placeUrl: string;
   memo: string;
@@ -38,13 +39,14 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
     endTime: item?.endTime ?? "",
     title: item?.title ?? "",
     eventType: (item?.eventType as EventType | undefined) ?? "",
+    isTentative: item?.isTentative === 1,
     placeName: item?.placeName ?? "",
     placeUrl: item?.placeUrl ?? "",
     memo: item?.memo ?? "",
   };
 }
 
-type SetField = (key: keyof ScheduleFormValues, value: string) => void;
+type SetField = (key: keyof ScheduleFormValues, value: string | boolean) => void;
 
 interface FieldsProps {
   values: ScheduleFormValues;
@@ -136,6 +138,16 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
           required
         />
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-ink">
+        <input
+          type="checkbox"
+          checked={values.isTentative}
+          onChange={(e) => set("isTentative", e.target.checked)}
+          className="h-4 w-4 shrink-0 rounded border-cream-dark text-coral focus:ring-coral"
+        />
+        仮予定にする（まだ確定していません）
+      </label>
     </>
   );
 }

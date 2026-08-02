@@ -31,6 +31,7 @@ export async function createScheduleItem(
     endTime?: string | null;
     title: string;
     eventType?: EventType | null;
+    isTentative?: boolean;
     placeName?: string | null;
     placeUrl?: string | null;
     memo?: string | null;
@@ -59,6 +60,7 @@ export async function updateScheduleItem(
     endTime: string | null;
     title: string;
     eventType: EventType | null;
+    isTentative: boolean;
     placeName: string | null;
     placeUrl: string | null;
     memo: string | null;

@@ -19,6 +19,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeName: "羽田空港",
     placeUrl: "https://www.haneda-airport.jp",
     memo: "ANA NH101 で到着予定",
+    isTentative: 0,
     images: [],
     orderIndex: 0,
     updatedBy: null,
@@ -35,6 +36,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeName: "渋谷スクランブル交差点周辺",
     placeUrl: null,
     memo: "おしゃれなカフェを探す",
+    isTentative: 0,
     images: [],
     orderIndex: 1,
     updatedBy: null,
@@ -65,6 +67,7 @@ export async function createScheduleItem(
     startTime?: string | null;
     endTime?: string | null;
     title: string;
+    isTentative?: boolean;
     placeName?: string | null;
     placeUrl?: string | null;
     memo?: string | null;
@@ -78,6 +81,7 @@ export async function createScheduleItem(
     startTime: data.startTime ?? null,
     endTime: data.endTime ?? null,
     title: data.title,
+    isTentative: data.isTentative ? 1 : 0,
     placeName: data.placeName ?? null,
     placeUrl: data.placeUrl ?? null,
     memo: data.memo ?? null,
@@ -99,6 +103,7 @@ export async function updateScheduleItem(
     date: string;
     startTime: string | null;
     title: string;
+    isTentative: boolean;
     placeName: string | null;
     placeUrl: string | null;
     memo: string | null;
@@ -108,7 +113,9 @@ export async function updateScheduleItem(
   const item = scheduleItems.find((s) => s.id === itemId && s.tripId === tripId);
   if (!item) throw new Error(`Schedule item ${itemId} not found`);
 
-  Object.assign(item, data, { updatedAt: Date.now() });
+  const { isTentative, ...rest } = data;
+  Object.assign(item, rest, { updatedAt: Date.now() });
+  if (isTentative !== undefined) item.isTentative = isTentative ? 1 : 0;
   return item;
 }
 

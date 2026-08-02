@@ -42,6 +42,7 @@ export interface ScheduleItem {
   endTime?: string | null; // HH:MM
   title: string;
   eventType?: string | null;
+  isTentative: number; // 0 | 1
   placeName?: string | null;
   placeUrl?: string | null;
   memo?: string | null;
