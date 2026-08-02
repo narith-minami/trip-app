@@ -4,6 +4,7 @@
  * Controlled form for creating or editing a schedule item.
  */
 
+import { CircleDashed } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export interface ScheduleFormValues {
   endTime: string;
   title: string;
   eventType: EventType | "";
+  isTentative: boolean;
   placeName: string;
   placeUrl: string;
   memo: string;
@@ -38,13 +40,14 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
     endTime: item?.endTime ?? "",
     title: item?.title ?? "",
     eventType: (item?.eventType as EventType | undefined) ?? "",
+    isTentative: item?.isTentative === 1,
     placeName: item?.placeName ?? "",
     placeUrl: item?.placeUrl ?? "",
     memo: item?.memo ?? "",
   };
 }
 
-type SetField = (key: keyof ScheduleFormValues, value: string) => void;
+type SetField = (key: keyof ScheduleFormValues, value: string | boolean) => void;
 
 interface FieldsProps {
   values: ScheduleFormValues;
@@ -84,6 +87,26 @@ function EventTypeSelector({ values, set }: FieldsProps) {
         })}
       </div>
     </fieldset>
+  );
+}
+
+function TentativeToggle({ values, set }: FieldsProps) {
+  const active = values.isTentative;
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={() => set("isTentative", !active)}
+      className={cn(
+        "flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+        active
+          ? "border-dashed border-ink-light bg-cream text-ink-muted"
+          : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"
+      )}
+    >
+      <CircleDashed size={16} />
+      <span className="flex-1 text-left">仮予定にする（まだ確定していません）</span>
+    </button>
   );
 }
 
@@ -136,6 +159,8 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
           required
         />
       </div>
+
+      <TentativeToggle values={values} set={set} />
     </>
   );
 }

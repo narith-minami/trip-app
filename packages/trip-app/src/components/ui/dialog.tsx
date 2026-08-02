@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
 export interface DialogProps {
   open: boolean;
   onClose: () => void;
-  title?: string;
+  title?: ReactNode;
   children: ReactNode;
   className?: string;
 }
@@ -64,7 +64,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
             </h2>
           </div>
         )}
-        <div className={cn("flex-1 overflow-y-auto p-6", title && "pt-4")}>{children}</div>
+        <div className={cn("flex-1 overflow-y-auto p-6", title != null && "pt-4")}>{children}</div>
       </div>
     </div>
   );

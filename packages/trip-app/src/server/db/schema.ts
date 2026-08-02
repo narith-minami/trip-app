@@ -66,6 +66,7 @@ export const scheduleItems = sqliteTable("schedule_items", {
   placeUrl: text("placeUrl"),
   memo: text("memo"),
   eventType: text("eventType"), // EventType key, nullable
+  isTentative: integer("isTentative").notNull().default(0), // 0 | 1 — 仮予定フラグ
   orderIndex: integer("orderIndex").notNull().default(0),
   updatedBy: text("updatedBy"), // User ID, nullable
   createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),

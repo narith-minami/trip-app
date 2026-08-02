@@ -35,6 +35,7 @@ const CreateScheduleItemSchema = z.object({
   endTime: z.string().nullable().optional(),
   title: z.string().min(1),
   eventType: z.enum(EVENT_TYPE_VALUES).nullable().optional(),
+  isTentative: z.boolean().optional(),
   placeName: z.string().nullable().optional(),
   placeUrl: z.url().nullable().optional(),
   memo: z.string().nullable().optional(),
@@ -63,6 +64,21 @@ function withImages() {
 }
 
 /**
+ * Applies the place/memo/eventType/tentative fields to `updateData`.
+ * Split out of `buildScheduleUpdate` to keep cognitive complexity in check.
+ */
+function applyScheduleDetailFields(
+  updateData: ScheduleUpdateInput,
+  validated: z.infer<typeof UpdateScheduleItemSchema>
+) {
+  if (validated.eventType !== undefined) updateData.eventType = validated.eventType;
+  if (validated.isTentative !== undefined) updateData.isTentative = validated.isTentative ? 1 : 0;
+  if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
+  if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
+  if (validated.memo !== undefined) updateData.memo = validated.memo;
+}
+
+/**
  * Build the schedule-item fields to update from validated input.
  * `!== undefined` checks let callers explicitly clear nullable fields.
  */
@@ -78,10 +94,7 @@ function buildScheduleUpdate(
   if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
   if (validated.endTime !== undefined) updateData.endTime = validated.endTime;
   if (validated.title) updateData.title = validated.title;
-  if (validated.eventType !== undefined) updateData.eventType = validated.eventType;
-  if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
-  if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
-  if (validated.memo !== undefined) updateData.memo = validated.memo;
+  applyScheduleDetailFields(updateData, validated);
   if (validated.orderIndex !== undefined) updateData.orderIndex = validated.orderIndex;
   return updateData;
 }
@@ -133,6 +146,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           endTime: validated.endTime,
           title: validated.title,
           eventType: validated.eventType,
+          isTentative: validated.isTentative ? 1 : 0,
           placeName: validated.placeName,
           placeUrl: validated.placeUrl,
           memo: validated.memo,
@@ -278,6 +292,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           endTime: item.endTime,
           title: item.title,
           eventType: item.eventType,
+          isTentative: item.isTentative,
           placeName: item.placeName,
           placeUrl: item.placeUrl,
           memo: item.memo,

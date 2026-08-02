@@ -1,0 +1,1 @@
+ALTER TABLE `schedule_items` ADD `isTentative` integer DEFAULT 0 NOT NULL;

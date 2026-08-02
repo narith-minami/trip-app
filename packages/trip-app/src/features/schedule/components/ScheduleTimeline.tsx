@@ -56,7 +56,10 @@ function EventThumb({ item }: { item: ScheduleItem }) {
   const Icon = et.icon;
   return (
     <div
-      className="flex h-11 w-11 items-center justify-center rounded-2xl"
+      className={cn(
+        "flex h-11 w-11 items-center justify-center rounded-2xl",
+        item.isTentative === 1 && "grayscale opacity-50"
+      )}
       style={{ backgroundColor: et.color }}
       aria-hidden="true"
     >
