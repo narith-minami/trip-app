@@ -4,11 +4,14 @@
  * Text input and textarea primitives with shared styling.
  */
 
-import type { InputHTMLAttributes, Ref, TextareaHTMLAttributes } from "react";
+import type { InputHTMLAttributes, Ref, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-const FIELD_CLASSES =
-  "w-full px-3 py-2 border border-cream-dark rounded-xl transition-shadow duration-[var(--duration-fast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-coral";
+const FIELD_BASE_CLASSES =
+  "px-3 py-2 border border-cream-dark rounded-xl transition-shadow duration-[var(--duration-fast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-coral";
+// Input/Textarea default to full width; Select doesn't (it's commonly one of
+// several inline controls in a row), so it's built from the base directly.
+const FIELD_CLASSES = cn("w-full", FIELD_BASE_CLASSES);
 
 // React 19: ref is a normal prop, no forwardRef needed.
 export function Input({
@@ -26,6 +29,15 @@ export function Textarea({
   ...props
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & { ref?: Ref<HTMLTextAreaElement> }) {
   return <textarea ref={ref} className={cn(FIELD_CLASSES, className)} {...props} />;
+}
+
+// react-doctor-disable-next-line react-doctor/no-multi-comp -- co-located form-field primitives are an intentional design-system grouping
+export function Select({
+  className,
+  ref,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement> & { ref?: Ref<HTMLSelectElement> }) {
+  return <select ref={ref} className={cn(FIELD_BASE_CLASSES, className)} {...props} />;
 }
 
 // react-doctor-disable-next-line react-doctor/no-multi-comp -- co-located form-field primitives are an intentional design-system grouping

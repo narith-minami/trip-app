@@ -8,7 +8,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { DEFAULT_TODO_PRIORITY, TODO_PRIORITY_LIST, type TodoPriority } from "@/lib/todoPriority";
 import { TODO_TAG_PRESET_LIST } from "@/lib/todoTags";
@@ -117,24 +117,22 @@ export function TodoForm({
           instead of scrolling past this form every time. */}
       {(detailsOpen || hasCustomDetails) && (
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <select
+          <Select
             value={priority}
             onChange={(e) => setPriority(e.target.value as TodoPriority)}
             aria-label="優先順位"
-            className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
           >
             {TODO_PRIORITY_LIST.map((p) => (
               <option key={p.key} value={p.key}>
                 優先度: {p.label}
               </option>
             ))}
-          </select>
+          </Select>
           {members.length > 0 && (
-            <select
+            <Select
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               aria-label="担当者"
-              className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
             >
               <option value="">未割り当て</option>
               {members.map((member) => (
@@ -142,7 +140,7 @@ export function TodoForm({
                   {member.user?.name ?? member.userId}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
           <TagSelector selected={tags} onToggle={toggleTag} />
         </div>

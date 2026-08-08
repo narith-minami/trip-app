@@ -8,7 +8,7 @@ import { CircleDashed } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea } from "@/components/ui/input";
+import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
 import type { Facility, ScheduleItem } from "@/types/entities";
@@ -178,11 +178,11 @@ function FacilitySelectField({ facilities, values, set }: FacilitySelectFieldPro
   return (
     <div>
       <Label htmlFor="schedule-facility">紐付ける施設</Label>
-      <select
+      <Select
         id="schedule-facility"
         value={values.facilityId}
         onChange={(e) => set("facilityId", e.target.value)}
-        className="w-full rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+        className="w-full"
       >
         <option value="">施設を選択しない</option>
         {facilities.map((facility) => (
@@ -190,7 +190,7 @@ function FacilitySelectField({ facilities, values, set }: FacilitySelectFieldPro
             {facility.name}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

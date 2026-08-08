@@ -192,7 +192,10 @@
       }
     },
     {
-      "includes": ["src/components/ui/dialog.tsx"],
+      "includes": [
+        "src/components/ui/dialog.tsx",
+        "src/features/schedule/components/ScheduleItemCardImages.tsx"
+      ],
       "linter": {
         "rules": {
           "a11y": {

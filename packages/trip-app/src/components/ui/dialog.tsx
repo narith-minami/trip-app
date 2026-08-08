@@ -64,25 +64,34 @@ function useDialogVisibility(open: boolean) {
   return { mounted, closing };
 }
 
-export function Dialog({ open, onClose, title, children, className }: DialogProps) {
-  const titleId = useId();
-  const { mounted, closing } = useDialogVisibility(open);
-
-  // Close on Escape for keyboard users.
-  // NOTE: react-doctor's prefer-use-effect-event suggests wrapping `onClose` in
-  // useEffectEvent so the listener isn't re-subscribed on a new callback
-  // identity. That's deferred — the pinned react-hooks (5.2.0) and
-  // react-compiler ESLint plugins don't yet recognise useEffectEvent, so it
-  // produces false exhaustive-deps / react-compiler errors. Suppressed in
-  // doctor.config.ts until the toolchain supports it.
+/**
+ * Closes on Escape for keyboard users. Shared by Dialog and any other
+ * modal-like overlay (e.g. ImageLightbox) so there's one Escape listener
+ * implementation.
+ *
+ * NOTE: react-doctor's prefer-use-effect-event suggests wrapping `onClose` in
+ * useEffectEvent so the listener isn't re-subscribed on a new callback
+ * identity. That's deferred — the pinned react-hooks (5.2.0) and
+ * react-compiler ESLint plugins don't yet recognise useEffectEvent, so it
+ * produces false exhaustive-deps / react-compiler errors. Suppressed in
+ * doctor.config.ts until the toolchain supports it.
+ */
+export function useEscapeKey(enabled: boolean, onClose: () => void) {
   useEffect(() => {
-    if (!open) return;
+    if (!enabled) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  }, [enabled, onClose]);
+}
+
+export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+  const titleId = useId();
+  const { mounted, closing } = useDialogVisibility(open);
+
+  useEscapeKey(open, onClose);
 
   if (!mounted) return null;
 

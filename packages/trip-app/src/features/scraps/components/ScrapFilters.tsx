@@ -5,7 +5,7 @@
  * author picker.
  */
 
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 
 export interface AuthorOption {
@@ -44,11 +44,10 @@ export function ScrapFilters({
           aria-label="フリーワード検索"
           className="flex-1"
         />
-        <select
+        <Select
           value={selectedAuthorId}
           onChange={(e) => onAuthorChange(e.target.value)}
           aria-label="投稿者で絞り込み"
-          className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-coral"
         >
           <option value="">すべての投稿者</option>
           {authors.map((author) => (
@@ -56,7 +55,7 @@ export function ScrapFilters({
               {author.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {allTags.length > 0 && (
