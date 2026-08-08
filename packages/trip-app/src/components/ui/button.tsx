@@ -18,11 +18,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-coral text-white hover:bg-coral-light",
+  // Darken (not lighten) on hover: coral/sage are already tuned to the
+  // minimum contrast that keeps white text readable, so lightening on
+  // hover would drop back below WCAG AA.
+  primary: "bg-coral text-white hover:brightness-90",
   secondary: "border border-navy text-navy hover:bg-cream-mid",
   danger: "bg-red-600 text-white hover:bg-red-700",
   ghost: "text-ink-muted hover:text-ink hover:bg-cream-mid",
-  success: "bg-sage text-white hover:opacity-90",
+  success: "bg-sage text-white hover:brightness-90",
 };
 
 const SIZE_CLASSES: Record<Size, string> = {

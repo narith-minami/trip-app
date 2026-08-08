@@ -16,10 +16,13 @@ export type TodoPriority = (typeof TODO_PRIORITY_KEYS)[number];
 /** Default priority applied when none is supplied. */
 export const DEFAULT_TODO_PRIORITY: TodoPriority = "medium";
 
+// Deepened from the Tailwind defaults (#EF4444/#F59E0B/#9CA3AF) — at the
+// badge's ~12% background tint, those left the label text under 2.3:1
+// contrast. These pass WCAG AA (4.5:1) against the tint.
 export const TODO_PRIORITIES = {
-  high: { label: "高", color: "#EF4444", order: 0 },
-  medium: { label: "中", color: "#F59E0B", order: 1 },
-  low: { label: "低", color: "#9CA3AF", order: 2 },
+  high: { label: "高", color: "#c61111", order: 0 },
+  medium: { label: "中", color: "#945f06", order: 1 },
+  low: { label: "低", color: "#606977", order: 2 },
 } as const satisfies Record<TodoPriority, { label: string; color: string; order: number }>;
 
 /** Preset list for building selectors (highest priority first). */

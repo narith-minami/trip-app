@@ -6,14 +6,19 @@
   --color-navy: #0f1c2e;
   --color-navy-mid: #1a2e48;
   --color-navy-light: #243d5c;
-  --color-coral: #ff6b47;
+  /* Deepened from the original #ff6b47 so white-on-coral (buttons) and
+     coral-on-cream (links, badges) both clear WCAG AA (4.5:1) — the
+     original was ~2.8:1. --color-coral-light keeps the brighter hue for
+     decorative use (gradients, hover states) where contrast doesn't apply. */
+  --color-coral: #c42600;
   --color-coral-light: #ff8f72;
   --color-cream: #fff8f0;
   --color-cream-mid: #f5ede0;
   --color-cream-dark: #e8d9c5;
-  --color-gold: #d4a854;
+  /* Deepened alongside --color-coral for the same AA-contrast reason. */
+  --color-gold: #8e6924;
   --color-gold-light: #f0c878;
-  --color-sage: #5b8a6f;
+  --color-sage: #496e59;
   --color-sage-light: #7db89a;
   /* Text alias colors */
   --color-ink: #0f1c2e;

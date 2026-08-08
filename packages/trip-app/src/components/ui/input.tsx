@@ -32,6 +32,6 @@ export function Textarea({
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     // biome-ignore lint/a11y/noLabelWithoutControl: generic label primitive; callers associate it with a control via the spread `htmlFor` prop
-    <label className={cn("block text-sm font-medium text-ink-muted mb-1", className)} {...props} />
+    <label className={cn("block text-sm font-semibold text-ink mb-1", className)} {...props} />
   );
 }
