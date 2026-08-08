@@ -6,8 +6,10 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
+import { Home, Plus } from "lucide-react";
 import { useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { AppShell, PageContainer } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { CreateTripModal } from "@/features/trips/components/CreateTripModal";
 import { TripCard, type TripCardData } from "@/features/trips/components/TripCard";
@@ -25,29 +27,25 @@ function TripsHeader({
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-cream"
-              aria-hidden="true"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+            <Home size={16} className="text-cream" aria-hidden="true" />
           </span>
           <span className="font-display text-xl font-semibold text-navy">Tabigo</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={onOpenScraps}>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="whitespace-nowrap"
+            onClick={onOpenScraps}
+          >
             スクラップ
           </Button>
-          <Button onClick={onCreate}>+ 新しい旅行</Button>
+          <Button size="sm" className="whitespace-nowrap" onClick={onCreate}>
+            <span className="inline-flex items-center gap-1">
+              <Plus size={16} aria-hidden="true" />
+              新しい旅行
+            </span>
+          </Button>
         </div>
       </div>
     </div>
@@ -72,12 +70,12 @@ export function TripsPage() {
   const trips = (tripsData?.data ?? []) as TripCardData[];
 
   return (
-    <div className="min-h-screen bg-cream">
+    <AppShell>
       <TripsHeader
         onCreate={() => setShowCreateModal(true)}
         onOpenScraps={() => navigate({ to: "/scraps" })}
       />
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <PageContainer className="!py-8">
         {trips.length === 0 ? (
           <div className="py-16 text-center">
             <p className="mb-6 text-ink-muted">
@@ -96,8 +94,8 @@ export function TripsPage() {
             ))}
           </div>
         )}
-      </div>
+      </PageContainer>
       <CreateTripModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
-    </div>
+    </AppShell>
   );
 }

@@ -5,6 +5,7 @@
  * Ordered incomplete-first, then by priority (high → low).
  */
 
+import { CheckCircle2 } from "lucide-react";
 import { useMemo } from "react";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { todoPriorityOrder } from "@/lib/todoPriority";
@@ -34,7 +35,7 @@ export function TodoList({ todos, onToggle, onDelete, pendingIds }: TodoListProp
   if (todos.length === 0) {
     return (
       <EmptyState
-        icon="✅"
+        icon={<CheckCircle2 size={40} strokeWidth={1.5} />}
         title="やることはまだありません"
         description="タスクを追加してみんなで共有しましょう。"
       />

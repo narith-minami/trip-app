@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useScrapMutations } from "@/features/scraps/hooks/useScrapMutations";
@@ -43,12 +44,9 @@ function ScrapBody({ scrap }: { scrap: Scrap }) {
       {scrap.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {scrap.tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center rounded-full bg-cream-mid px-2.5 py-0.5 text-xs font-medium text-navy"
-            >
+            <Badge key={tag} variant="navy">
               #{tag}
-            </span>
+            </Badge>
           ))}
         </div>
       )}

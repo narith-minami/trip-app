@@ -8,7 +8,7 @@ import type { InputHTMLAttributes, Ref, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 const FIELD_CLASSES =
-  "w-full px-3 py-2 border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-coral";
+  "w-full px-3 py-2 border border-cream-dark rounded-xl transition-shadow duration-[var(--duration-fast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-coral";
 
 // React 19: ref is a normal prop, no forwardRef needed.
 export function Input({

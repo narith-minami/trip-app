@@ -8,6 +8,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { fetchInvitePreview, joinTripByInvite } from "@/api/invite";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
@@ -19,7 +20,7 @@ import { QUERY_KEYS } from "@/lib/queryKeys";
 function InvalidInvite() {
   const navigate = useNavigate();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-4">
+    <div className="flex min-h-screen items-center justify-center bg-cream px-4 pt-[env(safe-area-inset-top)]">
       <div className="text-center">
         <p className="text-red-600">この招待リンクは無効です</p>
         <Button variant="ghost" className="mt-4" onClick={() => navigate({ to: "/" })}>
@@ -94,7 +95,12 @@ function InvitePreviewCard({
     <Card>
       <CardBody>
         <h1 className="font-display text-2xl font-bold text-ink">{preview.title}</h1>
-        {preview.destination && <p className="mt-1 text-ink-muted">📍 {preview.destination}</p>}
+        {preview.destination && (
+          <p className="mt-1 flex items-center gap-1 text-ink-muted">
+            <MapPin size={14} aria-hidden="true" />
+            {preview.destination}
+          </p>
+        )}
         <p className="mt-1 text-sm text-ink-muted">
           {preview.startDate} 〜 {preview.endDate}
         </p>
@@ -123,7 +129,7 @@ export function InvitePage() {
   if (error || !preview) return <InvalidInvite />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-4">
+    <div className="flex min-h-screen items-center justify-center bg-cream px-4 pt-[env(safe-area-inset-top)]">
       <div className="w-full max-w-md">
         <p className="mb-4 text-center text-sm font-medium text-ink-muted">旅行への招待</p>
         <InvitePreviewCard preview={preview} token={token} isLoggedIn={!!session} />

@@ -48,7 +48,7 @@ export function ScrapFilters({
           value={selectedAuthorId}
           onChange={(e) => onAuthorChange(e.target.value)}
           aria-label="投稿者で絞り込み"
-          className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
+          className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-coral"
         >
           <option value="">すべての投稿者</option>
           {authors.map((author) => (
@@ -71,6 +71,7 @@ export function ScrapFilters({
                 onClick={() => onToggleTag(tag)}
                 className={cn(
                   "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
                   selected
                     ? "border-transparent bg-coral text-white"
                     : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"

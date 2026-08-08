@@ -4,6 +4,8 @@
  * Presentational card summarising a single trip in the trips list.
  */
 
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/cn";
 import type { Trip, TripMemberRole } from "@/types/entities";
 
 export interface TripCardData extends Trip {
@@ -43,7 +45,12 @@ export function TripCard({ trip, onClick }: TripCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className={cn(
+        "block w-full overflow-hidden rounded-2xl bg-white text-left shadow-sm",
+        "transition-[transform,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-standard)]",
+        "hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] motion-reduce:transform-none",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2"
+      )}
     >
       {/* Cover area */}
       <span className="relative block h-44 w-full">
@@ -76,15 +83,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         <span className="text-xs text-ink-light">
           {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : ""}
         </span>
-        <span
-          className={
-            isOwner
-              ? "rounded-full bg-coral/10 px-2.5 py-0.5 text-xs font-medium text-coral"
-              : "rounded-full bg-cream-dark px-2.5 py-0.5 text-xs font-medium text-ink-muted"
-          }
-        >
-          {isOwner ? "オーナー" : "メンバー"}
-        </span>
+        <Badge variant={isOwner ? "coral" : "neutral"}>{isOwner ? "オーナー" : "メンバー"}</Badge>
       </span>
     </button>
   );

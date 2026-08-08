@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 export interface EmptyStateProps {
   title: string;
   description?: string;
-  icon?: string;
+  icon?: ReactNode;
   action?: ReactNode;
   className?: string;
 }
@@ -18,7 +18,7 @@ export interface EmptyStateProps {
 export function EmptyState({ title, description, icon, action, className }: EmptyStateProps) {
   return (
     <div className={cn("py-12 text-center", className)}>
-      {icon && <div className="mb-3 text-4xl">{icon}</div>}
+      {icon && <div className="mb-3 flex justify-center text-ink-light">{icon}</div>}
       <p className="font-medium text-ink">{title}</p>
       {description && <p className="mt-1 text-sm text-ink-muted">{description}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}

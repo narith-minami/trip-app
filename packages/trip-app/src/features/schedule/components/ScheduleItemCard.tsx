@@ -5,7 +5,9 @@
  * Layout (thumbnail + connecting line) is handled by ScheduleTimeline.
  */
 
+import { MapPin, Plus, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { resolveEventType } from "@/lib/eventTypes";
@@ -81,9 +83,9 @@ function ImageThumbnail({ image, canEdit, isDeleting, onOpen, onDelete }: ImageT
           }}
           disabled={isDeleting}
           aria-label="写真を削除"
-          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white disabled:opacity-50"
+          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white disabled:opacity-50"
         >
-          ✕
+          <X size={12} aria-hidden="true" />
         </button>
       )}
     </div>
@@ -125,7 +127,11 @@ function AddImageTile({ isUploading, onSelectFile }: AddImageTileProps) {
         disabled={isUploading}
         className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-cream-dark text-ink-light hover:border-ink-muted hover:text-ink-muted disabled:opacity-50"
       >
-        <span className="text-lg leading-none">{isUploading ? "…" : "＋"}</span>
+        {isUploading ? (
+          <span className="text-lg leading-none">…</span>
+        ) : (
+          <Plus size={18} aria-hidden="true" />
+        )}
         <span className="text-[10px] leading-none">{isUploading ? "追加中" : "写真を追加"}</span>
       </button>
     </div>
@@ -239,13 +245,21 @@ export function ScheduleItemCard({
                 {eventType.label}
               </span>
               {item.isTentative === 1 && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-light bg-cream px-2 py-0.5 text-xs font-medium text-ink-muted">
+                <Badge
+                  variant="custom"
+                  className="border border-dashed border-ink-light bg-cream text-ink-muted"
+                >
                   仮予定
-                </span>
+                </Badge>
               )}
             </div>
             <h4 className="mt-1 font-semibold text-ink">{item.title}</h4>
-            {item.placeName && <p className="mt-0.5 text-sm text-ink-muted">📍 {item.placeName}</p>}
+            {item.placeName && (
+              <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-muted">
+                <MapPin size={12} aria-hidden="true" />
+                {item.placeName}
+              </p>
+            )}
           </div>
           {canEdit && (
             <div className="flex shrink-0 gap-1">
