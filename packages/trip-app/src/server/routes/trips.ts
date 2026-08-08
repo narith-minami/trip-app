@@ -135,23 +135,25 @@ const tripsRouter = new Hono<TripMemberContext>()
     const tripId = generateId("trip");
     const inviteToken = generateId("invite");
 
-    // Create trip
-    await db.insert(trips).values({
-      id: tripId,
-      title: validated.title,
-      destination: validated.location,
-      startDate: validated.startDate,
-      endDate: validated.endDate,
-      ownerId: userId,
-      inviteToken,
-    });
-
-    // Add owner as first member
-    await db.insert(tripMembers).values({
-      tripId,
-      userId,
-      role: "owner",
-    });
+    // Create the trip and its owner membership in one atomic batch —
+    // a failure between the two would otherwise leave an orphan trip
+    // unreachable by every membership-gated route.
+    await db.batch([
+      db.insert(trips).values({
+        id: tripId,
+        title: validated.title,
+        destination: validated.location,
+        startDate: validated.startDate,
+        endDate: validated.endDate,
+        ownerId: userId,
+        inviteToken,
+      }),
+      db.insert(tripMembers).values({
+        tripId,
+        userId,
+        role: "owner",
+      }),
+    ]);
 
     // Fetch and return the created trip
     const createdTrip = await db.query.trips.findFirst({

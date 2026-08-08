@@ -142,24 +142,24 @@ const facilitiesRouter = new Hono<TripMemberContext>()
     const db = getDb(c.env.DB);
     const facilityId = generateId("facility");
 
-    await db.insert(facilities).values({
-      id: facilityId,
-      tripId,
-      category: validated.category,
-      name: validated.name,
-      address: validated.address,
-      lat: validated.lat,
-      lng: validated.lng,
-      phone: validated.phone,
-      businessHours: validated.businessHours,
-      url: validated.url,
-      memo: validated.memo,
-      updatedBy: userId,
-    });
-
-    const created = await db.query.facilities.findFirst({
-      where: eq(facilities.id, facilityId),
-    });
+    // RETURNING gives the stored row back without a second round trip.
+    const [created] = await db
+      .insert(facilities)
+      .values({
+        id: facilityId,
+        tripId,
+        category: validated.category,
+        name: validated.name,
+        address: validated.address,
+        lat: validated.lat,
+        lng: validated.lng,
+        phone: validated.phone,
+        businessHours: validated.businessHours,
+        url: validated.url,
+        memo: validated.memo,
+        updatedBy: userId,
+      })
+      .returning();
 
     return c.json(created, 201);
   })
@@ -187,11 +187,12 @@ const facilitiesRouter = new Hono<TripMemberContext>()
     }
 
     const updateData = buildFacilityUpdate(validated, userId);
-    await db.update(facilities).set(updateData).where(eq(facilities.id, facilityId));
-
-    const updated = await db.query.facilities.findFirst({
-      where: eq(facilities.id, facilityId),
-    });
+    // RETURNING gives the stored row back without a second round trip.
+    const [updated] = await db
+      .update(facilities)
+      .set(updateData)
+      .where(eq(facilities.id, facilityId))
+      .returning();
 
     return c.json(updated);
   })

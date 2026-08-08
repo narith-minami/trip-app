@@ -77,11 +77,17 @@ const inviteRouter = new Hono<AuthContext>()
       return c.json({ error: "既にこの旅行に参加しています", tripId: trip.id }, 409);
     }
 
-    await db.insert(tripMembers).values({
-      tripId: trip.id,
-      userId,
-      role: "member",
-    });
+    // onConflictDoNothing closes the read-then-insert race (AGENTS.md #9):
+    // two concurrent joins both pass the check above, but the second insert
+    // becomes a no-op instead of a constraint violation.
+    await db
+      .insert(tripMembers)
+      .values({
+        tripId: trip.id,
+        userId,
+        role: "member",
+      })
+      .onConflictDoNothing();
 
     return c.json({ tripId: trip.id }, 201);
   });

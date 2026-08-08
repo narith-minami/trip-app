@@ -240,12 +240,18 @@ const scheduleRouter = new Hono<TripMemberContext>()
       return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
     }
 
+    // Batch all updates into one D1 request: atomic and avoids N+1 round
+    // trips (AGENTS.md #4). The schema guarantees at least one item, but
+    // destructuring keeps the non-empty tuple type db.batch requires.
     const now = Date.now();
-    for (const { id, orderIndex } of items) {
-      await db
+    const [firstUpdate, ...restUpdates] = items.map(({ id, orderIndex }) =>
+      db
         .update(scheduleItems)
         .set({ orderIndex, updatedAt: now, updatedBy: userId })
-        .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
+        .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)))
+    );
+    if (firstUpdate) {
+      await db.batch([firstUpdate, ...restUpdates]);
     }
 
     return c.json({ success: true });

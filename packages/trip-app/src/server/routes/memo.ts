@@ -30,21 +30,13 @@ const memoRouter = new Hono<TripMemberContext>()
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
-    let memo = await db.query.tripMemos.findFirst({
+    // Lazily create an empty memo on first read. The atomic upsert avoids
+    // the read-then-insert race and one extra round trip (AGENTS.md #9).
+    await db.insert(tripMemos).values({ tripId, content: "" }).onConflictDoNothing();
+
+    const memo = await db.query.tripMemos.findFirst({
       where: eq(tripMemos.tripId, tripId),
     });
-
-    // If memo doesn't exist, create empty one
-    if (!memo) {
-      await db.insert(tripMemos).values({
-        tripId,
-        content: "",
-      });
-
-      memo = await db.query.tripMemos.findFirst({
-        where: eq(tripMemos.tripId, tripId),
-      });
-    }
 
     return c.json(memo);
   })
@@ -61,7 +53,8 @@ const memoRouter = new Hono<TripMemberContext>()
 
     // Atomic upsert: insert the memo or update it if one already exists
     // for this trip. Avoids a read-then-write race under concurrency.
-    await db
+    // RETURNING gives the stored row back without a second round trip.
+    const [updated] = await db
       .insert(tripMemos)
       .values({
         tripId,
@@ -76,11 +69,8 @@ const memoRouter = new Hono<TripMemberContext>()
           updatedBy: userId,
           updatedAt: Date.now(),
         },
-      });
-
-    const updated = await db.query.tripMemos.findFirst({
-      where: eq(tripMemos.tripId, tripId),
-    });
+      })
+      .returning();
 
     return c.json(updated);
   });

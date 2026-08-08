@@ -66,12 +66,13 @@ const coverRouter = new Hono<TripMemberContext>().post(
       return c.json({ error: "画像のアップロードに失敗しました" }, 500);
     }
 
-    // Update trip with R2 key
-    await db.update(trips).set({ coverImageUrl: fileName }).where(eq(trips.id, tripId));
-
-    const updated = await db.query.trips.findFirst({
-      where: eq(trips.id, tripId),
-    });
+    // Update trip with R2 key. RETURNING gives the stored row back
+    // without a second round trip.
+    const [updated] = await db
+      .update(trips)
+      .set({ coverImageUrl: fileName })
+      .where(eq(trips.id, tripId))
+      .returning();
 
     return c.json(updated);
   }
