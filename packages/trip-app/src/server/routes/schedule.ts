@@ -123,7 +123,8 @@ function buildScheduleUpdate(
  * List schedule items for a trip
  */
 const scheduleRouter = new Hono<TripMemberContext>()
-  .get("/", requireSession(), requireMember, async (c) => {
+  .use("*", requireSession(), requireMember)
+  .get("/", async (c) => {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
@@ -139,198 +140,174 @@ const scheduleRouter = new Hono<TripMemberContext>()
    * POST /api/trips/:tripId/schedule
    * Create a schedule item
    */
-  .post(
-    "/",
-    requireSession(),
-    requireMember,
-    zValidator("json", CreateScheduleItemSchema),
-    async (c) => {
-      const userId = c.get("user")?.id ?? null;
-      const tripId = c.get("tripId");
-      const validated = c.req.valid("json");
+  .post("/", zValidator("json", CreateScheduleItemSchema), async (c) => {
+    const userId = c.get("user")?.id ?? null;
+    const tripId = c.get("tripId");
+    const validated = c.req.valid("json");
 
-      const db = getDb(c.env.DB);
+    const db = getDb(c.env.DB);
 
-      if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
-        return c.json({ error: "施設が見つかりません" }, 400);
-      }
-
-      const itemId = generateId("schedule");
-
-      await db.insert(scheduleItems).values({
-        id: itemId,
-        tripId,
-        date: validated.date,
-        startTime: validated.startTime,
-        endTime: validated.endTime,
-        title: validated.title,
-        eventType: validated.eventType,
-        isTentative: validated.isTentative ? 1 : 0,
-        placeName: validated.placeName,
-        placeUrl: validated.placeUrl,
-        memo: validated.memo,
-        facilityId: validated.facilityId,
-        orderIndex: validated.orderIndex,
-        updatedBy: userId,
-      });
-
-      const created = await db.query.scheduleItems.findFirst({
-        where: eq(scheduleItems.id, itemId),
-        with: withRelations(),
-      });
-
-      return c.json(created, 201);
+    if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+      return c.json({ error: "施設が見つかりません" }, 400);
     }
-  )
+
+    const itemId = generateId("schedule");
+
+    await db.insert(scheduleItems).values({
+      id: itemId,
+      tripId,
+      date: validated.date,
+      startTime: validated.startTime,
+      endTime: validated.endTime,
+      title: validated.title,
+      eventType: validated.eventType,
+      isTentative: validated.isTentative ? 1 : 0,
+      placeName: validated.placeName,
+      placeUrl: validated.placeUrl,
+      memo: validated.memo,
+      facilityId: validated.facilityId,
+      orderIndex: validated.orderIndex,
+      updatedBy: userId,
+    });
+
+    const created = await db.query.scheduleItems.findFirst({
+      where: eq(scheduleItems.id, itemId),
+      with: withRelations(),
+    });
+
+    return c.json(created, 201);
+  })
   /**
    * PUT /api/trips/:tripId/schedule/:itemId
    * Update a schedule item
    */
-  .put(
-    "/:itemId",
-    requireSession(),
-    requireMember,
-    zValidator("json", UpdateScheduleItemSchema),
-    async (c) => {
-      const userId = c.get("user")?.id ?? null;
-      const tripId = c.get("tripId");
-      const itemId = c.req.param("itemId");
-      if (!itemId) {
-        return c.json({ error: "アイテムIDが必要です" }, 400);
-      }
-      const validated = c.req.valid("json");
-
-      const db = getDb(c.env.DB);
-
-      // Verify item belongs to trip
-      const item = await db.query.scheduleItems.findFirst({
-        where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
-      });
-
-      if (!item) {
-        return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
-      }
-
-      if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
-        return c.json({ error: "施設が見つかりません" }, 400);
-      }
-
-      const updateData = buildScheduleUpdate(validated, userId);
-
-      await db.update(scheduleItems).set(updateData).where(eq(scheduleItems.id, itemId));
-
-      const updated = await db.query.scheduleItems.findFirst({
-        where: eq(scheduleItems.id, itemId),
-        with: withRelations(),
-      });
-
-      return c.json(updated);
+  .put("/:itemId", zValidator("json", UpdateScheduleItemSchema), async (c) => {
+    const userId = c.get("user")?.id ?? null;
+    const tripId = c.get("tripId");
+    const itemId = c.req.param("itemId");
+    if (!itemId) {
+      return c.json({ error: "アイテムIDが必要です" }, 400);
     }
-  )
+    const validated = c.req.valid("json");
+
+    const db = getDb(c.env.DB);
+
+    // Verify item belongs to trip
+    const item = await db.query.scheduleItems.findFirst({
+      where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
+    });
+
+    if (!item) {
+      return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
+    }
+
+    if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+      return c.json({ error: "施設が見つかりません" }, 400);
+    }
+
+    const updateData = buildScheduleUpdate(validated, userId);
+
+    await db.update(scheduleItems).set(updateData).where(eq(scheduleItems.id, itemId));
+
+    const updated = await db.query.scheduleItems.findFirst({
+      where: eq(scheduleItems.id, itemId),
+      with: withRelations(),
+    });
+
+    return c.json(updated);
+  })
   /**
    * PATCH /api/trips/:tripId/schedule/reorder
    * Bulk update orderIndex for multiple schedule items
    */
-  .patch(
-    "/reorder",
-    requireSession(),
-    requireMember,
-    zValidator("json", ReorderScheduleItemsSchema),
-    async (c) => {
-      const tripId = c.get("tripId");
-      const userId = c.get("user")?.id ?? null;
-      const { items } = c.req.valid("json");
-      const db = getDb(c.env.DB);
+  .patch("/reorder", zValidator("json", ReorderScheduleItemsSchema), async (c) => {
+    const tripId = c.get("tripId");
+    const userId = c.get("user")?.id ?? null;
+    const { items } = c.req.valid("json");
+    const db = getDb(c.env.DB);
 
-      // Verify all items belong to this trip
-      const existing = await db.query.scheduleItems.findMany({
-        where: and(
-          eq(scheduleItems.tripId, tripId),
-          inArray(
-            scheduleItems.id,
-            items.map((i) => i.id)
-          )
-        ),
-      });
-      if (existing.length !== items.length) {
-        return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
-      }
-
-      const now = Date.now();
-      for (const { id, orderIndex } of items) {
-        await db
-          .update(scheduleItems)
-          .set({ orderIndex, updatedAt: now, updatedBy: userId })
-          .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
-      }
-
-      return c.json({ success: true });
+    // Verify all items belong to this trip
+    const existing = await db.query.scheduleItems.findMany({
+      where: and(
+        eq(scheduleItems.tripId, tripId),
+        inArray(
+          scheduleItems.id,
+          items.map((i) => i.id)
+        )
+      ),
+    });
+    if (existing.length !== items.length) {
+      return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
     }
-  )
+
+    const now = Date.now();
+    for (const { id, orderIndex } of items) {
+      await db
+        .update(scheduleItems)
+        .set({ orderIndex, updatedAt: now, updatedBy: userId })
+        .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
+    }
+
+    return c.json({ success: true });
+  })
   /**
    * POST /api/trips/:tripId/schedule/copy
    * Bulk-copy schedule items to a different date
    */
-  .post(
-    "/copy",
-    requireSession(),
-    requireMember,
-    zValidator("json", CopyScheduleItemsSchema),
-    async (c) => {
-      const tripId = c.get("tripId");
-      const userId = c.get("user")?.id ?? null;
-      const { targetDate, itemIds } = c.req.valid("json");
-      const db = getDb(c.env.DB);
+  .post("/copy", zValidator("json", CopyScheduleItemsSchema), async (c) => {
+    const tripId = c.get("tripId");
+    const userId = c.get("user")?.id ?? null;
+    const { targetDate, itemIds } = c.req.valid("json");
+    const db = getDb(c.env.DB);
 
-      const existing = await db.query.scheduleItems.findMany({
-        where: and(eq(scheduleItems.tripId, tripId), inArray(scheduleItems.id, itemIds)),
-      });
-      if (existing.length !== itemIds.length) {
-        return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
-      }
-
-      const now = Date.now();
-      const insertRows = existing.map((item) => ({
-        id: generateId("schedule"),
-        tripId,
-        date: targetDate,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        title: item.title,
-        eventType: item.eventType,
-        isTentative: item.isTentative,
-        placeName: item.placeName,
-        placeUrl: item.placeUrl,
-        memo: item.memo,
-        facilityId: item.facilityId,
-        orderIndex: item.orderIndex,
-        updatedBy: userId,
-        createdAt: now,
-        updatedAt: now,
-      }));
-
-      await db.insert(scheduleItems).values(insertRows);
-
-      const created = await db.query.scheduleItems.findMany({
-        where: inArray(
-          scheduleItems.id,
-          insertRows.map((r) => r.id)
-        ),
-        with: { facility: true },
-      });
-
-      // Photos are never copied along with the item, so the relation is
-      // always empty here — no need to query it.
-      const createdWithImages = created.map((item) => ({ ...item, images: [] }));
-
-      return c.json({ data: createdWithImages, count: createdWithImages.length }, 201);
+    const existing = await db.query.scheduleItems.findMany({
+      where: and(eq(scheduleItems.tripId, tripId), inArray(scheduleItems.id, itemIds)),
+    });
+    if (existing.length !== itemIds.length) {
+      return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
     }
-  )
+
+    const now = Date.now();
+    const insertRows = existing.map((item) => ({
+      id: generateId("schedule"),
+      tripId,
+      date: targetDate,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      title: item.title,
+      eventType: item.eventType,
+      isTentative: item.isTentative,
+      placeName: item.placeName,
+      placeUrl: item.placeUrl,
+      memo: item.memo,
+      facilityId: item.facilityId,
+      orderIndex: item.orderIndex,
+      updatedBy: userId,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    await db.insert(scheduleItems).values(insertRows);
+
+    const created = await db.query.scheduleItems.findMany({
+      where: inArray(
+        scheduleItems.id,
+        insertRows.map((r) => r.id)
+      ),
+      with: { facility: true },
+    });
+
+    // Photos are never copied along with the item, so the relation is
+    // always empty here — no need to query it.
+    const createdWithImages = created.map((item) => ({ ...item, images: [] }));
+
+    return c.json({ data: createdWithImages, count: createdWithImages.length }, 201);
+  })
   /**
    * DELETE /api/trips/:tripId/schedule/:itemId
    * Delete a schedule item
    */
-  .delete("/:itemId", requireSession(), requireMember, async (c) => {
+  .delete("/:itemId", async (c) => {
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
     if (!itemId) {

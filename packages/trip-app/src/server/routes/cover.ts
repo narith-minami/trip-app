@@ -3,7 +3,7 @@
  *
  * Cover photo API endpoints.
  * Handles cover image uploads to R2 and database updates.
- * Mounted at /api/trips/:tripId/cover.
+ * Mounted at /api/trips/:tripId/cover. Owner-only via `requireOwner`.
  * Unexpected errors propagate to the central `app.onError` handler.
  */
 
@@ -11,10 +11,10 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { generateId } from "@/lib/utils";
 import { getDb, trips } from "../db";
-import { ERROR_MESSAGES } from "../lib/errors";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
+import { requireOwner } from "../middleware/requireOwner";
 
 /**
  * POST /api/trips/:tripId/cover
@@ -24,28 +24,10 @@ const coverRouter = new Hono<TripMemberContext>().post(
   "/",
   requireSession(),
   requireMember,
+  requireOwner,
   async (c) => {
-    const userId = c.get("user")?.id ?? null;
-    if (!userId) {
-      return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
-    }
-
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
-
-    // Get trip
-    const trip = await db.query.trips.findFirst({
-      where: eq(trips.id, tripId),
-    });
-
-    if (!trip) {
-      return c.json({ error: ERROR_MESSAGES.TRIP_NOT_FOUND }, 404);
-    }
-
-    // Only owner can update cover
-    if (trip.ownerId !== userId) {
-      return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
-    }
 
     // Get file from form data
     const formData = await c.req.formData();

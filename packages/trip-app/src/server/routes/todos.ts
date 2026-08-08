@@ -152,7 +152,8 @@ async function persistTodoUpdate(
  * List todos for a trip
  */
 const todosRouter = new Hono<TripMemberContext>()
-  .get("/", requireSession(), requireMember, async (c) => {
+  .use("*", requireSession(), requireMember)
+  .get("/", async (c) => {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
@@ -170,7 +171,7 @@ const todosRouter = new Hono<TripMemberContext>()
    * GET /api/trips/:tripId/todos/:todoId
    * Fetch a single todo with its assignee, tags and comments (detail view).
    */
-  .get("/:todoId", requireSession(), requireMember, async (c) => {
+  .get("/:todoId", async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
     if (!todoId) {
@@ -189,7 +190,7 @@ const todosRouter = new Hono<TripMemberContext>()
    * POST /api/trips/:tripId/todos
    * Create a todo
    */
-  .post("/", requireSession(), requireMember, zValidator("json", CreateTodoSchema), async (c) => {
+  .post("/", zValidator("json", CreateTodoSchema), async (c) => {
     const tripId = c.get("tripId");
     const validated = c.req.valid("json");
 
@@ -223,45 +224,39 @@ const todosRouter = new Hono<TripMemberContext>()
    * PUT /api/trips/:tripId/todos/:todoId
    * Update a todo (checkbox toggle, priority, assignee, tags)
    */
-  .put(
-    "/:todoId",
-    requireSession(),
-    requireMember,
-    zValidator("json", UpdateTodoSchema),
-    async (c) => {
-      const tripId = c.get("tripId");
-      const todoId = c.req.param("todoId");
-      if (!todoId) {
-        return c.json({ error: "TodoのIDが必要です" }, 400);
-      }
-      const validated = c.req.valid("json");
-
-      const db = getDb(c.env.DB);
-
-      // Verify todo belongs to trip
-      const todo = await db.query.todos.findFirst({
-        where: and(eq(todos.id, todoId), eq(todos.tripId, tripId)),
-      });
-
-      if (!todo) {
-        return c.json({ error: "Todoが見つかりません" }, 404);
-      }
-
-      await persistTodoUpdate(db, todoId, validated);
-
-      const updated = await findTodo(db, todoId);
-      if (!updated) {
-        return c.json({ error: "更新されたTodoの取得に失敗しました" }, 500);
-      }
-
-      return c.json(serialize(updated as TodoWithRelations));
+  .put("/:todoId", zValidator("json", UpdateTodoSchema), async (c) => {
+    const tripId = c.get("tripId");
+    const todoId = c.req.param("todoId");
+    if (!todoId) {
+      return c.json({ error: "TodoのIDが必要です" }, 400);
     }
-  )
+    const validated = c.req.valid("json");
+
+    const db = getDb(c.env.DB);
+
+    // Verify todo belongs to trip
+    const todo = await db.query.todos.findFirst({
+      where: and(eq(todos.id, todoId), eq(todos.tripId, tripId)),
+    });
+
+    if (!todo) {
+      return c.json({ error: "Todoが見つかりません" }, 404);
+    }
+
+    await persistTodoUpdate(db, todoId, validated);
+
+    const updated = await findTodo(db, todoId);
+    if (!updated) {
+      return c.json({ error: "更新されたTodoの取得に失敗しました" }, 500);
+    }
+
+    return c.json(serialize(updated as TodoWithRelations));
+  })
   /**
    * DELETE /api/trips/:tripId/todos/:todoId
    * Delete a todo (and its tags)
    */
-  .delete("/:todoId", requireSession(), requireMember, async (c) => {
+  .delete("/:todoId", async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
     if (!todoId) {

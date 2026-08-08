@@ -25,7 +25,8 @@ const MemoSchema = z.object({
  * Get trip memo (upsert pattern - creates empty if doesn't exist)
  */
 const memoRouter = new Hono<TripMemberContext>()
-  .get("/", requireSession(), requireMember, async (c) => {
+  .use("*", requireSession(), requireMember)
+  .get("/", async (c) => {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
@@ -51,7 +52,7 @@ const memoRouter = new Hono<TripMemberContext>()
    * PUT /api/trips/:tripId/memo
    * Update memo
    */
-  .put("/", requireSession(), requireMember, zValidator("json", MemoSchema), async (c) => {
+  .put("/", zValidator("json", MemoSchema), async (c) => {
     const userId = c.get("user")?.id ?? null;
     const tripId = c.get("tripId");
     const validated = c.req.valid("json");

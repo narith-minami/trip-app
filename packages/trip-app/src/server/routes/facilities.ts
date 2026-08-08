@@ -78,7 +78,8 @@ function buildFacilityUpdate(
  * List facilities for a trip, grouped by category on the client.
  */
 const facilitiesRouter = new Hono<TripMemberContext>()
-  .get("/", requireSession(), requireMember, async (c) => {
+  .use("*", requireSession(), requireMember)
+  .get("/", async (c) => {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
@@ -94,30 +95,24 @@ const facilitiesRouter = new Hono<TripMemberContext>()
    * Search external facility info (name/address/phone/coordinates) via YOLP.
    * Must be registered before "/:facilityId" so "search" isn't captured as an ID.
    */
-  .get(
-    "/search",
-    requireSession(),
-    requireMember,
-    zValidator("query", SearchQuerySchema),
-    async (c) => {
-      const appId = c.env.YAHOO_CLIENT_ID;
-      if (!appId) {
-        return c.json({ error: ERR_SEARCH_UNAVAILABLE }, 503);
-      }
-      try {
-        const { q } = c.req.valid("query");
-        const results = await searchFacilitiesByKeyword(q, appId);
-        return c.json({ data: results });
-      } catch (_error) {
-        return c.json({ error: ERR_SEARCH_FAILED }, 502);
-      }
+  .get("/search", zValidator("query", SearchQuerySchema), async (c) => {
+    const appId = c.env.YAHOO_CLIENT_ID;
+    if (!appId) {
+      return c.json({ error: ERR_SEARCH_UNAVAILABLE }, 503);
     }
-  )
+    try {
+      const { q } = c.req.valid("query");
+      const results = await searchFacilitiesByKeyword(q, appId);
+      return c.json({ data: results });
+    } catch (_error) {
+      return c.json({ error: ERR_SEARCH_FAILED }, 502);
+    }
+  })
   /**
    * GET /api/trips/:tripId/facilities/:facilityId
    * Get a single facility's detail.
    */
-  .get("/:facilityId", requireSession(), requireMember, async (c) => {
+  .get("/:facilityId", async (c) => {
     const tripId = c.get("tripId");
     const facilityId = c.req.param("facilityId");
     if (!facilityId) {
@@ -139,84 +134,72 @@ const facilitiesRouter = new Hono<TripMemberContext>()
    * POST /api/trips/:tripId/facilities
    * Create a facility.
    */
-  .post(
-    "/",
-    requireSession(),
-    requireMember,
-    zValidator("json", CreateFacilitySchema),
-    async (c) => {
-      const userId = c.get("user")?.id ?? null;
-      const tripId = c.get("tripId");
-      const validated = c.req.valid("json");
+  .post("/", zValidator("json", CreateFacilitySchema), async (c) => {
+    const userId = c.get("user")?.id ?? null;
+    const tripId = c.get("tripId");
+    const validated = c.req.valid("json");
 
-      const db = getDb(c.env.DB);
-      const facilityId = generateId("facility");
+    const db = getDb(c.env.DB);
+    const facilityId = generateId("facility");
 
-      await db.insert(facilities).values({
-        id: facilityId,
-        tripId,
-        category: validated.category,
-        name: validated.name,
-        address: validated.address,
-        lat: validated.lat,
-        lng: validated.lng,
-        phone: validated.phone,
-        businessHours: validated.businessHours,
-        url: validated.url,
-        memo: validated.memo,
-        updatedBy: userId,
-      });
+    await db.insert(facilities).values({
+      id: facilityId,
+      tripId,
+      category: validated.category,
+      name: validated.name,
+      address: validated.address,
+      lat: validated.lat,
+      lng: validated.lng,
+      phone: validated.phone,
+      businessHours: validated.businessHours,
+      url: validated.url,
+      memo: validated.memo,
+      updatedBy: userId,
+    });
 
-      const created = await db.query.facilities.findFirst({
-        where: eq(facilities.id, facilityId),
-      });
+    const created = await db.query.facilities.findFirst({
+      where: eq(facilities.id, facilityId),
+    });
 
-      return c.json(created, 201);
-    }
-  )
+    return c.json(created, 201);
+  })
   /**
    * PUT /api/trips/:tripId/facilities/:facilityId
    * Update a facility.
    */
-  .put(
-    "/:facilityId",
-    requireSession(),
-    requireMember,
-    zValidator("json", UpdateFacilitySchema),
-    async (c) => {
-      const userId = c.get("user")?.id ?? null;
-      const tripId = c.get("tripId");
-      const facilityId = c.req.param("facilityId");
-      if (!facilityId) {
-        return c.json({ error: "施設IDが必要です" }, 400);
-      }
-      const validated = c.req.valid("json");
-
-      const db = getDb(c.env.DB);
-
-      const existing = await db.query.facilities.findFirst({
-        where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
-      });
-
-      if (!existing) {
-        return c.json({ error: ERR_NOT_FOUND }, 404);
-      }
-
-      const updateData = buildFacilityUpdate(validated, userId);
-      await db.update(facilities).set(updateData).where(eq(facilities.id, facilityId));
-
-      const updated = await db.query.facilities.findFirst({
-        where: eq(facilities.id, facilityId),
-      });
-
-      return c.json(updated);
+  .put("/:facilityId", zValidator("json", UpdateFacilitySchema), async (c) => {
+    const userId = c.get("user")?.id ?? null;
+    const tripId = c.get("tripId");
+    const facilityId = c.req.param("facilityId");
+    if (!facilityId) {
+      return c.json({ error: "施設IDが必要です" }, 400);
     }
-  )
+    const validated = c.req.valid("json");
+
+    const db = getDb(c.env.DB);
+
+    const existing = await db.query.facilities.findFirst({
+      where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
+    });
+
+    if (!existing) {
+      return c.json({ error: ERR_NOT_FOUND }, 404);
+    }
+
+    const updateData = buildFacilityUpdate(validated, userId);
+    await db.update(facilities).set(updateData).where(eq(facilities.id, facilityId));
+
+    const updated = await db.query.facilities.findFirst({
+      where: eq(facilities.id, facilityId),
+    });
+
+    return c.json(updated);
+  })
   /**
    * DELETE /api/trips/:tripId/facilities/:facilityId
    * Delete a facility and unlink it from any schedule items that reference it.
    */
-  .delete("/:facilityId", requireSession(), requireMember, async (c) => {
+  .delete("/:facilityId", async (c) => {
     const tripId = c.get("tripId");
     const facilityId = c.req.param("facilityId");
     if (!facilityId) {

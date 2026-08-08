@@ -8,18 +8,19 @@
 
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { getDb, tripMembers, trips, userSummaryColumns } from "../db";
-import { ERROR_MESSAGES } from "../lib/errors";
+import { getDb, tripMembers, userSummaryColumns } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
+import { requireOwner } from "../middleware/requireOwner";
 
 /**
  * GET /api/trips/:tripId/members
  * List trip members
  */
 const membersRouter = new Hono<TripMemberContext>()
-  .get("/", requireSession(), requireMember, async (c) => {
+  .use("*", requireSession(), requireMember)
+  .get("/", async (c) => {
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
@@ -34,30 +35,15 @@ const membersRouter = new Hono<TripMemberContext>()
   })
   /**
    * DELETE /api/trips/:tripId/members/:memberId
-   * Remove member (owner only)
+   * Remove member (owner only, via requireOwner)
    */
-  .delete("/:memberId", requireSession(), requireMember, async (c) => {
-    const userId = c.get("user")?.id ?? null;
+  .delete("/:memberId", requireOwner, async (c) => {
     const tripId = c.get("tripId");
     const memberId = c.req.param("memberId");
     if (!memberId) {
       return c.json({ error: "メンバーIDが必要です" }, 400);
     }
     const db = getDb(c.env.DB);
-
-    // Get trip to check ownership
-    const trip = await db.query.trips.findFirst({
-      where: eq(trips.id, tripId),
-    });
-
-    if (!trip) {
-      return c.json({ error: ERROR_MESSAGES.TRIP_NOT_FOUND }, 404);
-    }
-
-    // Only owner can remove members
-    if (trip.ownerId !== userId) {
-      return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
-    }
 
     // Cannot remove owner
     const member = await db.query.tripMembers.findFirst({

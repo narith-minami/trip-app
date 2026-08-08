@@ -3,20 +3,22 @@
  *
  * Trip management API endpoints.
  * Handles CRUD operations for trips with proper access control.
+ * `/:tripId` routes are guarded by `requireMember` (membership) and, for
+ * destructive operations, `requireOwner`.
  * Unexpected errors propagate to the central `app.onError` handler.
  */
 
 import { zValidator } from "@hono/zod-validator";
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
 import { generateId } from "@/lib/utils";
 import { getDb, tripMembers, trips, userSummaryColumns } from "../db";
 import { ERROR_MESSAGES } from "../lib/errors";
-import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
-
-const ERR_TRIP_ID_REQUIRED = "旅行IDが必要です";
+import type { TripMemberContext } from "../middleware/requireMember";
+import { requireMember } from "../middleware/requireMember";
+import { requireOwner } from "../middleware/requireOwner";
 
 type TripUpdateInput = Partial<typeof trips.$inferInsert>;
 
@@ -44,11 +46,24 @@ function buildTripUpdate(validated: {
   return updateData;
 }
 
-/**
- * GET /api/trips
- * List trips for the current user
- */
-const tripsRouter = new Hono<AuthContext>()
+/** Shared relation shape: trip with owner and member users embedded. */
+const withOwnerAndMembers = {
+  owner: { columns: userSummaryColumns },
+  members: {
+    with: {
+      user: { columns: userSummaryColumns },
+    },
+  },
+} as const;
+
+const tripsRouter = new Hono<TripMemberContext>()
+  // Membership guard for all single-trip routes. List/create ("/") only
+  // require a session and keep their own requireSession() below.
+  .use("/:tripId", requireSession(), requireMember)
+  /**
+   * GET /api/trips
+   * List trips for the current user
+   */
   .get("/", requireSession(), async (c) => {
     const userId = c.get("user")?.id ?? null;
     if (!userId) {
@@ -75,14 +90,7 @@ const tripsRouter = new Hono<AuthContext>()
     const tripsData = await db.query.trips.findMany({
       where: (trips, { inArray }) => inArray(trips.id, tripIds),
       orderBy: desc(trips.createdAt),
-      with: {
-        owner: { columns: userSummaryColumns },
-        members: {
-          with: {
-            user: { columns: userSummaryColumns },
-          },
-        },
-      },
+      with: withOwnerAndMembers,
     });
 
     const total = tripsData.length;
@@ -148,53 +156,22 @@ const tripsRouter = new Hono<AuthContext>()
     // Fetch and return the created trip
     const createdTrip = await db.query.trips.findFirst({
       where: eq(trips.id, tripId),
-      with: {
-        owner: { columns: userSummaryColumns },
-        members: {
-          with: {
-            user: { columns: userSummaryColumns },
-          },
-        },
-      },
+      with: withOwnerAndMembers,
     });
 
     return c.json(createdTrip, 201);
   })
   /**
    * GET /api/trips/:tripId
-   * Get trip detail
+   * Get trip detail (members only, via requireMember)
    */
-  .get("/:tripId", requireSession(), async (c) => {
-    const userId = c.get("user")?.id ?? null;
-    if (!userId) {
-      return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
-    }
-
-    const tripId = c.req.param("tripId");
-    if (!tripId) {
-      return c.json({ error: ERR_TRIP_ID_REQUIRED }, 400);
-    }
+  .get("/:tripId", async (c) => {
+    const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
-
-    // Check membership
-    const member = await db.query.tripMembers.findFirst({
-      where: and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, userId)),
-    });
-
-    if (!member) {
-      return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
-    }
 
     const trip = await db.query.trips.findFirst({
       where: eq(trips.id, tripId),
-      with: {
-        owner: { columns: userSummaryColumns },
-        members: {
-          with: {
-            user: { columns: userSummaryColumns },
-          },
-        },
-      },
+      with: withOwnerAndMembers,
     });
 
     if (!trip) {
@@ -205,86 +182,34 @@ const tripsRouter = new Hono<AuthContext>()
   })
   /**
    * PUT /api/trips/:tripId
-   * Update trip
+   * Update trip (members only, via requireMember)
    */
-  .put(
-    "/:tripId",
-    requireSession(),
-    zValidator("json", UpdateTripSchema.omit({ id: true })),
-    async (c) => {
-      const userId = c.get("user")?.id ?? null;
-      if (!userId) {
-        return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
-      }
+  .put("/:tripId", zValidator("json", UpdateTripSchema.omit({ id: true })), async (c) => {
+    const tripId = c.get("tripId");
+    const validated = c.req.valid("json");
 
-      const tripId = c.req.param("tripId");
-      if (!tripId) {
-        return c.json({ error: ERR_TRIP_ID_REQUIRED }, 400);
-      }
-      const validated = c.req.valid("json");
-
-      const db = getDb(c.env.DB);
-
-      // Check membership
-      const member = await db.query.tripMembers.findFirst({
-        where: and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, userId)),
-      });
-
-      if (!member) {
-        return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
-      }
-
-      // Update trip
-      const updateData = buildTripUpdate(validated);
-
-      await db.update(trips).set(updateData).where(eq(trips.id, tripId));
-
-      const updated = await db.query.trips.findFirst({
-        where: eq(trips.id, tripId),
-        with: {
-          owner: { columns: userSummaryColumns },
-          members: {
-            with: {
-              user: { columns: userSummaryColumns },
-            },
-          },
-        },
-      });
-
-      return c.json(updated);
-    }
-  )
-  /**
-   * DELETE /api/trips/:tripId
-   * Delete trip (owner only)
-   */
-  .delete("/:tripId", requireSession(), async (c) => {
-    const userId = c.get("user")?.id ?? null;
-    if (!userId) {
-      return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
-    }
-
-    const tripId = c.req.param("tripId");
-    if (!tripId) {
-      return c.json({ error: ERR_TRIP_ID_REQUIRED }, 400);
-    }
     const db = getDb(c.env.DB);
 
-    // Get trip
-    const trip = await db.query.trips.findFirst({
+    // Update trip
+    const updateData = buildTripUpdate(validated);
+
+    await db.update(trips).set(updateData).where(eq(trips.id, tripId));
+
+    const updated = await db.query.trips.findFirst({
       where: eq(trips.id, tripId),
+      with: withOwnerAndMembers,
     });
 
-    if (!trip) {
-      return c.json({ error: ERROR_MESSAGES.TRIP_NOT_FOUND }, 404);
-    }
+    return c.json(updated);
+  })
+  /**
+   * DELETE /api/trips/:tripId
+   * Delete trip (owner only, via requireOwner)
+   */
+  .delete("/:tripId", requireOwner, async (c) => {
+    const tripId = c.get("tripId");
+    const db = getDb(c.env.DB);
 
-    // Only owner can delete
-    if (trip.ownerId !== userId) {
-      return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
-    }
-
-    // Delete trip
     await db.delete(trips).where(eq(trips.id, tripId));
 
     return c.json({ success: true });

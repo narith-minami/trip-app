@@ -30,11 +30,12 @@ async function findItemInTrip(db: ReturnType<typeof getDb>, itemId: string, trip
 }
 
 const scheduleImagesRouter = new Hono<TripMemberContext>()
+  .use("*", requireSession(), requireMember)
   /**
    * POST /api/trips/:tripId/schedule/:itemId/images
    * Upload a new photo for a schedule item to R2 (appended, not replaced)
    */
-  .post("/", requireSession(), requireMember, async (c) => {
+  .post("/", async (c) => {
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
     if (!itemId) {
@@ -98,7 +99,7 @@ const scheduleImagesRouter = new Hono<TripMemberContext>()
    * DELETE /api/trips/:tripId/schedule/:itemId/images/:imageId
    * Remove a single photo from a schedule item
    */
-  .delete("/:imageId", requireSession(), requireMember, async (c) => {
+  .delete("/:imageId", async (c) => {
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
     const imageId = c.req.param("imageId");

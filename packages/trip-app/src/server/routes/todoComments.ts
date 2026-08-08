@@ -36,65 +36,60 @@ async function findTodoInTrip(db: ReturnType<typeof getDb>, todoId: string, trip
 }
 
 const commentsRouter = new Hono<TripMemberContext>()
+  .use("*", requireSession(), requireMember)
   /**
    * POST /api/trips/:tripId/todos/:todoId/comments
    * Create a comment as the current session user.
    */
-  .post(
-    "/",
-    requireSession(),
-    requireMember,
-    zValidator("json", CreateCommentSchema),
-    async (c) => {
-      const tripId = c.get("tripId");
-      const todoId = c.req.param("todoId");
-      const user = c.get("user");
-      if (!todoId) {
-        return c.json({ error: "TodoのIDが必要です" }, 400);
-      }
-      if (!user) {
-        return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
-      }
-      const validated = c.req.valid("json");
-      const db = getDb(c.env.DB);
+  .post("/", zValidator("json", CreateCommentSchema), async (c) => {
+    const tripId = c.get("tripId");
+    const todoId = c.req.param("todoId");
+    const user = c.get("user");
+    if (!todoId) {
+      return c.json({ error: "TodoのIDが必要です" }, 400);
+    }
+    if (!user) {
+      return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
+    }
+    const validated = c.req.valid("json");
+    const db = getDb(c.env.DB);
 
-      const todo = await findTodoInTrip(db, todoId, tripId);
-      if (!todo) {
-        return c.json({ error: "Todoが見つかりません" }, 404);
-      }
+    const todo = await findTodoInTrip(db, todoId, tripId);
+    if (!todo) {
+      return c.json({ error: "Todoが見つかりません" }, 404);
+    }
 
-      const commentId = generateId("todoComment");
-      const now = Date.now();
-      await db.insert(todoComments).values({
+    const commentId = generateId("todoComment");
+    const now = Date.now();
+    await db.insert(todoComments).values({
+      id: commentId,
+      todoId,
+      authorId: user.id,
+      content: validated.content,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // The author is just the session user (a subset of it) — no need to
+    // re-fetch the row we just inserted with a join to get it.
+    return c.json(
+      {
         id: commentId,
         todoId,
         authorId: user.id,
         content: validated.content,
         createdAt: now,
         updatedAt: now,
-      });
-
-      // The author is just the session user (a subset of it) — no need to
-      // re-fetch the row we just inserted with a join to get it.
-      return c.json(
-        {
-          id: commentId,
-          todoId,
-          authorId: user.id,
-          content: validated.content,
-          createdAt: now,
-          updatedAt: now,
-          author: { id: user.id, name: user.name, email: user.email, image: user.image },
-        },
-        201
-      );
-    }
-  )
+        author: { id: user.id, name: user.name, email: user.email, image: user.image },
+      },
+      201
+    );
+  })
   /**
    * DELETE /api/trips/:tripId/todos/:todoId/comments/:commentId
    * Delete a comment. Only the author may delete their own comment.
    */
-  .delete("/:commentId", requireSession(), requireMember, async (c) => {
+  .delete("/:commentId", async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
     const commentId = c.req.param("commentId");
