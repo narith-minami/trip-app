@@ -26,6 +26,8 @@ describe("createAuth", () => {
       DB: {} as Env["DB"],
       AUTH_SECRET: "test-secret",
       BETTER_AUTH_URL: "http://localhost:5173",
+      RESEND_API_KEY: "re_test_key",
+      EMAIL_FROM: "Trip App <noreply@example.com>",
     } satisfies Env;
 
     const auth = createAuth(env);
@@ -33,11 +35,27 @@ describe("createAuth", () => {
     expect(typeof auth.api.getSession).toBe("function");
   });
 
+  it("wires a sendResetPassword callback for the forgot-password flow", () => {
+    const env = {
+      DB: {} as Env["DB"],
+      AUTH_SECRET: "test-secret",
+      BETTER_AUTH_URL: "http://localhost:5173",
+      RESEND_API_KEY: "re_test_key",
+      EMAIL_FROM: "Trip App <noreply@example.com>",
+    } satisfies Env;
+
+    const auth = createAuth(env);
+
+    expect(typeof auth.options.emailAndPassword?.sendResetPassword).toBe("function");
+  });
+
   it("only enables the Google provider when both OAuth credentials are set", () => {
     const baseEnv = {
       DB: {} as Env["DB"],
       AUTH_SECRET: "test-secret",
       BETTER_AUTH_URL: "http://localhost:5173",
+      RESEND_API_KEY: "re_test_key",
+      EMAIL_FROM: "Trip App <noreply@example.com>",
     } satisfies Env;
 
     const withoutGoogle = createAuth(baseEnv);
