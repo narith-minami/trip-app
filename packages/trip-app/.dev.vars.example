@@ -19,6 +19,14 @@ BETTER_AUTH_URL="http://localhost:5173"
 # GOOGLE_CLIENT_ID=""
 # GOOGLE_CLIENT_SECRET=""
 
+# Optional: Yahoo! Open Local Platform (YOLP) Client ID, used for facility
+# search / address autofill in the facility registration form.
+# Free to obtain: sign up at https://developer.yahoo.co.jp/start/, create an
+# application, and copy the issued Client ID here. Free tier: 50,000 requests
+# per app per day. When omitted, the facility search feature is disabled and
+# users fall back to manual entry.
+# YAHOO_CLIENT_ID=""
+
 # Required: Resend API key, used to send password-reset emails.
 # Get one at https://resend.com/api-keys
 RESEND_API_KEY=""

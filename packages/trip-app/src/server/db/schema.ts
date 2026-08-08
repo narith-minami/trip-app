@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // ============================================================================
 // User (Better Auth managed)
@@ -83,6 +83,8 @@ export const facilities = sqliteTable("facilities", {
   category: text("category").notNull(), // FacilityCategory key
   name: text("name").notNull(),
   address: text("address"),
+  lat: real("lat"),
+  lng: real("lng"),
   phone: text("phone"),
   businessHours: text("businessHours"),
   url: text("url"),

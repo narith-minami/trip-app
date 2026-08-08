@@ -40,6 +40,8 @@ export interface Facility {
   category: string;
   name: string;
   address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   phone?: string | null;
   businessHours?: string | null;
   url?: string | null;

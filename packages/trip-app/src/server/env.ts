@@ -15,6 +15,7 @@ export interface Env {
   BETTER_AUTH_URL: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  YAHOO_CLIENT_ID?: string;
   RESEND_API_KEY: string;
   EMAIL_FROM: string;
 }

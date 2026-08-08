@@ -109,6 +109,7 @@ export function FacilityDetail({
       </Card>
 
       <FacilityFormDialog
+        tripId={tripId}
         isOpen={isEditOpen}
         editing={facility}
         isSubmitting={isSubmitting}

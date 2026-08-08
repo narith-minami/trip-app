@@ -3,6 +3,7 @@ import type { Facility } from "@/types/entities";
 import { FacilityForm, type FacilityFormValues } from "./FacilityForm";
 
 interface FacilityFormDialogProps {
+  tripId: string;
   isOpen: boolean;
   editing: Facility | null;
   isSubmitting: boolean;
@@ -11,6 +12,7 @@ interface FacilityFormDialogProps {
 }
 
 export function FacilityFormDialog({
+  tripId,
   isOpen,
   editing,
   isSubmitting,
@@ -20,6 +22,7 @@ export function FacilityFormDialog({
   return (
     <Dialog open={isOpen} onClose={onClose} title={editing ? "施設を編集" : "施設を追加"}>
       <FacilityForm
+        tripId={tripId}
         initial={editing ?? undefined}
         isSubmitting={isSubmitting}
         onSubmit={onSubmit}

@@ -17,6 +17,8 @@ function toPayload(values: FacilityFormValues) {
     category: values.category,
     name: values.name,
     address: values.address || null,
+    lat: values.lat,
+    lng: values.lng,
     phone: values.phone || null,
     businessHours: values.businessHours || null,
     url: values.url || null,

@@ -14,9 +14,12 @@ import { facilities, getDb, scheduleItems } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
+import { searchFacilitiesByKeyword } from "../services/facilitySearch";
 
 const ERR_INTERNAL = "内部サーバーエラー";
 const ERR_NOT_FOUND = "施設が見つかりません";
+const ERR_SEARCH_UNAVAILABLE = "施設検索機能は現在利用できません";
+const ERR_SEARCH_FAILED = "施設検索に失敗しました";
 
 const FACILITY_CATEGORY_VALUES = [
   "hotel",
@@ -31,6 +34,8 @@ const CreateFacilitySchema = z.object({
   category: z.enum(FACILITY_CATEGORY_VALUES),
   name: z.string().min(1),
   address: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
   phone: z.string().nullable().optional(),
   businessHours: z.string().nullable().optional(),
   url: z.string().nullable().optional(),
@@ -38,6 +43,10 @@ const CreateFacilitySchema = z.object({
 });
 
 const UpdateFacilitySchema = CreateFacilitySchema.partial();
+
+const SearchQuerySchema = z.object({
+  q: z.string().min(1),
+});
 
 type FacilityUpdateInput = Partial<typeof facilities.$inferInsert>;
 
@@ -56,6 +65,8 @@ function buildFacilityUpdate(
   if (validated.category !== undefined) updateData.category = validated.category;
   if (validated.name !== undefined) updateData.name = validated.name;
   if (validated.address !== undefined) updateData.address = validated.address;
+  if (validated.lat !== undefined) updateData.lat = validated.lat;
+  if (validated.lng !== undefined) updateData.lng = validated.lng;
   if (validated.phone !== undefined) updateData.phone = validated.phone;
   if (validated.businessHours !== undefined) updateData.businessHours = validated.businessHours;
   if (validated.url !== undefined) updateData.url = validated.url;
@@ -83,6 +94,30 @@ const facilitiesRouter = new Hono<TripMemberContext>()
       return c.json({ error: ERR_INTERNAL }, 500);
     }
   })
+  /**
+   * GET /api/trips/:tripId/facilities/search?q=...
+   * Search external facility info (name/address/phone/coordinates) via YOLP.
+   * Must be registered before "/:facilityId" so "search" isn't captured as an ID.
+   */
+  .get(
+    "/search",
+    requireSession(),
+    requireMember,
+    zValidator("query", SearchQuerySchema),
+    async (c) => {
+      const appId = c.env.YAHOO_CLIENT_ID;
+      if (!appId) {
+        return c.json({ error: ERR_SEARCH_UNAVAILABLE }, 503);
+      }
+      try {
+        const { q } = c.req.valid("query");
+        const results = await searchFacilitiesByKeyword(q, appId);
+        return c.json({ data: results });
+      } catch (_error) {
+        return c.json({ error: ERR_SEARCH_FAILED }, 502);
+      }
+    }
+  )
   /**
    * GET /api/trips/:tripId/facilities/:facilityId
    * Get a single facility's detail.
@@ -133,6 +168,8 @@ const facilitiesRouter = new Hono<TripMemberContext>()
           category: validated.category,
           name: validated.name,
           address: validated.address,
+          lat: validated.lat,
+          lng: validated.lng,
           phone: validated.phone,
           businessHours: validated.businessHours,
           url: validated.url,
