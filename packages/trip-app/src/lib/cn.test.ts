@@ -10,7 +10,7 @@ describe("cn", () => {
     expect(cn("a", false, null, undefined, "b")).toBe("a b");
   });
 
-  it("keeps numeric values", () => {
+  it("drops 0 along with other falsy values but keeps truthy numbers", () => {
     expect(cn("a", 0, 1)).toBe("a 1");
   });
 

@@ -22,7 +22,7 @@ export function TodoDetailPage() {
   const { data: trip } = useTripDetail(tripId);
   const { data: todo, isLoading, error } = useTodoDetail(tripId, todoId);
 
-  const handleBack = () => navigate({ to: "/trips/$tripId/", params: { tripId } });
+  const handleBack = () => navigate({ to: "/trips/$tripId", params: { tripId } });
 
   if (isLoading) return <LoadingSpinner fullScreen label="Todoを読み込み中..." />;
 

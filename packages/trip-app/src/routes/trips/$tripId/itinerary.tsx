@@ -20,7 +20,7 @@ export function ItineraryPage() {
   const { data: trip, isLoading } = useTripDetail(tripId);
   const { backgroundColor } = useTripColors(tripId);
 
-  const handleBack = () => navigate({ to: "/trips/$tripId/", params: { tripId } });
+  const handleBack = () => navigate({ to: "/trips/$tripId", params: { tripId } });
 
   const dates =
     trip?.startDate && trip?.endDate ? generateDateRange(trip.startDate, trip.endDate) : [];

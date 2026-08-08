@@ -18,7 +18,7 @@ export function FacilityDetailPage() {
   const navigate = useNavigate();
   const { data: facility, isLoading, error } = useFacilityDetail(tripId, facilityId);
 
-  const handleBack = () => navigate({ to: "/trips/$tripId/", params: { tripId } });
+  const handleBack = () => navigate({ to: "/trips/$tripId", params: { tripId } });
 
   if (isLoading) return <LoadingSpinner fullScreen label="施設を読み込み中..." />;
 

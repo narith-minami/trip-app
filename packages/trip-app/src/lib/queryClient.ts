@@ -20,7 +20,7 @@ function createQueryClient() {
         gcTime: 1000 * 60 * 10,
         // Retry failed queries up to 2 times
         retry: 2,
-        // Don't retry on 4xx errors (client errors)
+        // Retry a failed query when its component remounts
         retryOnMount: true,
       },
       mutations: {
