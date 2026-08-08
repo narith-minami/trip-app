@@ -186,7 +186,8 @@
       "includes": ["src/server/**/*.ts"],
       "linter": {
         "rules": {
-          "style": { "useNamingConvention": "off" }
+          "style": { "useNamingConvention": "off" },
+          "suspicious": { "noConsole": "off" }
         }
       }
     },

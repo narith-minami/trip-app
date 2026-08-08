@@ -8,6 +8,7 @@
 
 import { Hono } from "hono";
 import type { Env } from "./env";
+import { ERROR_MESSAGES } from "./lib/errors";
 import { createAuth } from "./routes/auth";
 import coverRouter from "./routes/cover";
 import facilitiesRouter from "./routes/facilities";
@@ -73,7 +74,7 @@ const routes = app
  */
 app.notFound(async (c) => {
   if (c.req.path.startsWith("/api/")) {
-    return c.json({ error: "Not Found" }, 404);
+    return c.json({ error: ERROR_MESSAGES.NOT_FOUND }, 404);
   }
   if (c.env.ASSETS) {
     const assetResponse = await c.env.ASSETS.fetch(c.req.url);
@@ -81,14 +82,17 @@ app.notFound(async (c) => {
     const indexUrl = new URL("/index.html", c.req.url).toString();
     return (await c.env.ASSETS.fetch(indexUrl)) as unknown as Response;
   }
-  return c.json({ error: "Not Found" }, 404);
+  return c.json({ error: ERROR_MESSAGES.NOT_FOUND }, 404);
 });
 
 /**
- * Error handler
+ * Central error handler. Route handlers deliberately let unexpected errors
+ * propagate here instead of wrapping every handler in try/catch, so all
+ * 500s are logged in one place.
  */
-app.onError((_err, c) => {
-  return c.json({ error: "Internal Server Error" }, 500);
+app.onError((err, c) => {
+  console.error(`${c.req.method} ${c.req.path} failed`, err);
+  return c.json({ error: ERROR_MESSAGES.INTERNAL }, 500);
 });
 
 /**

@@ -3,6 +3,7 @@
  *
  * Memo API endpoints.
  * Handles CRUD operations for trip memos (upsert pattern).
+ * Unexpected errors propagate to the central `app.onError` handler.
  */
 
 import { zValidator } from "@hono/zod-validator";
@@ -25,73 +26,62 @@ const MemoSchema = z.object({
  */
 const memoRouter = new Hono<TripMemberContext>()
   .get("/", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const db = getDb(c.env.DB);
+    const tripId = c.get("tripId");
+    const db = getDb(c.env.DB);
 
-      let memo = await db.query.tripMemos.findFirst({
-        where: eq(tripMemos.tripId, tripId),
+    let memo = await db.query.tripMemos.findFirst({
+      where: eq(tripMemos.tripId, tripId),
+    });
+
+    // If memo doesn't exist, create empty one
+    if (!memo) {
+      await db.insert(tripMemos).values({
+        tripId,
+        content: "",
       });
 
-      // If memo doesn't exist, create empty one
-      if (!memo) {
-        await db.insert(tripMemos).values({
-          tripId,
-          content: "",
-        });
-
-        memo = await db.query.tripMemos.findFirst({
-          where: eq(tripMemos.tripId, tripId),
-        });
-      }
-
-      return c.json(memo);
-    } catch (_error) {
-      return c.json({ error: "内部サーバーエラー" }, 500);
+      memo = await db.query.tripMemos.findFirst({
+        where: eq(tripMemos.tripId, tripId),
+      });
     }
+
+    return c.json(memo);
   })
   /**
    * PUT /api/trips/:tripId/memo
    * Update memo
    */
   .put("/", requireSession(), requireMember, zValidator("json", MemoSchema), async (c) => {
-    try {
-      const userId = c.get("user")?.id ?? null;
-      const tripId = c.get("tripId");
-      const validated = c.req.valid("json");
+    const userId = c.get("user")?.id ?? null;
+    const tripId = c.get("tripId");
+    const validated = c.req.valid("json");
 
-      const db = getDb(c.env.DB);
+    const db = getDb(c.env.DB);
 
-      // Atomic upsert: insert the memo or update it if one already exists
-      // for this trip. Avoids a read-then-write race under concurrency.
-      await db
-        .insert(tripMemos)
-        .values({
-          tripId,
+    // Atomic upsert: insert the memo or update it if one already exists
+    // for this trip. Avoids a read-then-write race under concurrency.
+    await db
+      .insert(tripMemos)
+      .values({
+        tripId,
+        content: validated.content,
+        updatedBy: userId,
+        updatedAt: Date.now(),
+      })
+      .onConflictDoUpdate({
+        target: tripMemos.tripId,
+        set: {
           content: validated.content,
           updatedBy: userId,
           updatedAt: Date.now(),
-        })
-        .onConflictDoUpdate({
-          target: tripMemos.tripId,
-          set: {
-            content: validated.content,
-            updatedBy: userId,
-            updatedAt: Date.now(),
-          },
-        });
-
-      const updated = await db.query.tripMemos.findFirst({
-        where: eq(tripMemos.tripId, tripId),
+        },
       });
 
-      return c.json(updated);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("validation")) {
-        return c.json({ error: error.message }, 400);
-      }
-      return c.json({ error: "内部サーバーエラー" }, 500);
-    }
+    const updated = await db.query.tripMemos.findFirst({
+      where: eq(tripMemos.tripId, tripId),
+    });
+
+    return c.json(updated);
   });
 
 export default memoRouter;

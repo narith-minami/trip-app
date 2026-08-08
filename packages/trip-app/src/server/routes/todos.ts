@@ -40,8 +40,6 @@ const UpdateTodoSchema = z.object({
   tags: TodoTagsSchema.optional(),
 });
 
-const ERR_INTERNAL = "内部サーバーエラー";
-
 type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 
 type TodoWithRelations = typeof todos.$inferSelect & {
@@ -155,88 +153,71 @@ async function persistTodoUpdate(
  */
 const todosRouter = new Hono<TripMemberContext>()
   .get("/", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const db = getDb(c.env.DB);
+    const tripId = c.get("tripId");
+    const db = getDb(c.env.DB);
 
-      const items = await db.query.todos.findMany({
-        where: eq(todos.tripId, tripId),
-        with: {
-          assignee: { columns: userSummaryColumns },
-          tags: true,
-        },
-      });
+    const items = await db.query.todos.findMany({
+      where: eq(todos.tripId, tripId),
+      with: {
+        assignee: { columns: userSummaryColumns },
+        tags: true,
+      },
+    });
 
-      return c.json({ data: items.map((item) => serialize(item as TodoWithRelations)) });
-    } catch (error) {
-      console.error("GET /api/trips/:tripId/todos failed", error);
-      return c.json({ error: ERR_INTERNAL }, 500);
-    }
+    return c.json({ data: items.map((item) => serialize(item as TodoWithRelations)) });
   })
   /**
    * GET /api/trips/:tripId/todos/:todoId
    * Fetch a single todo with its assignee, tags and comments (detail view).
    */
   .get("/:todoId", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const todoId = c.req.param("todoId");
-      if (!todoId) {
-        return c.json({ error: "TodoのIDが必要です" }, 400);
-      }
-      const db = getDb(c.env.DB);
-
-      const todo = await findTodoDetail(db, todoId);
-      if (!todo || todo.tripId !== tripId) {
-        return c.json({ error: "Todoが見つかりません" }, 404);
-      }
-
-      return c.json(serializeDetail(todo as TodoDetailWithRelations));
-    } catch (error) {
-      console.error("GET /api/trips/:tripId/todos/:todoId failed", error);
-      return c.json({ error: ERR_INTERNAL }, 500);
+    const tripId = c.get("tripId");
+    const todoId = c.req.param("todoId");
+    if (!todoId) {
+      return c.json({ error: "TodoのIDが必要です" }, 400);
     }
+    const db = getDb(c.env.DB);
+
+    const todo = await findTodoDetail(db, todoId);
+    if (!todo || todo.tripId !== tripId) {
+      return c.json({ error: "Todoが見つかりません" }, 404);
+    }
+
+    return c.json(serializeDetail(todo as TodoDetailWithRelations));
   })
   /**
    * POST /api/trips/:tripId/todos
    * Create a todo
    */
   .post("/", requireSession(), requireMember, zValidator("json", CreateTodoSchema), async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const validated = c.req.valid("json");
+    const tripId = c.get("tripId");
+    const validated = c.req.valid("json");
 
-      const db = getDb(c.env.DB);
-      const todoId = generateId("todo");
-      const tags = uniqueTags(validated.tags);
+    const db = getDb(c.env.DB);
+    const todoId = generateId("todo");
+    const tags = uniqueTags(validated.tags);
 
-      const insertTodo = db.insert(todos).values({
-        id: todoId,
-        tripId,
-        title: validated.title,
-        description: validated.description ?? null,
-        dueDate: validated.dueDate ?? null,
-        assigneeId: validated.assigneeId,
-        priority: validated.priority ?? "medium",
-      });
+    const insertTodo = db.insert(todos).values({
+      id: todoId,
+      tripId,
+      title: validated.title,
+      description: validated.description ?? null,
+      dueDate: validated.dueDate ?? null,
+      assigneeId: validated.assigneeId,
+      priority: validated.priority ?? "medium",
+    });
 
-      // Bulk-insert tags in a single batch with the todo for atomicity
-      // and to avoid N+1 round trips (AGENTS.md #4/#8).
-      const tagStmt = insertTagsStmt(db, todoId, tags);
-      await (tagStmt ? db.batch([insertTodo, tagStmt]) : insertTodo);
+    // Bulk-insert tags in a single batch with the todo for atomicity
+    // and to avoid N+1 round trips (AGENTS.md #4/#8).
+    const tagStmt = insertTagsStmt(db, todoId, tags);
+    await (tagStmt ? db.batch([insertTodo, tagStmt]) : insertTodo);
 
-      const created = await findTodo(db, todoId);
-      if (!created) {
-        return c.json({ error: "作成されたTodoの取得に失敗しました" }, 500);
-      }
-
-      return c.json(serialize(created as TodoWithRelations), 201);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("validation")) {
-        return c.json({ error: error.message }, 400);
-      }
-      return c.json({ error: ERR_INTERNAL }, 500);
+    const created = await findTodo(db, todoId);
+    if (!created) {
+      return c.json({ error: "作成されたTodoの取得に失敗しました" }, 500);
     }
+
+    return c.json(serialize(created as TodoWithRelations), 201);
   })
   /**
    * PUT /api/trips/:tripId/todos/:todoId
@@ -248,52 +229,13 @@ const todosRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", UpdateTodoSchema),
     async (c) => {
-      try {
-        const tripId = c.get("tripId");
-        const todoId = c.req.param("todoId");
-        if (!todoId) {
-          return c.json({ error: "TodoのIDが必要です" }, 400);
-        }
-        const validated = c.req.valid("json");
-
-        const db = getDb(c.env.DB);
-
-        // Verify todo belongs to trip
-        const todo = await db.query.todos.findFirst({
-          where: and(eq(todos.id, todoId), eq(todos.tripId, tripId)),
-        });
-
-        if (!todo) {
-          return c.json({ error: "Todoが見つかりません" }, 404);
-        }
-
-        await persistTodoUpdate(db, todoId, validated);
-
-        const updated = await findTodo(db, todoId);
-        if (!updated) {
-          return c.json({ error: "更新されたTodoの取得に失敗しました" }, 500);
-        }
-
-        return c.json(serialize(updated as TodoWithRelations));
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("validation")) {
-          return c.json({ error: error.message }, 400);
-        }
-        return c.json({ error: ERR_INTERNAL }, 500);
-      }
-    }
-  )
-  /**
-   * DELETE /api/trips/:tripId/todos/:todoId
-   * Delete a todo (and its tags)
-   */
-  .delete("/:todoId", requireSession(), requireMember, async (c) => {
-    try {
       const tripId = c.get("tripId");
       const todoId = c.req.param("todoId");
       if (!todoId) {
         return c.json({ error: "TodoのIDが必要です" }, 400);
       }
+      const validated = c.req.valid("json");
+
       const db = getDb(c.env.DB);
 
       // Verify todo belongs to trip
@@ -305,17 +247,44 @@ const todosRouter = new Hono<TripMemberContext>()
         return c.json({ error: "Todoが見つかりません" }, 404);
       }
 
-      await db.batch([
-        db.delete(todoComments).where(eq(todoComments.todoId, todoId)),
-        db.delete(todoTags).where(eq(todoTags.todoId, todoId)),
-        db.delete(todos).where(eq(todos.id, todoId)),
-      ]);
+      await persistTodoUpdate(db, todoId, validated);
 
-      return c.json({ success: true });
-    } catch (error) {
-      console.error("DELETE /api/trips/:tripId/todos/:todoId failed", error);
-      return c.json({ error: ERR_INTERNAL }, 500);
+      const updated = await findTodo(db, todoId);
+      if (!updated) {
+        return c.json({ error: "更新されたTodoの取得に失敗しました" }, 500);
+      }
+
+      return c.json(serialize(updated as TodoWithRelations));
     }
+  )
+  /**
+   * DELETE /api/trips/:tripId/todos/:todoId
+   * Delete a todo (and its tags)
+   */
+  .delete("/:todoId", requireSession(), requireMember, async (c) => {
+    const tripId = c.get("tripId");
+    const todoId = c.req.param("todoId");
+    if (!todoId) {
+      return c.json({ error: "TodoのIDが必要です" }, 400);
+    }
+    const db = getDb(c.env.DB);
+
+    // Verify todo belongs to trip
+    const todo = await db.query.todos.findFirst({
+      where: and(eq(todos.id, todoId), eq(todos.tripId, tripId)),
+    });
+
+    if (!todo) {
+      return c.json({ error: "Todoが見つかりません" }, 404);
+    }
+
+    await db.batch([
+      db.delete(todoComments).where(eq(todoComments.todoId, todoId)),
+      db.delete(todoTags).where(eq(todoTags.todoId, todoId)),
+      db.delete(todos).where(eq(todos.id, todoId)),
+    ]);
+
+    return c.json({ success: true });
   });
 
 export default todosRouter;

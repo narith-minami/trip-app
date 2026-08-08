@@ -16,7 +16,6 @@ import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
 import { searchFacilitiesByKeyword } from "../services/facilitySearch";
 
-const ERR_INTERNAL = "内部サーバーエラー";
 const ERR_NOT_FOUND = "施設が見つかりません";
 const ERR_SEARCH_UNAVAILABLE = "施設検索機能は現在利用できません";
 const ERR_SEARCH_FAILED = "施設検索に失敗しました";
@@ -80,19 +79,15 @@ function buildFacilityUpdate(
  */
 const facilitiesRouter = new Hono<TripMemberContext>()
   .get("/", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const db = getDb(c.env.DB);
+    const tripId = c.get("tripId");
+    const db = getDb(c.env.DB);
 
-      const items = await db.query.facilities.findMany({
-        where: eq(facilities.tripId, tripId),
-        orderBy: [asc(facilities.category), asc(facilities.createdAt)],
-      });
+    const items = await db.query.facilities.findMany({
+      where: eq(facilities.tripId, tripId),
+      orderBy: [asc(facilities.category), asc(facilities.createdAt)],
+    });
 
-      return c.json({ data: items });
-    } catch (_error) {
-      return c.json({ error: ERR_INTERNAL }, 500);
-    }
+    return c.json({ data: items });
   })
   /**
    * GET /api/trips/:tripId/facilities/search?q=...
@@ -123,26 +118,22 @@ const facilitiesRouter = new Hono<TripMemberContext>()
    * Get a single facility's detail.
    */
   .get("/:facilityId", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const facilityId = c.req.param("facilityId");
-      if (!facilityId) {
-        return c.json({ error: "施設IDが必要です" }, 400);
-      }
-
-      const db = getDb(c.env.DB);
-      const facility = await db.query.facilities.findFirst({
-        where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
-      });
-
-      if (!facility) {
-        return c.json({ error: ERR_NOT_FOUND }, 404);
-      }
-
-      return c.json(facility);
-    } catch (_error) {
-      return c.json({ error: ERR_INTERNAL }, 500);
+    const tripId = c.get("tripId");
+    const facilityId = c.req.param("facilityId");
+    if (!facilityId) {
+      return c.json({ error: "施設IDが必要です" }, 400);
     }
+
+    const db = getDb(c.env.DB);
+    const facility = await db.query.facilities.findFirst({
+      where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
+    });
+
+    if (!facility) {
+      return c.json({ error: ERR_NOT_FOUND }, 404);
+    }
+
+    return c.json(facility);
   })
   /**
    * POST /api/trips/:tripId/facilities
@@ -154,40 +145,33 @@ const facilitiesRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", CreateFacilitySchema),
     async (c) => {
-      try {
-        const userId = c.get("user")?.id ?? null;
-        const tripId = c.get("tripId");
-        const validated = c.req.valid("json");
+      const userId = c.get("user")?.id ?? null;
+      const tripId = c.get("tripId");
+      const validated = c.req.valid("json");
 
-        const db = getDb(c.env.DB);
-        const facilityId = generateId("facility");
+      const db = getDb(c.env.DB);
+      const facilityId = generateId("facility");
 
-        await db.insert(facilities).values({
-          id: facilityId,
-          tripId,
-          category: validated.category,
-          name: validated.name,
-          address: validated.address,
-          lat: validated.lat,
-          lng: validated.lng,
-          phone: validated.phone,
-          businessHours: validated.businessHours,
-          url: validated.url,
-          memo: validated.memo,
-          updatedBy: userId,
-        });
+      await db.insert(facilities).values({
+        id: facilityId,
+        tripId,
+        category: validated.category,
+        name: validated.name,
+        address: validated.address,
+        lat: validated.lat,
+        lng: validated.lng,
+        phone: validated.phone,
+        businessHours: validated.businessHours,
+        url: validated.url,
+        memo: validated.memo,
+        updatedBy: userId,
+      });
 
-        const created = await db.query.facilities.findFirst({
-          where: eq(facilities.id, facilityId),
-        });
+      const created = await db.query.facilities.findFirst({
+        where: eq(facilities.id, facilityId),
+      });
 
-        return c.json(created, 201);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("validation")) {
-          return c.json({ error: error.message }, 400);
-        }
-        return c.json({ error: ERR_INTERNAL }, 500);
-      }
+      return c.json(created, 201);
     }
   )
   /**
@@ -200,52 +184,13 @@ const facilitiesRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", UpdateFacilitySchema),
     async (c) => {
-      try {
-        const userId = c.get("user")?.id ?? null;
-        const tripId = c.get("tripId");
-        const facilityId = c.req.param("facilityId");
-        if (!facilityId) {
-          return c.json({ error: "施設IDが必要です" }, 400);
-        }
-        const validated = c.req.valid("json");
-
-        const db = getDb(c.env.DB);
-
-        const existing = await db.query.facilities.findFirst({
-          where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
-        });
-
-        if (!existing) {
-          return c.json({ error: ERR_NOT_FOUND }, 404);
-        }
-
-        const updateData = buildFacilityUpdate(validated, userId);
-        await db.update(facilities).set(updateData).where(eq(facilities.id, facilityId));
-
-        const updated = await db.query.facilities.findFirst({
-          where: eq(facilities.id, facilityId),
-        });
-
-        return c.json(updated);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("validation")) {
-          return c.json({ error: error.message }, 400);
-        }
-        return c.json({ error: ERR_INTERNAL }, 500);
-      }
-    }
-  )
-  /**
-   * DELETE /api/trips/:tripId/facilities/:facilityId
-   * Delete a facility and unlink it from any schedule items that reference it.
-   */
-  .delete("/:facilityId", requireSession(), requireMember, async (c) => {
-    try {
+      const userId = c.get("user")?.id ?? null;
       const tripId = c.get("tripId");
       const facilityId = c.req.param("facilityId");
       if (!facilityId) {
         return c.json({ error: "施設IDが必要です" }, 400);
       }
+      const validated = c.req.valid("json");
 
       const db = getDb(c.env.DB);
 
@@ -257,18 +202,46 @@ const facilitiesRouter = new Hono<TripMemberContext>()
         return c.json({ error: ERR_NOT_FOUND }, 404);
       }
 
-      await db.batch([
-        db
-          .update(scheduleItems)
-          .set({ facilityId: null })
-          .where(eq(scheduleItems.facilityId, facilityId)),
-        db.delete(facilities).where(eq(facilities.id, facilityId)),
-      ]);
+      const updateData = buildFacilityUpdate(validated, userId);
+      await db.update(facilities).set(updateData).where(eq(facilities.id, facilityId));
 
-      return c.json({ success: true });
-    } catch (_error) {
-      return c.json({ error: ERR_INTERNAL }, 500);
+      const updated = await db.query.facilities.findFirst({
+        where: eq(facilities.id, facilityId),
+      });
+
+      return c.json(updated);
     }
+  )
+  /**
+   * DELETE /api/trips/:tripId/facilities/:facilityId
+   * Delete a facility and unlink it from any schedule items that reference it.
+   */
+  .delete("/:facilityId", requireSession(), requireMember, async (c) => {
+    const tripId = c.get("tripId");
+    const facilityId = c.req.param("facilityId");
+    if (!facilityId) {
+      return c.json({ error: "施設IDが必要です" }, 400);
+    }
+
+    const db = getDb(c.env.DB);
+
+    const existing = await db.query.facilities.findFirst({
+      where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
+    });
+
+    if (!existing) {
+      return c.json({ error: ERR_NOT_FOUND }, 404);
+    }
+
+    await db.batch([
+      db
+        .update(scheduleItems)
+        .set({ facilityId: null })
+        .where(eq(scheduleItems.facilityId, facilityId)),
+      db.delete(facilities).where(eq(facilities.id, facilityId)),
+    ]);
+
+    return c.json({ success: true });
   });
 
 export default facilitiesRouter;

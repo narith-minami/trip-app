@@ -15,8 +15,6 @@ import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
 
-const ERR_INTERNAL = "内部サーバーエラー";
-
 const EVENT_TYPE_VALUES = [
   "food",
   "flight",
@@ -126,20 +124,16 @@ function buildScheduleUpdate(
  */
 const scheduleRouter = new Hono<TripMemberContext>()
   .get("/", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const db = getDb(c.env.DB);
+    const tripId = c.get("tripId");
+    const db = getDb(c.env.DB);
 
-      const items = await db.query.scheduleItems.findMany({
-        where: eq(scheduleItems.tripId, tripId),
-        orderBy: (items, { asc }) => [asc(items.date), asc(items.orderIndex)],
-        with: withRelations(),
-      });
+    const items = await db.query.scheduleItems.findMany({
+      where: eq(scheduleItems.tripId, tripId),
+      orderBy: (items, { asc }) => [asc(items.date), asc(items.orderIndex)],
+      with: withRelations(),
+    });
 
-      return c.json({ data: items });
-    } catch (_error) {
-      return c.json({ error: ERR_INTERNAL }, 500);
-    }
+    return c.json({ data: items });
   })
   /**
    * POST /api/trips/:tripId/schedule
@@ -151,48 +145,41 @@ const scheduleRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", CreateScheduleItemSchema),
     async (c) => {
-      try {
-        const userId = c.get("user")?.id ?? null;
-        const tripId = c.get("tripId");
-        const validated = c.req.valid("json");
+      const userId = c.get("user")?.id ?? null;
+      const tripId = c.get("tripId");
+      const validated = c.req.valid("json");
 
-        const db = getDb(c.env.DB);
+      const db = getDb(c.env.DB);
 
-        if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
-          return c.json({ error: "施設が見つかりません" }, 400);
-        }
-
-        const itemId = generateId("schedule");
-
-        await db.insert(scheduleItems).values({
-          id: itemId,
-          tripId,
-          date: validated.date,
-          startTime: validated.startTime,
-          endTime: validated.endTime,
-          title: validated.title,
-          eventType: validated.eventType,
-          isTentative: validated.isTentative ? 1 : 0,
-          placeName: validated.placeName,
-          placeUrl: validated.placeUrl,
-          memo: validated.memo,
-          facilityId: validated.facilityId,
-          orderIndex: validated.orderIndex,
-          updatedBy: userId,
-        });
-
-        const created = await db.query.scheduleItems.findFirst({
-          where: eq(scheduleItems.id, itemId),
-          with: withRelations(),
-        });
-
-        return c.json(created, 201);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("validation")) {
-          return c.json({ error: error.message }, 400);
-        }
-        return c.json({ error: ERR_INTERNAL }, 500);
+      if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+        return c.json({ error: "施設が見つかりません" }, 400);
       }
+
+      const itemId = generateId("schedule");
+
+      await db.insert(scheduleItems).values({
+        id: itemId,
+        tripId,
+        date: validated.date,
+        startTime: validated.startTime,
+        endTime: validated.endTime,
+        title: validated.title,
+        eventType: validated.eventType,
+        isTentative: validated.isTentative ? 1 : 0,
+        placeName: validated.placeName,
+        placeUrl: validated.placeUrl,
+        memo: validated.memo,
+        facilityId: validated.facilityId,
+        orderIndex: validated.orderIndex,
+        updatedBy: userId,
+      });
+
+      const created = await db.query.scheduleItems.findFirst({
+        where: eq(scheduleItems.id, itemId),
+        with: withRelations(),
+      });
+
+      return c.json(created, 201);
     }
   )
   /**
@@ -205,46 +192,39 @@ const scheduleRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", UpdateScheduleItemSchema),
     async (c) => {
-      try {
-        const userId = c.get("user")?.id ?? null;
-        const tripId = c.get("tripId");
-        const itemId = c.req.param("itemId");
-        if (!itemId) {
-          return c.json({ error: "アイテムIDが必要です" }, 400);
-        }
-        const validated = c.req.valid("json");
-
-        const db = getDb(c.env.DB);
-
-        // Verify item belongs to trip
-        const item = await db.query.scheduleItems.findFirst({
-          where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
-        });
-
-        if (!item) {
-          return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
-        }
-
-        if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
-          return c.json({ error: "施設が見つかりません" }, 400);
-        }
-
-        const updateData = buildScheduleUpdate(validated, userId);
-
-        await db.update(scheduleItems).set(updateData).where(eq(scheduleItems.id, itemId));
-
-        const updated = await db.query.scheduleItems.findFirst({
-          where: eq(scheduleItems.id, itemId),
-          with: withRelations(),
-        });
-
-        return c.json(updated);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("validation")) {
-          return c.json({ error: error.message }, 400);
-        }
-        return c.json({ error: ERR_INTERNAL }, 500);
+      const userId = c.get("user")?.id ?? null;
+      const tripId = c.get("tripId");
+      const itemId = c.req.param("itemId");
+      if (!itemId) {
+        return c.json({ error: "アイテムIDが必要です" }, 400);
       }
+      const validated = c.req.valid("json");
+
+      const db = getDb(c.env.DB);
+
+      // Verify item belongs to trip
+      const item = await db.query.scheduleItems.findFirst({
+        where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
+      });
+
+      if (!item) {
+        return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
+      }
+
+      if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+        return c.json({ error: "施設が見つかりません" }, 400);
+      }
+
+      const updateData = buildScheduleUpdate(validated, userId);
+
+      await db.update(scheduleItems).set(updateData).where(eq(scheduleItems.id, itemId));
+
+      const updated = await db.query.scheduleItems.findFirst({
+        where: eq(scheduleItems.id, itemId),
+        with: withRelations(),
+      });
+
+      return c.json(updated);
     }
   )
   /**
@@ -257,38 +237,34 @@ const scheduleRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", ReorderScheduleItemsSchema),
     async (c) => {
-      try {
-        const tripId = c.get("tripId");
-        const userId = c.get("user")?.id ?? null;
-        const { items } = c.req.valid("json");
-        const db = getDb(c.env.DB);
+      const tripId = c.get("tripId");
+      const userId = c.get("user")?.id ?? null;
+      const { items } = c.req.valid("json");
+      const db = getDb(c.env.DB);
 
-        // Verify all items belong to this trip
-        const existing = await db.query.scheduleItems.findMany({
-          where: and(
-            eq(scheduleItems.tripId, tripId),
-            inArray(
-              scheduleItems.id,
-              items.map((i) => i.id)
-            )
-          ),
-        });
-        if (existing.length !== items.length) {
-          return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
-        }
-
-        const now = Date.now();
-        for (const { id, orderIndex } of items) {
-          await db
-            .update(scheduleItems)
-            .set({ orderIndex, updatedAt: now, updatedBy: userId })
-            .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
-        }
-
-        return c.json({ success: true });
-      } catch (_error) {
-        return c.json({ error: ERR_INTERNAL }, 500);
+      // Verify all items belong to this trip
+      const existing = await db.query.scheduleItems.findMany({
+        where: and(
+          eq(scheduleItems.tripId, tripId),
+          inArray(
+            scheduleItems.id,
+            items.map((i) => i.id)
+          )
+        ),
+      });
+      if (existing.length !== items.length) {
+        return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
       }
+
+      const now = Date.now();
+      for (const { id, orderIndex } of items) {
+        await db
+          .update(scheduleItems)
+          .set({ orderIndex, updatedAt: now, updatedBy: userId })
+          .where(and(eq(scheduleItems.id, id), eq(scheduleItems.tripId, tripId)));
+      }
+
+      return c.json({ success: true });
     }
   )
   /**
@@ -301,57 +277,53 @@ const scheduleRouter = new Hono<TripMemberContext>()
     requireMember,
     zValidator("json", CopyScheduleItemsSchema),
     async (c) => {
-      try {
-        const tripId = c.get("tripId");
-        const userId = c.get("user")?.id ?? null;
-        const { targetDate, itemIds } = c.req.valid("json");
-        const db = getDb(c.env.DB);
+      const tripId = c.get("tripId");
+      const userId = c.get("user")?.id ?? null;
+      const { targetDate, itemIds } = c.req.valid("json");
+      const db = getDb(c.env.DB);
 
-        const existing = await db.query.scheduleItems.findMany({
-          where: and(eq(scheduleItems.tripId, tripId), inArray(scheduleItems.id, itemIds)),
-        });
-        if (existing.length !== itemIds.length) {
-          return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
-        }
-
-        const now = Date.now();
-        const insertRows = existing.map((item) => ({
-          id: generateId("schedule"),
-          tripId,
-          date: targetDate,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          title: item.title,
-          eventType: item.eventType,
-          isTentative: item.isTentative,
-          placeName: item.placeName,
-          placeUrl: item.placeUrl,
-          memo: item.memo,
-          facilityId: item.facilityId,
-          orderIndex: item.orderIndex,
-          updatedBy: userId,
-          createdAt: now,
-          updatedAt: now,
-        }));
-
-        await db.insert(scheduleItems).values(insertRows);
-
-        const created = await db.query.scheduleItems.findMany({
-          where: inArray(
-            scheduleItems.id,
-            insertRows.map((r) => r.id)
-          ),
-          with: { facility: true },
-        });
-
-        // Photos are never copied along with the item, so the relation is
-        // always empty here — no need to query it.
-        const createdWithImages = created.map((item) => ({ ...item, images: [] }));
-
-        return c.json({ data: createdWithImages, count: createdWithImages.length }, 201);
-      } catch (_error) {
-        return c.json({ error: ERR_INTERNAL }, 500);
+      const existing = await db.query.scheduleItems.findMany({
+        where: and(eq(scheduleItems.tripId, tripId), inArray(scheduleItems.id, itemIds)),
+      });
+      if (existing.length !== itemIds.length) {
+        return c.json({ error: "1件以上のアイテムが見つかりません" }, 404);
       }
+
+      const now = Date.now();
+      const insertRows = existing.map((item) => ({
+        id: generateId("schedule"),
+        tripId,
+        date: targetDate,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        title: item.title,
+        eventType: item.eventType,
+        isTentative: item.isTentative,
+        placeName: item.placeName,
+        placeUrl: item.placeUrl,
+        memo: item.memo,
+        facilityId: item.facilityId,
+        orderIndex: item.orderIndex,
+        updatedBy: userId,
+        createdAt: now,
+        updatedAt: now,
+      }));
+
+      await db.insert(scheduleItems).values(insertRows);
+
+      const created = await db.query.scheduleItems.findMany({
+        where: inArray(
+          scheduleItems.id,
+          insertRows.map((r) => r.id)
+        ),
+        with: { facility: true },
+      });
+
+      // Photos are never copied along with the item, so the relation is
+      // always empty here — no need to query it.
+      const createdWithImages = created.map((item) => ({ ...item, images: [] }));
+
+      return c.json({ data: createdWithImages, count: createdWithImages.length }, 201);
     }
   )
   /**
@@ -359,32 +331,28 @@ const scheduleRouter = new Hono<TripMemberContext>()
    * Delete a schedule item
    */
   .delete("/:itemId", requireSession(), requireMember, async (c) => {
-    try {
-      const tripId = c.get("tripId");
-      const itemId = c.req.param("itemId");
-      if (!itemId) {
-        return c.json({ error: "アイテムIDが必要です" }, 400);
-      }
-      const db = getDb(c.env.DB);
-
-      // Verify item belongs to trip
-      const item = await db.query.scheduleItems.findFirst({
-        where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
-      });
-
-      if (!item) {
-        return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
-      }
-
-      await db.batch([
-        db.delete(scheduleItemImages).where(eq(scheduleItemImages.scheduleItemId, itemId)),
-        db.delete(scheduleItems).where(eq(scheduleItems.id, itemId)),
-      ]);
-
-      return c.json({ success: true });
-    } catch (_error) {
-      return c.json({ error: ERR_INTERNAL }, 500);
+    const tripId = c.get("tripId");
+    const itemId = c.req.param("itemId");
+    if (!itemId) {
+      return c.json({ error: "アイテムIDが必要です" }, 400);
     }
+    const db = getDb(c.env.DB);
+
+    // Verify item belongs to trip
+    const item = await db.query.scheduleItems.findFirst({
+      where: and(eq(scheduleItems.id, itemId), eq(scheduleItems.tripId, tripId)),
+    });
+
+    if (!item) {
+      return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
+    }
+
+    await db.batch([
+      db.delete(scheduleItemImages).where(eq(scheduleItemImages.scheduleItemId, itemId)),
+      db.delete(scheduleItems).where(eq(scheduleItems.id, itemId)),
+    ]);
+
+    return c.json({ success: true });
   });
 
 export default scheduleRouter;
