@@ -47,7 +47,13 @@ export function ItineraryView({ tripId, dates }: ItineraryViewProps) {
               <div className="h-px flex-1 bg-cream-dark" />
             </div>
             {dayItems.length > 0 ? (
-              <ScheduleTimeline date={date} items={dayItems} canEdit={false} showHeading={false} />
+              <ScheduleTimeline
+                tripId={tripId}
+                date={date}
+                items={dayItems}
+                canEdit={false}
+                showHeading={false}
+              />
             ) : (
               <p className="py-4 text-sm text-ink-muted">予定なし</p>
             )}

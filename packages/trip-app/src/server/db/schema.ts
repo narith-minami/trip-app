@@ -67,7 +67,26 @@ export const scheduleItems = sqliteTable("schedule_items", {
   memo: text("memo"),
   eventType: text("eventType"), // EventType key, nullable
   isTentative: integer("isTentative").notNull().default(0), // 0 | 1 — 仮予定フラグ
+  facilityId: text("facilityId").references(() => facilities.id, { onDelete: "set null" }),
   orderIndex: integer("orderIndex").notNull().default(0),
+  updatedBy: text("updatedBy"), // User ID, nullable
+  createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+  updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
+});
+
+// ============================================================================
+// Facilities Table (reusable place/spot info per trip: hotels, restaurants, ...)
+// ============================================================================
+export const facilities = sqliteTable("facilities", {
+  id: text("id").primaryKey(),
+  tripId: text("tripId").notNull(),
+  category: text("category").notNull(), // FacilityCategory key
+  name: text("name").notNull(),
+  address: text("address"),
+  phone: text("phone"),
+  businessHours: text("businessHours"),
+  url: text("url"),
+  memo: text("memo"),
   updatedBy: text("updatedBy"), // User ID, nullable
   createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
@@ -181,6 +200,7 @@ export const tripsRelations = relations(trips, ({ one, many }) => ({
   }),
   members: many(tripMembers),
   scheduleItems: many(scheduleItems),
+  facilities: many(facilities),
   todos: many(todos),
   memo: one(tripMemos, {
     fields: [trips.id],
@@ -208,6 +228,10 @@ export const scheduleItemsRelations = relations(scheduleItems, ({ one, many }) =
     fields: [scheduleItems.updatedBy],
     references: [users.id],
   }),
+  facility: one(facilities, {
+    fields: [scheduleItems.facilityId],
+    references: [facilities.id],
+  }),
   images: many(scheduleItemImages),
 }));
 
@@ -216,6 +240,18 @@ export const scheduleItemImagesRelations = relations(scheduleItemImages, ({ one 
     fields: [scheduleItemImages.scheduleItemId],
     references: [scheduleItems.id],
   }),
+}));
+
+export const facilitiesRelations = relations(facilities, ({ one, many }) => ({
+  trip: one(trips, {
+    fields: [facilities.tripId],
+    references: [trips.id],
+  }),
+  updater: one(users, {
+    fields: [facilities.updatedBy],
+    references: [users.id],
+  }),
+  scheduleItems: many(scheduleItems),
 }));
 
 export const todosRelations = relations(todos, ({ one, many }) => ({
@@ -296,6 +332,8 @@ export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type NewScheduleItem = typeof scheduleItems.$inferInsert;
 export type ScheduleItemImage = typeof scheduleItemImages.$inferSelect;
 export type NewScheduleItemImage = typeof scheduleItemImages.$inferInsert;
+export type Facility = typeof facilities.$inferSelect;
+export type NewFacility = typeof facilities.$inferInsert;
 export type Todo = typeof todos.$inferSelect;
 export type NewTodo = typeof todos.$inferInsert;
 export type TodoTag = typeof todoTags.$inferSelect;

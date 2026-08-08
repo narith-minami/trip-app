@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { useScheduleAlertsData } from "@/features/schedule/hooks/useScheduleAlerts";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { generateDateRange } from "@/lib/utils";
+import type { Facility } from "@/types/entities";
 import { DatePicker } from "./DatePicker";
 import { ScheduleAlerts } from "./ScheduleAlerts";
 import { ScheduleCopyDialog } from "./ScheduleCopyDialog";
@@ -18,6 +19,8 @@ import { ScheduleToolbar } from "./ScheduleToolbar";
 
 export interface ScheduleSectionProps {
   tripId: string;
+  /** Trip's facilities, fetched by the route layer for the schedule-item facility selector. */
+  facilities: Facility[];
   canEdit?: boolean;
   defaultDate?: string;
   startDate?: string;
@@ -26,6 +29,7 @@ export interface ScheduleSectionProps {
 
 export function ScheduleSection({
   tripId,
+  facilities,
   canEdit = false,
   defaultDate,
   startDate,
@@ -66,6 +70,7 @@ export function ScheduleSection({
       />
       <ScheduleAlerts missing={selectedMissing} />
       <ScheduleTimeline
+        tripId={tripId}
         date={selectedDate}
         items={items}
         canEdit={canEdit}
@@ -76,6 +81,7 @@ export function ScheduleSection({
         onDeleteImage={sec.handleDeleteImage}
       />
       <ScheduleItemFormDialog
+        facilities={facilities}
         isOpen={sec.isOpen}
         editing={sec.editing}
         defaultDate={selectedDate || (defaultDate ?? "")}

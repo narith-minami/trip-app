@@ -17,6 +17,7 @@ import { InvitePage } from "@/routes/invite/$token";
 import { LoginPage } from "@/routes/login";
 import { ScrapsPage } from "@/routes/scraps/index";
 import { SignupPage } from "@/routes/signup";
+import { FacilityDetailPage } from "@/routes/trips/$tripId/facilities/$facilityId";
 import { TripDetailPage } from "@/routes/trips/$tripId/index";
 import { ItineraryPage } from "@/routes/trips/$tripId/itinerary";
 import { ScheduleEditPage } from "@/routes/trips/$tripId/schedule-edit";
@@ -97,6 +98,12 @@ const todoDetailRoute = createRoute({
   component: TodoDetailPage,
 });
 
+const facilityDetailRoute = createRoute({
+  getParentRoute: () => tripRoute,
+  path: "/facilities/$facilityId",
+  component: FacilityDetailPage,
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -104,5 +111,11 @@ export const routeTree = rootRoute.addChildren([
   tripsIndexRoute,
   scrapsRoute,
   inviteRoute,
-  tripRoute.addChildren([tripDetailIndexRoute, scheduleEditRoute, itineraryRoute, todoDetailRoute]),
+  tripRoute.addChildren([
+    tripDetailIndexRoute,
+    scheduleEditRoute,
+    itineraryRoute,
+    todoDetailRoute,
+    facilityDetailRoute,
+  ]),
 ]);

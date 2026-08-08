@@ -31,6 +31,16 @@ const queryKeys = {
   },
 
   /**
+   * Trip facilities queries
+   */
+  facilities: {
+    all: (tripId: string) => ["facilities", tripId] as const,
+    list: (tripId: string) => [...queryKeys.facilities.all(tripId), "list"] as const,
+    detail: (tripId: string, facilityId: string) =>
+      [...queryKeys.facilities.all(tripId), "detail", facilityId] as const,
+  },
+
+  /**
    * Trip todos queries
    */
   todos: {

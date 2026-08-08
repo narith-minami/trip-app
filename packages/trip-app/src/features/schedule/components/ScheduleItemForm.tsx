@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
-import type { ScheduleItem } from "@/types/entities";
+import type { Facility, ScheduleItem } from "@/types/entities";
 
 export interface ScheduleFormValues {
   date: string;
@@ -23,9 +23,12 @@ export interface ScheduleFormValues {
   placeName: string;
   placeUrl: string;
   memo: string;
+  facilityId: string;
 }
 
 export interface ScheduleItemFormProps {
+  /** Trip's facilities, fetched by the route layer (schedule can't import the facilities feature directly). */
+  facilities: Facility[];
   initial?: ScheduleItem;
   defaultDate?: string;
   isSubmitting?: boolean;
@@ -44,6 +47,7 @@ function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues
     placeName: item?.placeName ?? "",
     placeUrl: item?.placeUrl ?? "",
     memo: item?.memo ?? "",
+    facilityId: item?.facilityId ?? "",
   };
 }
 
@@ -166,7 +170,32 @@ function ScheduleDateTitleFields({ values, set }: FieldsProps) {
   );
 }
 
-function SchedulePlaceFields({ values, set }: FieldsProps) {
+interface FacilitySelectFieldProps extends FieldsProps {
+  facilities: Facility[];
+}
+
+function FacilitySelectField({ facilities, values, set }: FacilitySelectFieldProps) {
+  return (
+    <div>
+      <Label htmlFor="schedule-facility">紐付ける施設</Label>
+      <select
+        id="schedule-facility"
+        value={values.facilityId}
+        onChange={(e) => set("facilityId", e.target.value)}
+        className="w-full rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+      >
+        <option value="">施設を選択しない</option>
+        {facilities.map((facility) => (
+          <option key={facility.id} value={facility.id}>
+            {facility.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function SchedulePlaceFields({ facilities, values, set }: FacilitySelectFieldProps) {
   return (
     <>
       <div>
@@ -188,6 +217,8 @@ function SchedulePlaceFields({ values, set }: FieldsProps) {
         />
       </div>
 
+      <FacilitySelectField facilities={facilities} values={values} set={set} />
+
       <div>
         <Label>メモ</Label>
         <Textarea
@@ -202,6 +233,7 @@ function SchedulePlaceFields({ values, set }: FieldsProps) {
 }
 
 export function ScheduleItemForm({
+  facilities,
   initial,
   defaultDate,
   isSubmitting = false,
@@ -221,7 +253,7 @@ export function ScheduleItemForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <ScheduleDateTitleFields values={values} set={set} />
       <EventTypeSelector values={values} set={set} />
-      <SchedulePlaceFields values={values} set={set} />
+      <SchedulePlaceFields facilities={facilities} values={values} set={set} />
 
       <div className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>

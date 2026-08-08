@@ -35,6 +35,7 @@ export async function createScheduleItem(
     placeName?: string | null;
     placeUrl?: string | null;
     memo?: string | null;
+    facilityId?: string | null;
     orderIndex?: number;
   }
 ) {
@@ -64,6 +65,7 @@ export async function updateScheduleItem(
     placeName: string | null;
     placeUrl: string | null;
     memo: string | null;
+    facilityId: string | null;
     orderIndex: number;
   }>
 ) {

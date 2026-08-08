@@ -19,6 +19,7 @@ import { TripTabsContent } from "./TripTabsContent";
 
 const TRIP_TABS = [
   { value: "schedule", label: "日程" },
+  { value: "facilities", label: "施設" },
   { value: "todos", label: "Todo" },
   { value: "memo", label: "メモ" },
   { value: "members", label: "メンバー" },

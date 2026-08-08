@@ -34,6 +34,21 @@ export interface ScheduleItemImage {
   createdAt: number;
 }
 
+export interface Facility {
+  id: string;
+  tripId: string;
+  category: string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  businessHours?: string | null;
+  url?: string | null;
+  memo?: string | null;
+  updatedBy?: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface ScheduleItem {
   id: string;
   tripId: string;
@@ -46,6 +61,8 @@ export interface ScheduleItem {
   placeName?: string | null;
   placeUrl?: string | null;
   memo?: string | null;
+  facilityId?: string | null;
+  facility?: Facility | null;
   images: ScheduleItemImage[];
   orderIndex: number;
   updatedBy?: string | null;

@@ -23,6 +23,7 @@ function toPayload(values: ScheduleFormValues) {
     placeName: values.placeName || null,
     placeUrl: values.placeUrl || null,
     memo: values.memo || null,
+    facilityId: values.facilityId || null,
   };
 }
 
