@@ -75,6 +75,7 @@ export function FacilitySection({ tripId, canEdit = false }: FacilitySectionProp
       )}
 
       <FacilityFormDialog
+        tripId={tripId}
         isOpen={sec.isOpen}
         editing={sec.editing}
         isSubmitting={sec.isSubmitting}

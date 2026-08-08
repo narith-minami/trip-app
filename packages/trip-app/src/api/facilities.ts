@@ -11,10 +11,21 @@ export interface FacilityInput {
   category: FacilityCategory;
   name: string;
   address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   phone?: string | null;
   businessHours?: string | null;
   url?: string | null;
   memo?: string | null;
+}
+
+export interface FacilitySearchResult {
+  name: string;
+  address: string | null;
+  phone: string | null;
+  url: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 /**
@@ -71,6 +82,23 @@ export async function updateFacility(
   });
   if (!res.ok) {
     throw new Error("Failed to update facility");
+  }
+  return res.json();
+}
+
+/**
+ * Search external facility info (name/address/phone/coordinates) by keyword
+ */
+export async function searchFacilities(tripId: string, query: string) {
+  const res = await apiClient.api.trips[":tripId"].facilities.search.$get({
+    param: { tripId },
+    query: { q: query },
+  });
+  if (res.status === 503) {
+    throw new Error("施設検索機能は現在利用できません");
+  }
+  if (!res.ok) {
+    throw new Error("施設検索に失敗しました");
   }
   return res.json();
 }
