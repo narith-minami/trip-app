@@ -33,41 +33,34 @@ function makeHandleSubmit(
   update: ReturnType<typeof useScheduleMutations>["update"],
   setIsOpen: (v: boolean) => void
 ) {
-  return async (values: ScheduleFormValues) => {
-    try {
-      if (editing) {
-        await update.mutateAsync({ itemId: editing.id, data: toPayload(values) as never });
-        toast.success("Schedule item updated");
-      } else {
-        await create.mutateAsync(toPayload(values) as never);
-        toast.success("Schedule item added");
-      }
+  return (values: ScheduleFormValues) => {
+    const data = toPayload(values);
+    const onSuccess = () => {
+      toast.success(editing ? "予定を更新しました" : "予定を追加しました");
       setIsOpen(false);
-    } catch {
-      toast.error("Failed to save schedule item");
+    };
+    const onError = () => toast.error("予定の保存に失敗しました");
+    if (editing) {
+      update.mutate({ itemId: editing.id, data }, { onSuccess, onError });
+    } else {
+      create.mutate(data, { onSuccess, onError });
     }
   };
 }
 
 function makeHandleDelete(remove: ReturnType<typeof useScheduleMutations>["remove"]) {
-  return async (item: ScheduleItem) => {
-    if (!window.confirm("Delete this schedule item?")) return;
-    try {
-      await remove.mutateAsync(item.id);
-      toast.success("Schedule item deleted");
-    } catch {
-      toast.error("Failed to delete schedule item");
-    }
+  return (item: ScheduleItem) => {
+    if (!window.confirm("この予定を削除しますか？")) return;
+    remove.mutate(item.id, {
+      onSuccess: () => toast.success("予定を削除しました"),
+      onError: () => toast.error("予定の削除に失敗しました"),
+    });
   };
 }
 
 function makeHandleReorder(reorder: ReturnType<typeof useScheduleMutations>["reorder"]) {
-  return async (reordered: Array<{ id: string; orderIndex: number }>) => {
-    try {
-      await reorder.mutateAsync(reordered as never);
-    } catch {
-      toast.error("並び替えに失敗しました");
-    }
+  return (reordered: Array<{ id: string; orderIndex: number }>) => {
+    reorder.mutate(reordered, { onError: () => toast.error("並び替えに失敗しました") });
   };
 }
 
@@ -102,15 +95,18 @@ function makeHandleCopy(
   copy: ReturnType<typeof useScheduleMutations>["copy"],
   setCopyOpen: (v: boolean) => void
 ) {
-  return async (targetDate: string, itemIds: string[], onSuccess: (d: string) => void) => {
-    try {
-      await copy.mutateAsync({ targetDate, itemIds } as never);
-      toast.success("予定をコピーしました");
-      setCopyOpen(false);
-      onSuccess(targetDate);
-    } catch {
-      toast.error("予定のコピーに失敗しました");
-    }
+  return (targetDate: string, itemIds: string[], onSuccess: (d: string) => void) => {
+    copy.mutate(
+      { targetDate, itemIds },
+      {
+        onSuccess: () => {
+          toast.success("予定をコピーしました");
+          setCopyOpen(false);
+          onSuccess(targetDate);
+        },
+        onError: () => toast.error("予定のコピーに失敗しました"),
+      }
+    );
   };
 }
 

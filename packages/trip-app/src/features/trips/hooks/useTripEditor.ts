@@ -36,27 +36,27 @@ export function useTripEditor(tripId: string) {
   const setField = (key: keyof TripEditValues, value: string) =>
     setEditData((prev) => ({ ...prev, [key]: value }));
 
-  const save = async () => {
-    try {
-      await updateTripMutation.mutateAsync(editData);
-      toast.success("Trip updated successfully");
-      setIsEditing(false);
-    } catch {
-      toast.error("Failed to update trip");
-    }
+  const save = () => {
+    updateTripMutation.mutate(editData, {
+      onSuccess: () => {
+        toast.success("旅行を更新しました");
+        setIsEditing(false);
+      },
+      onError: () => toast.error("旅行の更新に失敗しました"),
+    });
   };
 
-  const remove = async () => {
-    if (!window.confirm("Are you sure you want to delete this trip?")) {
+  const remove = () => {
+    if (!window.confirm("この旅行を削除してもよろしいですか？")) {
       return;
     }
-    try {
-      await deleteTripMutation.mutateAsync(tripId);
-      toast.success("Trip deleted successfully");
-      navigate({ to: "/trips" });
-    } catch {
-      toast.error("Failed to delete trip");
-    }
+    deleteTripMutation.mutate(tripId, {
+      onSuccess: () => {
+        toast.success("旅行を削除しました");
+        navigate({ to: "/trips" });
+      },
+      onError: () => toast.error("旅行の削除に失敗しました"),
+    });
   };
 
   return {

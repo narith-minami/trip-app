@@ -29,30 +29,32 @@ export function useTodoDetailEdit(tripId: string, todo: TodoDetailData) {
   };
   const cancelEdit = () => setEditing(false);
 
-  const handleSave = async (e: FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
-    try {
-      await update.mutateAsync({
+    update.mutate(
+      {
         todoId: todo.id,
         // Empty string → null so the field can be cleared (AGENTS.md #1).
         data: {
           description: description.trim() === "" ? null : description,
           dueDate: dueDate === "" ? null : dueDate,
         },
-      });
-      toast.success("保存しました");
-      setEditing(false);
-    } catch {
-      toast.error("保存に失敗しました");
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success("保存しました");
+          setEditing(false);
+        },
+        onError: () => toast.error("保存に失敗しました"),
+      }
+    );
   };
 
-  const handleToggle = async () => {
-    try {
-      await update.mutateAsync({ todoId: todo.id, data: { isDone: !done } });
-    } catch {
-      toast.error("更新に失敗しました");
-    }
+  const handleToggle = () => {
+    update.mutate(
+      { todoId: todo.id, data: { isDone: !done } },
+      { onError: () => toast.error("更新に失敗しました") }
+    );
   };
 
   return {

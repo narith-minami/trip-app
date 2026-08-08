@@ -4,14 +4,12 @@
  * Container for the trip detail "Members" tab.
  */
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
-import { removeMember } from "@/api/members";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Card, CardBody } from "@/components/ui/card";
+import { useMemberMutations } from "@/features/members/hooks/useMemberMutations";
 import { useMembers } from "@/features/members/hooks/useMembers";
-import { QUERY_KEYS } from "@/lib/queryKeys";
+import { usePendingIds } from "@/hooks/usePendingIds";
 import type { TripMember } from "@/types/entities";
 import { InviteLinkBox } from "./InviteLinkBox";
 import { MemberAvatarList } from "./MemberAvatarList";
@@ -24,26 +22,17 @@ export interface MembersSectionProps {
 
 export function MembersSection({ tripId, inviteToken, canManage = false }: MembersSectionProps) {
   const { data: members, isLoading, error } = useMembers(tripId);
-  const queryClient = useQueryClient();
-  const [pendingId, setPendingId] = useState<string | undefined>();
+  const { remove } = useMemberMutations(tripId);
+  const { pendingIds, addPending, clearPending } = usePendingIds();
 
-  const removeMutation = useMutation({
-    mutationFn: (memberId: string) => removeMember(tripId, memberId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members.all(tripId) }),
-  });
-
-  const handleRemove = async (member: TripMember) => {
+  const handleRemove = (member: TripMember) => {
     if (!window.confirm(`${member.user?.name ?? "このメンバー"}を削除しますか？`)) return;
-    setPendingId(member.userId);
-    // No try/finally (React Compiler can't lower a `finally`); the catch
-    // swallows errors so clearing the pending id afterwards runs in both paths.
-    try {
-      await removeMutation.mutateAsync(member.userId);
-      toast.success("メンバーを削除しました");
-    } catch {
-      toast.error("メンバーの削除に失敗しました");
-    }
-    setPendingId(undefined);
+    addPending(member.userId);
+    remove.mutate(member.userId, {
+      onSuccess: () => toast.success("メンバーを削除しました"),
+      onError: () => toast.error("メンバーの削除に失敗しました"),
+      onSettled: () => clearPending(member.userId),
+    });
   };
 
   if (isLoading) return <LoadingSpinner label="メンバーを読み込み中..." />;
@@ -55,7 +44,7 @@ export function MembersSection({ tripId, inviteToken, canManage = false }: Membe
         members={members ?? []}
         canManage={canManage}
         onRemove={handleRemove}
-        pendingId={pendingId}
+        pendingIds={pendingIds}
       />
 
       {canManage && inviteToken && (

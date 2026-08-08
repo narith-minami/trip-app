@@ -66,13 +66,11 @@ function JoinAction({ token }: { token: string }) {
     },
   });
 
-  const handleJoin = async () => {
-    try {
-      await join.mutateAsync();
-      toast.success("旅行に参加しました");
-    } catch {
-      toast.error("参加に失敗しました");
-    }
+  const handleJoin = () => {
+    join.mutate(undefined, {
+      onSuccess: () => toast.success("旅行に参加しました"),
+      onError: () => toast.error("参加に失敗しました"),
+    });
   };
 
   return (

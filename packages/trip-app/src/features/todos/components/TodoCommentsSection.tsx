@@ -29,22 +29,16 @@ export function TodoCommentsSection({
   const { create, remove } = useTodoCommentMutations(tripId, todoId);
   const { pendingIds, addPending, clearPending } = usePendingIds();
 
-  const handleCreate = async (content: string) => {
-    try {
-      await create.mutateAsync(content);
-    } catch {
-      toast.error("コメントの投稿に失敗しました");
-    }
+  const handleCreate = (content: string) => {
+    create.mutate(content, { onError: () => toast.error("コメントの投稿に失敗しました") });
   };
 
-  const handleDelete = async (comment: TodoComment) => {
+  const handleDelete = (comment: TodoComment) => {
     addPending(comment.id);
-    try {
-      await remove.mutateAsync(comment.id);
-    } catch {
-      toast.error("コメントの削除に失敗しました");
-    }
-    clearPending(comment.id);
+    remove.mutate(comment.id, {
+      onError: () => toast.error("コメントの削除に失敗しました"),
+      onSettled: () => clearPending(comment.id),
+    });
   };
 
   return (

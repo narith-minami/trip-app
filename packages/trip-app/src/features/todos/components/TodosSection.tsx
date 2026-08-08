@@ -23,39 +23,27 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
   const { create, update, remove } = useTodoMutations(tripId);
   const { pendingIds, addPending, clearPending } = usePendingIds();
 
-  const handleCreate = async (values: TodoFormValues) => {
-    try {
-      await create.mutateAsync(values);
-    } catch {
-      toast.error("Todoの追加に失敗しました");
-    }
+  const handleCreate = (values: TodoFormValues) => {
+    create.mutate(values, { onError: () => toast.error("Todoの追加に失敗しました") });
   };
 
-  const handleToggle = async (todo: Todo) => {
+  const handleToggle = (todo: Todo) => {
     addPending(todo.id);
-    // No try/finally (React Compiler can't lower a `finally`); the catch
-    // swallows errors so clearing the pending id afterwards runs in both paths.
-    try {
-      await update.mutateAsync({
-        todoId: todo.id,
-        data: { isDone: todo.isDone !== 1 },
-      });
-    } catch {
-      toast.error("Todoの更新に失敗しました");
-    }
-    clearPending(todo.id);
+    update.mutate(
+      { todoId: todo.id, data: { isDone: todo.isDone !== 1 } },
+      {
+        onError: () => toast.error("Todoの更新に失敗しました"),
+        onSettled: () => clearPending(todo.id),
+      }
+    );
   };
 
-  const handleDelete = async (todo: Todo) => {
+  const handleDelete = (todo: Todo) => {
     addPending(todo.id);
-    // No try/finally (React Compiler can't lower a `finally`); the catch
-    // swallows errors so clearing the pending id afterwards runs in both paths.
-    try {
-      await remove.mutateAsync(todo.id);
-    } catch {
-      toast.error("Todoの削除に失敗しました");
-    }
-    clearPending(todo.id);
+    remove.mutate(todo.id, {
+      onError: () => toast.error("Todoの削除に失敗しました"),
+      onSettled: () => clearPending(todo.id),
+    });
   };
 
   if (isLoading) return <LoadingSpinner label="Todoを読み込み中..." />;

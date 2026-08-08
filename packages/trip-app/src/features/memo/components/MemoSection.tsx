@@ -18,13 +18,11 @@ export function MemoSection({ tripId }: MemoSectionProps) {
   const { data: memo, isLoading, error } = useTripMemo(tripId);
   const updateMutation = useMemoUpdateMutation(tripId);
 
-  const handleSave = async (content: string) => {
-    try {
-      await updateMutation.mutateAsync(content);
-      toast.success("メモを保存しました");
-    } catch {
-      toast.error("メモの保存に失敗しました");
-    }
+  const handleSave = (content: string) => {
+    updateMutation.mutate(content, {
+      onSuccess: () => toast.success("メモを保存しました"),
+      onError: () => toast.error("メモの保存に失敗しました"),
+    });
   };
 
   if (isLoading) return <LoadingSpinner label="メモを読み込み中..." />;

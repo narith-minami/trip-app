@@ -109,14 +109,12 @@ export function ScrapCard({ scrap, isAuthor }: ScrapCardProps) {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!window.confirm("このスクラップを削除しますか？")) return;
-    try {
-      await remove.mutateAsync(scrap.id);
-      toast.success("スクラップを削除しました");
-    } catch {
-      toast.error("スクラップの削除に失敗しました");
-    }
+    remove.mutate(scrap.id, {
+      onSuccess: () => toast.success("スクラップを削除しました"),
+      onError: () => toast.error("スクラップの削除に失敗しました"),
+    });
   };
 
   if (editing) {
