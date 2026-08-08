@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CalendarDays } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { cn } from "@/lib/cn";
@@ -159,16 +159,23 @@ export function ScheduleTimeline({
   onUploadImage,
   onDeleteImage,
 }: ScheduleTimelineProps) {
+  // react-doctor-disable-next-line react-doctor/no-derived-useState -- local drag draft must seed its initial value from the items prop
   const [localItems, setLocalItems] = useState<ScheduleItem[]>(items);
+  // `baseline` is the upstream `items` this draft was last synced to, read during
+  // render (below) to drive the sync — React's "store info from previous render"
+  // pattern.
+  // react-doctor-disable-next-line react-doctor/no-derived-useState, react-doctor/rerender-state-only-in-handlers -- tracks last-synced items to drive the render-time sync, per the React docs pattern
+  const [baseline, setBaseline] = useState<ScheduleItem[]>(items);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const prevItemsRef = useRef(items);
 
-  useEffect(() => {
-    if (items !== prevItemsRef.current) {
-      prevItemsRef.current = items;
-      setLocalItems(items);
-    }
-  }, [items]);
+  // Adjust state during render instead of in an effect (AGENTS.md #2). Skipped
+  // while a drag is in flight so a background refetch never yanks localItems
+  // out from under an active drag gesture; the latest items are adopted as
+  // soon as the drag ends.
+  if (items !== baseline && activeId === null) {
+    setBaseline(items);
+    setLocalItems(items);
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
