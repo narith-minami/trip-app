@@ -1,6 +1,5 @@
 import { cn } from "@/lib/cn";
-
-const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
+import { JA_DOW, parseLocalDate } from "@/lib/japaneseDate";
 
 interface DateCardProps {
   dateStr: string;
@@ -11,8 +10,9 @@ interface DateCardProps {
 }
 
 function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCardProps) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dow = DOW[new Date(y, m - 1, d).getDay()];
+  const date = parseLocalDate(dateStr);
+  const d = date.getDate();
+  const dow = JA_DOW[date.getDay()];
   return (
     <button
       type="button"

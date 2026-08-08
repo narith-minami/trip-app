@@ -21,15 +21,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { cn } from "@/lib/cn";
+import { JA_DOW, parseLocalDate } from "@/lib/japaneseDate";
 import type { ScheduleItem } from "@/types/entities";
 import { RowOverlay, SortableScheduleRow } from "./ScheduleTimelineRow";
 
-const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
 export function formatDayHeading(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dow = DOW[new Date(y, m - 1, d).getDay()];
-  return `${m}月${d}日（${dow}）`;
+  const date = parseLocalDate(dateStr);
+  const dow = JA_DOW[date.getDay()];
+  return `${date.getMonth() + 1}月${date.getDate()}日（${dow}）`;
 }
 
 function detectTimeConflict(items: ScheduleItem[]): string | null {

@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/cn";
+import { formatMD } from "@/lib/japaneseDate";
 import { resolveTodoPriority } from "@/lib/todoPriority";
 import { resolveTodoTag } from "@/lib/todoTags";
-import { formatDueDate } from "@/lib/utils";
 import type { Todo } from "@/types/entities";
 
 export interface TodoItemProps {
@@ -74,7 +74,7 @@ export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoIte
           </button>
           <span className="flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={todo.priority} />
-            {todo.dueDate && <Badge variant="navy">期日 {formatDueDate(todo.dueDate)}</Badge>}
+            {todo.dueDate && <Badge variant="navy">期日 {formatMD(todo.dueDate)}</Badge>}
             {hasMeta && todo.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
           </span>
         </span>

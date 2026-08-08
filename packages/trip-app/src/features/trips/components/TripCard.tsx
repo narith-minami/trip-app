@@ -6,8 +6,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { resolveCoverImageSrc } from "@/features/trips/lib/coverImage";
-import { getTripStatus, parseLocalDate, type TripStatus } from "@/features/trips/lib/tripStatus";
+import { getTripStatus, type TripStatus } from "@/features/trips/lib/tripStatus";
 import { cn } from "@/lib/cn";
+import { parseLocalDate } from "@/lib/japaneseDate";
 import type { Trip, TripMemberRole } from "@/types/entities";
 
 export interface TripCardData extends Trip {

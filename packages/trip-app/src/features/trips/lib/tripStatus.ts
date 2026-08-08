@@ -5,16 +5,12 @@
  * card from its start/end dates, per the Tabigo spec.
  */
 
+import { DAY_MS, parseLocalDate } from "@/lib/japaneseDate";
+
 export type TripStatus =
   | { type: "upcoming"; label: string }
   | { type: "ongoing"; label: string }
   | { type: "finished"; label: string };
-
-/** Parses a `YYYY-MM-DD` string as a local-timezone date (avoids the UTC-midnight shift `new Date(str)` causes). */
-function parseLocalDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
 
 export function getTripStatus(
   startDate: string,
@@ -27,7 +23,7 @@ export function getTripStatus(
   t.setHours(0, 0, 0, 0);
 
   if (t < start) {
-    const diffDays = Math.ceil((start.getTime() - t.getTime()) / 86400000);
+    const diffDays = Math.ceil((start.getTime() - t.getTime()) / DAY_MS);
     return { type: "upcoming", label: `あと${diffDays}日` };
   }
   if (t <= end) {
@@ -35,5 +31,3 @@ export function getTripStatus(
   }
   return { type: "finished", label: "終了" };
 }
-
-export { parseLocalDate };

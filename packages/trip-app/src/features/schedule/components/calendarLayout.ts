@@ -1,3 +1,4 @@
+import { JA_DOW, parseLocalDate } from "@/lib/japaneseDate";
 import type { ScheduleItem } from "@/types/entities";
 
 export const PX_PER_MIN = 1.5;
@@ -24,16 +25,14 @@ export function minutesToTime(min: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
 export function formatDayHeading(dateStr: string): string {
   if (!dateStr) return "";
   const parts = dateStr.split("-").map(Number);
   if (parts.length !== 3 || parts.some(Number.isNaN)) return dateStr;
-  const [y, mo, d] = parts;
-  const date = new Date(y, mo - 1, d);
+  const [, mo, d] = parts;
+  const date = parseLocalDate(dateStr);
   if (Number.isNaN(date.getTime())) return dateStr;
-  const dow = DOW[date.getDay()];
+  const dow = JA_DOW[date.getDay()];
   return `${mo}/${d} (${dow})`;
 }
 
