@@ -9,7 +9,8 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Copy, ListTree, MoreHorizontal, Plus, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { MenuItem, MenuPanel, useCloseOnOutsideOrEscape } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
 
 interface ScheduleToolbarProps {
@@ -20,50 +21,6 @@ interface ScheduleToolbarProps {
   hasItems: boolean;
   onCopy: () => void;
   onAdd: () => void;
-}
-
-interface MenuItemProps {
-  icon: React.ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-function MenuItem({ icon: Icon, label, onClick, disabled = false }: MenuItemProps) {
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink transition-colors hover:bg-cream-mid disabled:pointer-events-none disabled:opacity-40"
-    >
-      <Icon size={16} aria-hidden={true} />
-      {label}
-    </button>
-  );
-}
-
-function useCloseOnOutsideOrEscape(
-  open: boolean,
-  close: () => void,
-  containerRef: React.RefObject<HTMLElement | null>
-) {
-  useEffect(() => {
-    if (!open) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) close();
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, close, containerRef]);
 }
 
 interface ScheduleMenuProps {
@@ -87,14 +44,7 @@ function ScheduleMenu({
 }: ScheduleMenuProps) {
   const navigate = useNavigate();
   return (
-    <div
-      role="menu"
-      aria-label="日程メニュー"
-      className={cn(
-        "flex w-56 flex-col overflow-hidden rounded-2xl bg-white py-1 shadow-lg",
-        "motion-safe:animate-[dialog-panel-in_var(--duration-base)_var(--ease-spring)]"
-      )}
-    >
+    <MenuPanel aria-label="日程メニュー">
       <MenuItem
         icon={ListTree}
         label="全日程を表示する"
@@ -128,7 +78,7 @@ function ScheduleMenu({
           />
         </>
       )}
-    </div>
+    </MenuPanel>
   );
 }
 

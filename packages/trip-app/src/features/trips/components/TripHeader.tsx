@@ -5,12 +5,13 @@
  * Gradient background with countdown badge, title, date range and member avatars.
  */
 
-import { ChevronLeft, Palette } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, MoreVertical, Palette, Pencil, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { MenuItem, MenuPanel, useCloseOnOutsideOrEscape } from "@/components/ui/menu";
 import { TripColorSettings } from "@/features/trips/components/TripColorSettings";
 import type { TripColors } from "@/features/trips/hooks/useTripColors";
 import type { useTripEditor } from "@/features/trips/hooks/useTripEditor";
@@ -125,6 +126,50 @@ function TripEditFields({ editor }: { editor: TripEditor }) {
   );
 }
 
+function OwnerActionsMenu({ editor, onEdit }: { editor: TripEditor; onEdit: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const close = () => setMenuOpen(false);
+  useCloseOnOutsideOrEscape(menuOpen, close, containerRef);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setMenuOpen((prev) => !prev)}
+        aria-label="旅行の操作"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        className="flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2"
+      >
+        <MoreVertical size={20} aria-hidden={true} />
+      </button>
+      {menuOpen && (
+        <MenuPanel aria-label="旅行の操作メニュー" className="absolute right-0 top-full z-40 mt-2">
+          <MenuItem
+            icon={Pencil}
+            label="編集"
+            onClick={() => {
+              close();
+              onEdit();
+            }}
+          />
+          <MenuItem
+            icon={Trash2}
+            label="削除"
+            danger
+            disabled={editor.isDeleting}
+            onClick={() => {
+              close();
+              editor.remove();
+            }}
+          />
+        </MenuPanel>
+      )}
+    </div>
+  );
+}
+
 function OwnerActions({ editor, onEdit }: { editor: TripEditor; onEdit: () => void }) {
   if (editor.isEditing) {
     return (
@@ -142,20 +187,7 @@ function OwnerActions({ editor, onEdit }: { editor: TripEditor; onEdit: () => vo
       </>
     );
   }
-  return (
-    <>
-      <Button
-        variant="ghost"
-        onClick={onEdit}
-        className="text-white/80 hover:bg-white/10 hover:text-white"
-      >
-        編集
-      </Button>
-      <Button variant="danger" onClick={editor.remove} disabled={editor.isDeleting}>
-        削除
-      </Button>
-    </>
-  );
+  return <OwnerActionsMenu editor={editor} onEdit={onEdit} />;
 }
 
 function TripHeaderBackground() {
