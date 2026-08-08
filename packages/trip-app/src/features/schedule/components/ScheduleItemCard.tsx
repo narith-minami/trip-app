@@ -5,13 +5,15 @@
  * Layout (thumbnail + connecting line) is handled by ScheduleTimeline.
  */
 
-import { MapPin, Plus, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Building2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { resolveEventType } from "@/lib/eventTypes";
-import type { ScheduleItem, ScheduleItemImage } from "@/types/entities";
+import { resolveFacilityType } from "@/lib/facilityTypes";
+import type { ScheduleItem } from "@/types/entities";
+import { CardImages } from "./ScheduleItemCardImages";
 
 function timeAgo(ms: number): string {
   const diff = Date.now() - ms;
@@ -25,171 +27,13 @@ function timeAgo(ms: number): string {
 }
 
 export interface ScheduleItemCardProps {
+  tripId: string;
   item: ScheduleItem;
   canEdit?: boolean;
   onEdit?: (item: ScheduleItem) => void;
   onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
-}
-
-/** Full-screen enlarged view of a single tapped photo. No prev/next navigation. */
-function ImageLightbox({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return (
-    <button
-      type="button"
-      onClick={onClose}
-      aria-label="拡大表示を閉じる"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-    >
-      <img src={imageUrl} alt="" className="max-h-[85dvh] max-w-full rounded-lg object-contain" />
-    </button>
-  );
-}
-
-interface ImageThumbnailProps {
-  image: ScheduleItemImage;
-  canEdit: boolean;
-  isDeleting: boolean;
-  onOpen: () => void;
-  onDelete: () => void;
-}
-
-function ImageThumbnail({ image, canEdit, isDeleting, onOpen, onDelete }: ImageThumbnailProps) {
-  return (
-    <div className="relative h-20 w-20 shrink-0">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="h-full w-full overflow-hidden rounded-lg"
-        aria-label="写真を拡大表示"
-      >
-        <img src={image.imageUrl} alt="" className="h-full w-full object-cover" />
-      </button>
-      {canEdit && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          disabled={isDeleting}
-          aria-label="写真を削除"
-          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white disabled:opacity-50"
-        >
-          <X size={12} aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-interface AddImageTileProps {
-  isUploading: boolean;
-  onSelectFile: (file: File) => void;
-}
-
-function AddImageTile({ isUploading, onSelectFile }: AddImageTileProps) {
-  const inputId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (file) onSelectFile(file);
-  };
-
-  return (
-    <div className="h-20 w-20 shrink-0">
-      <label htmlFor={inputId} className="sr-only">
-        写真を追加
-      </label>
-      <input
-        ref={inputRef}
-        id={inputId}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-        disabled={isUploading}
-      />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={isUploading}
-        className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-cream-dark text-ink-light hover:border-ink-muted hover:text-ink-muted disabled:opacity-50"
-      >
-        {isUploading ? (
-          <span className="text-lg leading-none">…</span>
-        ) : (
-          <Plus size={18} aria-hidden="true" />
-        )}
-        <span className="text-[10px] leading-none">{isUploading ? "追加中" : "写真を追加"}</span>
-      </button>
-    </div>
-  );
-}
-
-interface CardImagesProps {
-  item: ScheduleItem;
-  canEdit: boolean;
-  onUploadImage?: (itemId: string, file: File) => Promise<void>;
-  onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
-}
-
-function CardImages({ item, canEdit, onUploadImage, onDeleteImage }: CardImagesProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
-  const [lightboxImage, setLightboxImage] = useState<ScheduleItemImage | null>(null);
-
-  if (item.images.length === 0 && !canEdit) return null;
-
-  const handleSelectFile = async (file: File) => {
-    if (!onUploadImage) return;
-    setIsUploading(true);
-    await onUploadImage(item.id, file);
-    setIsUploading(false);
-  };
-
-  const handleDelete = async (imageId: string) => {
-    if (!onDeleteImage) return;
-    setDeletingIds((prev) => new Set(prev).add(imageId));
-    await onDeleteImage(item.id, imageId);
-    setDeletingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(imageId);
-      return next;
-    });
-  };
-
-  return (
-    <>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {item.images.map((image) => (
-          <ImageThumbnail
-            key={image.id}
-            image={image}
-            canEdit={canEdit}
-            isDeleting={deletingIds.has(image.id)}
-            onOpen={() => setLightboxImage(image)}
-            onDelete={() => handleDelete(image.id)}
-          />
-        ))}
-        {canEdit && <AddImageTile isUploading={isUploading} onSelectFile={handleSelectFile} />}
-      </div>
-      {lightboxImage && (
-        <ImageLightbox imageUrl={lightboxImage.imageUrl} onClose={() => setLightboxImage(null)} />
-      )}
-    </>
-  );
 }
 
 function CardFooter({ item }: { item: ScheduleItem }) {
@@ -213,7 +57,90 @@ function CardFooter({ item }: { item: ScheduleItem }) {
   );
 }
 
+function FacilityLink({ tripId, item }: { tripId: string; item: ScheduleItem }) {
+  const navigate = useNavigate();
+  const facility = item.facility;
+  if (!facility) return null;
+  const facilityType = resolveFacilityType(facility.category);
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate({
+          to: "/trips/$tripId/facilities/$facilityId",
+          params: { tripId, facilityId: facility.id },
+        });
+      }}
+      className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{ backgroundColor: `${facilityType.color}20`, color: facilityType.color }}
+    >
+      <Building2 size={12} aria-hidden="true" />
+      {facility.name}
+    </button>
+  );
+}
+
+interface CardHeaderProps {
+  tripId: string;
+  item: ScheduleItem;
+  canEdit: boolean;
+  onEdit?: (item: ScheduleItem) => void;
+  onDelete?: (item: ScheduleItem) => void;
+}
+
+function CardHeader({ tripId, item, canEdit, onEdit, onDelete }: CardHeaderProps) {
+  const eventType = resolveEventType(item.eventType);
+  const Icon = eventType.icon;
+
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${eventType.color}20`, color: eventType.color }}
+          >
+            <Icon size={11} />
+          </span>
+          <span className="text-xs font-medium" style={{ color: eventType.color }}>
+            {eventType.label}
+          </span>
+          {item.isTentative === 1 && (
+            <Badge
+              variant="custom"
+              className="border border-dashed border-ink-light bg-cream text-ink-muted"
+            >
+              仮予定
+            </Badge>
+          )}
+        </div>
+        <h4 className="mt-1 font-semibold text-ink">{item.title}</h4>
+        {item.placeName && (
+          <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-muted">
+            <MapPin size={12} aria-hidden="true" />
+            {item.placeName}
+          </p>
+        )}
+        <FacilityLink tripId={tripId} item={item} />
+      </div>
+      {canEdit && (
+        <div className="flex shrink-0 gap-1">
+          <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
+            編集
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
+            削除
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ScheduleItemCard({
+  tripId,
   item,
   canEdit = false,
   onEdit,
@@ -221,9 +148,6 @@ export function ScheduleItemCard({
   onUploadImage,
   onDeleteImage,
 }: ScheduleItemCardProps) {
-  const eventType = resolveEventType(item.eventType);
-  const Icon = eventType.icon;
-
   return (
     <div
       className={cn(
@@ -232,46 +156,13 @@ export function ScheduleItemCard({
       )}
     >
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: `${eventType.color}20`, color: eventType.color }}
-              >
-                <Icon size={11} />
-              </span>
-              <span className="text-xs font-medium" style={{ color: eventType.color }}>
-                {eventType.label}
-              </span>
-              {item.isTentative === 1 && (
-                <Badge
-                  variant="custom"
-                  className="border border-dashed border-ink-light bg-cream text-ink-muted"
-                >
-                  仮予定
-                </Badge>
-              )}
-            </div>
-            <h4 className="mt-1 font-semibold text-ink">{item.title}</h4>
-            {item.placeName && (
-              <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-muted">
-                <MapPin size={12} aria-hidden="true" />
-                {item.placeName}
-              </p>
-            )}
-          </div>
-          {canEdit && (
-            <div className="flex shrink-0 gap-1">
-              <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
-                編集
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
-                削除
-              </Button>
-            </div>
-          )}
-        </div>
+        <CardHeader
+          tripId={tripId}
+          item={item}
+          canEdit={canEdit}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
         {item.memo && (
           <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted">
             {item.memo}

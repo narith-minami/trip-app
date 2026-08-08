@@ -17,6 +17,7 @@ export default defineConfig({
     "trip_members",
     "schedule_items",
     "schedule_item_images",
+    "facilities",
     "todos",
     "todo_tags",
     "todo_comments",

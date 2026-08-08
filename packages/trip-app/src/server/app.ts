@@ -10,6 +10,7 @@ import { Hono } from "hono";
 import type { Env } from "./env";
 import { createAuth } from "./routes/auth";
 import coverRouter from "./routes/cover";
+import facilitiesRouter from "./routes/facilities";
 import imagesRouter from "./routes/images";
 import inviteRouter from "./routes/invite";
 import membersRouter from "./routes/members";
@@ -60,6 +61,7 @@ const routes = app
   .route("/api/images", imagesRouter)
   .route("/api/trips/:tripId/schedule", scheduleRouter)
   .route("/api/trips/:tripId/schedule/:itemId/images", scheduleImagesRouter)
+  .route("/api/trips/:tripId/facilities", facilitiesRouter)
   .route("/api/trips/:tripId/todos/:todoId/comments", todoCommentsRouter)
   .route("/api/trips/:tripId/todos", todosRouter)
   .route("/api/trips/:tripId/memo", memoRouter)

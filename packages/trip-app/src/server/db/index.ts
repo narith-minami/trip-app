@@ -11,6 +11,8 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export type {
+  Facility,
+  NewFacility,
   NewScheduleItem,
   NewScheduleItemImage,
   NewScrap,
@@ -35,6 +37,7 @@ export type {
 } from "./schema";
 
 export {
+  facilities,
   scheduleItemImages,
   scheduleItems,
   scraps,

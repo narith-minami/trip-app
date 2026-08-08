@@ -1,8 +1,9 @@
 import { Dialog } from "@/components/ui/dialog";
-import type { ScheduleItem } from "@/types/entities";
+import type { Facility, ScheduleItem } from "@/types/entities";
 import { type ScheduleFormValues, ScheduleItemForm } from "./ScheduleItemForm";
 
 interface ScheduleItemFormDialogProps {
+  facilities: Facility[];
   isOpen: boolean;
   editing: ScheduleItem | null;
   defaultDate: string;
@@ -12,6 +13,7 @@ interface ScheduleItemFormDialogProps {
 }
 
 export function ScheduleItemFormDialog({
+  facilities,
   isOpen,
   editing,
   defaultDate,
@@ -35,6 +37,7 @@ export function ScheduleItemFormDialog({
   return (
     <Dialog open={isOpen} onClose={onClose} title={title}>
       <ScheduleItemForm
+        facilities={facilities}
         initial={editing ?? undefined}
         defaultDate={defaultDate}
         isSubmitting={isSubmitting}

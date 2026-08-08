@@ -39,6 +39,12 @@ export default defineConfig(({ mode }) => {
                 replacement: fileURLToPath(new URL("./src/mocks/api/schedule.ts", import.meta.url)),
               },
               {
+                find: "@/api/facilities",
+                replacement: fileURLToPath(
+                  new URL("./src/mocks/api/facilities.ts", import.meta.url)
+                ),
+              },
+              {
                 find: "@/api/todos",
                 replacement: fileURLToPath(new URL("./src/mocks/api/todos.ts", import.meta.url)),
               },

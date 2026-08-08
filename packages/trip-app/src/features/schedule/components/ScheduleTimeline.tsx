@@ -15,21 +15,14 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CalendarDays } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { cn } from "@/lib/cn";
-import { resolveEventType } from "@/lib/eventTypes";
 import type { ScheduleItem } from "@/types/entities";
-import { ScheduleItemCard } from "./ScheduleItemCard";
+import { RowOverlay, SortableScheduleRow } from "./ScheduleTimelineRow";
 
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
@@ -37,36 +30,6 @@ export function formatDayHeading(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map(Number);
   const dow = DOW[new Date(y, m - 1, d).getDay()];
   return `${m}月${d}日（${dow}）`;
-}
-
-function GripIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="4" r="1.5" />
-      <circle cx="5" cy="8" r="1.5" />
-      <circle cx="5" cy="12" r="1.5" />
-      <circle cx="11" cy="4" r="1.5" />
-      <circle cx="11" cy="8" r="1.5" />
-      <circle cx="11" cy="12" r="1.5" />
-    </svg>
-  );
-}
-
-function EventThumb({ item }: { item: ScheduleItem }) {
-  const et = resolveEventType(item.eventType);
-  const Icon = et.icon;
-  return (
-    <div
-      className={cn(
-        "flex h-11 w-11 items-center justify-center rounded-2xl",
-        item.isTentative === 1 && "grayscale opacity-50"
-      )}
-      style={{ backgroundColor: et.color }}
-      aria-hidden="true"
-    >
-      <Icon size={20} color="white" strokeWidth={2} />
-    </div>
-  );
 }
 
 function detectTimeConflict(items: ScheduleItem[]): string | null {
@@ -82,87 +45,8 @@ function detectTimeConflict(items: ScheduleItem[]): string | null {
   return null;
 }
 
-interface SortableScheduleRowProps {
-  item: ScheduleItem;
-  canEdit: boolean;
-  showDragHandle: boolean;
-  onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
-  onUploadImage?: (itemId: string, file: File) => Promise<void>;
-  onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
-}
-
-function SortableScheduleRow({
-  item,
-  canEdit,
-  showDragHandle,
-  onEdit,
-  onDelete,
-  onUploadImage,
-  onDeleteImage,
-}: SortableScheduleRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="flex items-start gap-4">
-      {/* Left: thumbnail + time — the colored circle acts as drag handle */}
-      <div
-        className={cn(
-          "relative z-10 flex w-14 shrink-0 flex-col items-center gap-0.5",
-          showDragHandle && "cursor-grab active:cursor-grabbing touch-none select-none"
-        )}
-        {...(showDragHandle ? { ...attributes, ...listeners } : {})}
-      >
-        {showDragHandle && (
-          <span className="mb-0.5 text-ink-muted">
-            <GripIcon />
-          </span>
-        )}
-        <EventThumb item={item} />
-        {item.startTime && <span className="text-xs text-ink-muted">{item.startTime}</span>}
-      </div>
-
-      {/* Right: card */}
-      <div className="min-w-0 flex-1">
-        <ScheduleItemCard
-          item={item}
-          canEdit={canEdit}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onUploadImage={onUploadImage}
-          onDeleteImage={onDeleteImage}
-        />
-      </div>
-    </div>
-  );
-}
-
-function RowOverlay({ item }: { item: ScheduleItem }) {
-  return (
-    <div className="flex items-start gap-4 rounded-2xl shadow-2xl">
-      <div className="relative z-10 flex w-14 shrink-0 flex-col items-center gap-0.5">
-        <span className="mb-0.5 text-ink-muted">
-          <GripIcon />
-        </span>
-        <EventThumb item={item} />
-        {item.startTime && <span className="text-xs text-ink-muted">{item.startTime}</span>}
-      </div>
-      <div className="min-w-0 flex-1">
-        <ScheduleItemCard item={item} canEdit={false} />
-      </div>
-    </div>
-  );
-}
-
 export interface ScheduleTimelineProps {
+  tripId: string;
   date: string;
   items: ScheduleItem[];
   canEdit?: boolean;
@@ -176,6 +60,7 @@ export interface ScheduleTimelineProps {
 }
 
 interface TimelineContentProps {
+  tripId: string;
   date: string;
   showHeading: boolean;
   localItems: ScheduleItem[];
@@ -193,6 +78,7 @@ interface TimelineContentProps {
 }
 
 function TimelineContent({
+  tripId,
   date,
   showHeading,
   localItems,
@@ -240,6 +126,7 @@ function TimelineContent({
               {localItems.map((item) => (
                 <SortableScheduleRow
                   key={item.id}
+                  tripId={tripId}
                   item={item}
                   canEdit={canEdit}
                   showDragHandle={showDragHandle}
@@ -252,13 +139,16 @@ function TimelineContent({
             </div>
           </div>
         </SortableContext>
-        <DragOverlay>{activeItem ? <RowOverlay item={activeItem} /> : null}</DragOverlay>
+        <DragOverlay>
+          {activeItem ? <RowOverlay tripId={tripId} item={activeItem} /> : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
 }
 
 export function ScheduleTimeline({
+  tripId,
   date,
   items,
   canEdit = false,
@@ -309,6 +199,7 @@ export function ScheduleTimeline({
 
   return (
     <TimelineContent
+      tripId={tripId}
       date={date}
       showHeading={showHeading}
       localItems={localItems}

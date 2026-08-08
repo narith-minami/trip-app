@@ -5,6 +5,7 @@
  */
 
 import type { ScheduleItem } from "@/types/entities";
+import { facilities } from "./facilities";
 
 const now = Date.now();
 
@@ -20,6 +21,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeUrl: "https://www.haneda-airport.jp",
     memo: "ANA NH101 で到着予定",
     isTentative: 0,
+    facilityId: null,
     images: [],
     orderIndex: 0,
     updatedBy: null,
@@ -37,6 +39,7 @@ const mockScheduleItems: ScheduleItem[] = [
     placeUrl: null,
     memo: "おしゃれなカフェを探す",
     isTentative: 0,
+    facilityId: null,
     images: [],
     orderIndex: 1,
     updatedBy: null,
@@ -47,6 +50,12 @@ const mockScheduleItems: ScheduleItem[] = [
 
 const scheduleItems = structuredClone(mockScheduleItems);
 
+/** Mimics the server's relational `with: { facility: true }` eager-load. */
+function withFacility(item: ScheduleItem): ScheduleItem {
+  const facility = item.facilityId ? facilities.find((f) => f.id === item.facilityId) : undefined;
+  return { ...item, facility: facility ?? null };
+}
+
 export async function fetchScheduleItems(tripId: string) {
   const items = scheduleItems
     .filter((s) => s.tripId === tripId)
@@ -55,7 +64,8 @@ export async function fetchScheduleItems(tripId: string) {
       const dateB = new Date(b.date).getTime();
       if (dateA !== dateB) return dateA - dateB;
       return a.orderIndex - b.orderIndex;
-    });
+    })
+    .map(withFacility);
 
   return { data: items };
 }
@@ -71,6 +81,7 @@ export async function createScheduleItem(
     placeName?: string | null;
     placeUrl?: string | null;
     memo?: string | null;
+    facilityId?: string | null;
     orderIndex?: number;
   }
 ) {
@@ -85,6 +96,7 @@ export async function createScheduleItem(
     placeName: data.placeName ?? null,
     placeUrl: data.placeUrl ?? null,
     memo: data.memo ?? null,
+    facilityId: data.facilityId ?? null,
     images: [],
     orderIndex: data.orderIndex ?? 0,
     updatedBy: null,
@@ -93,7 +105,7 @@ export async function createScheduleItem(
   };
 
   scheduleItems.push(newItem);
-  return newItem;
+  return withFacility(newItem);
 }
 
 export async function updateScheduleItem(
@@ -107,6 +119,7 @@ export async function updateScheduleItem(
     placeName: string | null;
     placeUrl: string | null;
     memo: string | null;
+    facilityId: string | null;
     orderIndex: number;
   }>
 ) {
@@ -116,7 +129,7 @@ export async function updateScheduleItem(
   const { isTentative, ...rest } = data;
   Object.assign(item, rest, { updatedAt: Date.now() });
   if (isTentative !== undefined) item.isTentative = isTentative ? 1 : 0;
-  return item;
+  return withFacility(item);
 }
 
 export async function reorderScheduleItems(
@@ -147,7 +160,7 @@ export async function copyScheduleItems(
     updatedAt: Date.now(),
   }));
   scheduleItems.push(...created);
-  return { data: created, count: created.length };
+  return { data: created.map(withFacility), count: created.length };
 }
 
 export async function deleteScheduleItem(tripId: string, itemId: string) {

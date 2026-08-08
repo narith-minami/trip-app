@@ -10,7 +10,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { generateId } from "@/lib/utils";
-import { getDb, scheduleItemImages, scheduleItems } from "../db";
+import { facilities, getDb, scheduleItemImages, scheduleItems } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -39,6 +39,7 @@ const CreateScheduleItemSchema = z.object({
   placeName: z.string().nullable().optional(),
   placeUrl: z.url().nullable().optional(),
   memo: z.string().nullable().optional(),
+  facilityId: z.string().nullable().optional(),
   orderIndex: z.number().int().default(0),
 });
 
@@ -58,9 +59,12 @@ const CopyScheduleItemsSchema = z.object({
 
 type ScheduleUpdateInput = Partial<typeof scheduleItems.$inferInsert>;
 
-/** Always embed a schedule item's photos, ordered for display. */
-function withImages() {
-  return { images: { orderBy: [asc(scheduleItemImages.orderIndex)] } };
+/** Always embed a schedule item's photos and linked facility, for display. */
+function withRelations() {
+  return {
+    images: { orderBy: [asc(scheduleItemImages.orderIndex)] },
+    facility: true as const,
+  };
 }
 
 /**
@@ -76,6 +80,23 @@ function applyScheduleDetailFields(
   if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
   if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
   if (validated.memo !== undefined) updateData.memo = validated.memo;
+  if (validated.facilityId !== undefined) updateData.facilityId = validated.facilityId;
+}
+
+/**
+ * Verify a facility belongs to the trip before linking it to a schedule item.
+ * Returns true when `facilityId` is null/undefined (no link requested).
+ */
+async function isFacilityInTrip(
+  db: ReturnType<typeof getDb>,
+  tripId: string,
+  facilityId: string | null | undefined
+): Promise<boolean> {
+  if (!facilityId) return true;
+  const facility = await db.query.facilities.findFirst({
+    where: and(eq(facilities.id, facilityId), eq(facilities.tripId, tripId)),
+  });
+  return Boolean(facility);
 }
 
 /**
@@ -112,7 +133,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
       const items = await db.query.scheduleItems.findMany({
         where: eq(scheduleItems.tripId, tripId),
         orderBy: (items, { asc }) => [asc(items.date), asc(items.orderIndex)],
-        with: withImages(),
+        with: withRelations(),
       });
 
       return c.json({ data: items });
@@ -136,6 +157,11 @@ const scheduleRouter = new Hono<TripMemberContext>()
         const validated = c.req.valid("json");
 
         const db = getDb(c.env.DB);
+
+        if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+          return c.json({ error: "施設が見つかりません" }, 400);
+        }
+
         const itemId = generateId("schedule");
 
         await db.insert(scheduleItems).values({
@@ -150,13 +176,14 @@ const scheduleRouter = new Hono<TripMemberContext>()
           placeName: validated.placeName,
           placeUrl: validated.placeUrl,
           memo: validated.memo,
+          facilityId: validated.facilityId,
           orderIndex: validated.orderIndex,
           updatedBy: userId,
         });
 
         const created = await db.query.scheduleItems.findFirst({
           where: eq(scheduleItems.id, itemId),
-          with: withImages(),
+          with: withRelations(),
         });
 
         return c.json(created, 201);
@@ -198,13 +225,17 @@ const scheduleRouter = new Hono<TripMemberContext>()
           return c.json({ error: "スケジュールアイテムが見つかりません" }, 404);
         }
 
+        if (!(await isFacilityInTrip(db, tripId, validated.facilityId))) {
+          return c.json({ error: "施設が見つかりません" }, 400);
+        }
+
         const updateData = buildScheduleUpdate(validated, userId);
 
         await db.update(scheduleItems).set(updateData).where(eq(scheduleItems.id, itemId));
 
         const updated = await db.query.scheduleItems.findFirst({
           where: eq(scheduleItems.id, itemId),
-          with: withImages(),
+          with: withRelations(),
         });
 
         return c.json(updated);
@@ -296,6 +327,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
           placeName: item.placeName,
           placeUrl: item.placeUrl,
           memo: item.memo,
+          facilityId: item.facilityId,
           orderIndex: item.orderIndex,
           updatedBy: userId,
           createdAt: now,
@@ -309,6 +341,7 @@ const scheduleRouter = new Hono<TripMemberContext>()
             scheduleItems.id,
             insertRows.map((r) => r.id)
           ),
+          with: { facility: true },
         });
 
         // Photos are never copied along with the item, so the relation is
