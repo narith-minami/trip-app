@@ -98,6 +98,7 @@ export async function updateTrip(
     startDate?: string;
     endDate?: string;
     description?: string;
+    coverImageUrl?: string | null;
   }
 ) {
   const trip = trips.find((t) => t.id === tripId);
@@ -108,6 +109,7 @@ export async function updateTrip(
     destination: data.location ?? trip.destination,
     startDate: data.startDate ?? trip.startDate,
     endDate: data.endDate ?? trip.endDate,
+    coverImageUrl: data.coverImageUrl !== undefined ? data.coverImageUrl : trip.coverImageUrl,
     updatedAt: Date.now(),
   });
 
@@ -120,4 +122,24 @@ export async function deleteTrip(tripId: string) {
 
   trips.splice(index, 1);
   return { success: true };
+}
+
+/**
+ * Mock cover upload: reads the file as a base64 data URL (no R2 in mock
+ * mode) and stores it directly on the trip, mirroring
+ * `uploadScheduleItemImage` in ./schedule.ts.
+ */
+export async function uploadTripCover(tripId: string, file: File) {
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) throw new Error(`Trip ${tripId} not found`);
+
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  Object.assign(trip, { coverImageUrl: dataUrl, updatedAt: Date.now() });
+  return trip;
 }

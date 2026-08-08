@@ -41,6 +41,8 @@ export const UpdateTripSchema = z.object({
   startDate: z.iso.date(INVALID_DATE_MSG).optional(),
   endDate: z.iso.date(INVALID_DATE_MSG).optional(),
   location: z.string().max(200, "Location must be 200 characters or less").optional(),
+  /** Direct URL to a thumbnail image, or `null` to clear a previously set cover. */
+  coverImageUrl: z.url("Invalid image URL").max(2000).nullable().optional(),
 });
 
 export type UpdateTrip = z.infer<typeof UpdateTripSchema>;

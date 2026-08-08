@@ -17,8 +17,10 @@ database_id = "d61efaa7-4652-4955-b92f-52e8f056bc83"
 
 # ============================================================================
 # R2 Bucket Binding
-# Requires R2 to be enabled in Cloudflare Dashboard before deploying.
-# To enable: Dashboard → R2 → Enable, then uncomment below.
+# The "trip-app-photos" bucket does not exist in the Cloudflare account yet.
+# Create it first (Dashboard → R2 → Create bucket, or
+# `wrangler r2 bucket create trip-app-photos`), then uncomment below.
+# Cover thumbnail upload/serving returns 503 until this is enabled.
 # ============================================================================
 # [[r2_buckets]]
 # binding = "R2"

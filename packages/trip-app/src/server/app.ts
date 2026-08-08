@@ -10,6 +10,7 @@ import { Hono } from "hono";
 import type { Env } from "./env";
 import { createAuth } from "./routes/auth";
 import coverRouter from "./routes/cover";
+import imagesRouter from "./routes/images";
 import inviteRouter from "./routes/invite";
 import membersRouter from "./routes/members";
 import memoRouter from "./routes/memo";
@@ -56,13 +57,14 @@ const routes = app
   .route("/api/users", usersRouter)
   .route("/api/scraps", scrapsRouter)
   .route("/api/invite", inviteRouter)
+  .route("/api/images", imagesRouter)
   .route("/api/trips/:tripId/schedule", scheduleRouter)
   .route("/api/trips/:tripId/schedule/:itemId/images", scheduleImagesRouter)
   .route("/api/trips/:tripId/todos/:todoId/comments", todoCommentsRouter)
   .route("/api/trips/:tripId/todos", todosRouter)
   .route("/api/trips/:tripId/memo", memoRouter)
   .route("/api/trips/:tripId/members", membersRouter)
-  .route("/api/trips", coverRouter);
+  .route("/api/trips/:tripId/cover", coverRouter);
 
 /**
  * 404 handler — serve SPA index.html for client-side routes, JSON 404 for unknown API routes

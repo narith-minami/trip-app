@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CreateTripSchema, TripQueryParamsSchema } from "@/lib/schemas/trip";
+import { CreateTripSchema, TripQueryParamsSchema, UpdateTripSchema } from "@/lib/schemas/trip";
 
 describe("CreateTripSchema", () => {
   it("accepts a valid trip payload", () => {
@@ -27,6 +27,31 @@ describe("CreateTripSchema", () => {
       startDate: "07/01/2026",
       endDate: "2026-07-10",
     });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("UpdateTripSchema coverImageUrl", () => {
+  it("accepts a valid absolute image URL", () => {
+    const result = UpdateTripSchema.safeParse({
+      id: "trip1",
+      coverImageUrl: "https://example.com/photo.jpg",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts null to clear the cover image", () => {
+    const result = UpdateTripSchema.safeParse({ id: "trip1", coverImageUrl: null });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an omitted coverImageUrl", () => {
+    const result = UpdateTripSchema.safeParse({ id: "trip1", title: "Trip" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a non-URL string", () => {
+    const result = UpdateTripSchema.safeParse({ id: "trip1", coverImageUrl: "not-a-url" });
     expect(result.success).toBe(false);
   });
 });
