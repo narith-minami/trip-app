@@ -37,8 +37,7 @@ function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCa
         {d}
       </span>
       <span
-        className="mt-1.5 h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: hasItems ? "#FF6B47" : "transparent" }}
+        className={cn("mt-1.5 h-1.5 w-1.5 rounded-full", hasItems ? "bg-coral" : "bg-transparent")}
       />
     </button>
   );

@@ -4,7 +4,9 @@ import type { ScheduleItem } from "@/types/entities";
 export const PX_PER_MIN = 1.5;
 export const SNAP_MIN = 10;
 
-const COLORS = ["#FF6B47", "#4F7EF7", "#2EC4B6", "#E9C46A", "#9B5DE5", "#F77F00", "#06D6A0"];
+// First entry matches --color-coral (globals.css), deepened for AA contrast
+// with the white event-block text rendered on top (EventBlock.tsx).
+const COLORS = ["#C42600", "#4F7EF7", "#2EC4B6", "#E9C46A", "#9B5DE5", "#F77F00", "#06D6A0"];
 
 export function eventColor(id: string): string {
   let hash = 0;

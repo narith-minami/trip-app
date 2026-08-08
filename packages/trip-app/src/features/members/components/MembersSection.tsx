@@ -5,7 +5,7 @@
  */
 
 import { toast } from "sonner";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { QueryBoundary } from "@/components/feedback/QueryBoundary";
 import { Card, CardBody } from "@/components/ui/card";
 import { useMemberMutations } from "@/features/members/hooks/useMemberMutations";
 import { useMembers } from "@/features/members/hooks/useMembers";
@@ -35,25 +35,29 @@ export function MembersSection({ tripId, inviteToken, canManage = false }: Membe
     });
   };
 
-  if (isLoading) return <LoadingSpinner label="メンバーを読み込み中..." />;
-  if (error) return <p className="text-red-600">メンバーの読み込みに失敗しました。</p>;
-
   return (
-    <div className="space-y-6">
-      <MemberAvatarList
-        members={members ?? []}
-        canManage={canManage}
-        onRemove={handleRemove}
-        pendingIds={pendingIds}
-      />
+    <QueryBoundary
+      isLoading={isLoading}
+      error={error}
+      loadingLabel="メンバーを読み込み中..."
+      errorMessage="メンバーの読み込みに失敗しました。"
+    >
+      <div className="space-y-6">
+        <MemberAvatarList
+          members={members ?? []}
+          canManage={canManage}
+          onRemove={handleRemove}
+          pendingIds={pendingIds}
+        />
 
-      {canManage && inviteToken && (
-        <Card>
-          <CardBody>
-            <InviteLinkBox inviteToken={inviteToken} />
-          </CardBody>
-        </Card>
-      )}
-    </div>
+        {canManage && inviteToken && (
+          <Card>
+            <CardBody>
+              <InviteLinkBox inviteToken={inviteToken} />
+            </CardBody>
+          </Card>
+        )}
+      </div>
+    </QueryBoundary>
   );
 }

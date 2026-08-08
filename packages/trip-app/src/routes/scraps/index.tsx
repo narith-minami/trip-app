@@ -7,32 +7,15 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { Button } from "@/components/ui/button";
+import { PageHeaderBar } from "@/components/layout/PageHeaderBar";
 import { ScrapComposer } from "@/features/scraps/components/ScrapComposer";
 import { type AuthorOption, ScrapFilters } from "@/features/scraps/components/ScrapFilters";
 import { ScrapList } from "@/features/scraps/components/ScrapList";
 import { useScraps } from "@/features/scraps/hooks/useScraps";
 import { useSession } from "@/lib/auth-client";
 import type { Scrap } from "@/types/entities";
-
-function ScrapsHeader({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="bg-white shadow-sm">
-      <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-4">
-        <Button variant="ghost" size="sm" onClick={onBack} aria-label="旅行一覧に戻る">
-          <span className="inline-flex items-center gap-1">
-            <ChevronLeft size={16} aria-hidden="true" />
-            戻る
-          </span>
-        </Button>
-        <h1 className="font-display text-xl font-semibold text-navy">スクラップ</h1>
-      </div>
-    </div>
-  );
-}
 
 function uniqueTags(scraps: Scrap[]): string[] {
   return [...new Set(scraps.flatMap((s) => s.tags))].sort((a, b) => a.localeCompare(b, "ja"));
@@ -106,7 +89,11 @@ export function ScrapsPage() {
 
   return (
     <div className="min-h-screen bg-cream pt-[env(safe-area-inset-top)]">
-      <ScrapsHeader onBack={() => navigate({ to: "/trips" })} />
+      <PageHeaderBar
+        title="スクラップ"
+        backLabel="旅行一覧に戻る"
+        onBack={() => navigate({ to: "/trips" })}
+      />
       <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <ScrapComposer />
 

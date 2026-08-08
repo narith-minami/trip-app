@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { QueryBoundary } from "@/components/feedback/QueryBoundary";
 import { useScheduleAlertsData } from "@/features/schedule/hooks/useScheduleAlerts";
 import { useScheduleSection } from "@/features/schedule/hooks/useScheduleSection";
 import { generateDateRange } from "@/lib/utils";
@@ -47,58 +47,63 @@ export function ScheduleSection({
     selectedDate
   );
   const items = sec.groupsMap.get(selectedDate) ?? [];
-  if (sec.isLoading) return <LoadingSpinner label="スケジュールを読み込み中..." />;
-  if (sec.error) return <p className="text-red-600">スケジュールの読み込みに失敗しました。</p>;
 
   return (
-    <div className="space-y-5">
-      <ScheduleToolbar
-        tripId={tripId}
-        selectedDate={selectedDate}
-        canEdit={canEdit}
-        datesLength={dates.length}
-        hasItems={items.length > 0}
-        onCopy={() => sec.setCopyOpen(true)}
-        onAdd={sec.openCreate}
-      />
-      <DatePicker
-        dates={dates}
-        selectedDate={selectedDate}
-        datesWithItems={new Set(sec.groupsMap.keys())}
-        alertCountByDate={alertCountByDate}
-        onSelect={setSelectedDate}
-      />
-      <ScheduleAlerts missing={selectedMissing} />
-      <ScheduleTimeline
-        tripId={tripId}
-        date={selectedDate}
-        items={items}
-        canEdit={canEdit}
-        onEdit={sec.openEdit}
-        onDelete={sec.handleDelete}
-        onReorder={canEdit ? sec.handleReorder : undefined}
-        onUploadImage={sec.handleUploadImage}
-        onDeleteImage={sec.handleDeleteImage}
-      />
-      <ScheduleItemFormDialog
-        facilities={facilities}
-        isOpen={sec.isOpen}
-        editing={sec.editing}
-        defaultDate={selectedDate || (defaultDate ?? "")}
-        isSubmitting={sec.isSubmitting}
-        onSubmit={sec.handleSubmit}
-        onClose={sec.close}
-      />
-      {sec.copyOpen && (
-        <ScheduleCopyDialog
-          sourceDate={selectedDate}
-          items={items}
-          dates={dates}
-          onCopy={(t, ids) => sec.handleCopy(t, ids, setSelectedDate)}
-          onClose={() => sec.setCopyOpen(false)}
-          isSubmitting={sec.copyIsPending}
+    <QueryBoundary
+      isLoading={sec.isLoading}
+      error={sec.error}
+      loadingLabel="スケジュールを読み込み中..."
+      errorMessage="スケジュールの読み込みに失敗しました。"
+    >
+      <div className="space-y-5">
+        <ScheduleToolbar
+          tripId={tripId}
+          selectedDate={selectedDate}
+          canEdit={canEdit}
+          datesLength={dates.length}
+          hasItems={items.length > 0}
+          onCopy={() => sec.setCopyOpen(true)}
+          onAdd={sec.openCreate}
         />
-      )}
-    </div>
+        <DatePicker
+          dates={dates}
+          selectedDate={selectedDate}
+          datesWithItems={new Set(sec.groupsMap.keys())}
+          alertCountByDate={alertCountByDate}
+          onSelect={setSelectedDate}
+        />
+        <ScheduleAlerts missing={selectedMissing} />
+        <ScheduleTimeline
+          tripId={tripId}
+          date={selectedDate}
+          items={items}
+          canEdit={canEdit}
+          onEdit={sec.openEdit}
+          onDelete={sec.handleDelete}
+          onReorder={canEdit ? sec.handleReorder : undefined}
+          onUploadImage={sec.handleUploadImage}
+          onDeleteImage={sec.handleDeleteImage}
+        />
+        <ScheduleItemFormDialog
+          facilities={facilities}
+          isOpen={sec.isOpen}
+          editing={sec.editing}
+          defaultDate={selectedDate || (defaultDate ?? "")}
+          isSubmitting={sec.isSubmitting}
+          onSubmit={sec.handleSubmit}
+          onClose={sec.close}
+        />
+        {sec.copyOpen && (
+          <ScheduleCopyDialog
+            sourceDate={selectedDate}
+            items={items}
+            dates={dates}
+            onCopy={(t, ids) => sec.handleCopy(t, ids, setSelectedDate)}
+            onClose={() => sec.setCopyOpen(false)}
+            isSubmitting={sec.copyIsPending}
+          />
+        )}
+      </div>
+    </QueryBoundary>
   );
 }

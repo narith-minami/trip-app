@@ -5,7 +5,7 @@
  */
 
 import { toast } from "sonner";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { QueryBoundary } from "@/components/feedback/QueryBoundary";
 import { useTripMemo } from "@/features/memo/hooks/useMemo";
 import { useMemoUpdateMutation } from "@/features/memo/hooks/useMemoUpdateMutation";
 import { MemoEditor } from "./MemoEditor";
@@ -25,14 +25,18 @@ export function MemoSection({ tripId }: MemoSectionProps) {
     });
   };
 
-  if (isLoading) return <LoadingSpinner label="メモを読み込み中..." />;
-  if (error) return <p className="text-red-600">メモの読み込みに失敗しました。</p>;
-
   return (
-    <MemoEditor
-      content={memo?.content ?? ""}
-      isSaving={updateMutation.isPending}
-      onSave={handleSave}
-    />
+    <QueryBoundary
+      isLoading={isLoading}
+      error={error}
+      loadingLabel="メモを読み込み中..."
+      errorMessage="メモの読み込みに失敗しました。"
+    >
+      <MemoEditor
+        content={memo?.content ?? ""}
+        isSaving={updateMutation.isPending}
+        onSave={handleSave}
+      />
+    </QueryBoundary>
   );
 }

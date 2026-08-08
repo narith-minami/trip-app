@@ -5,7 +5,7 @@
  */
 
 import { toast } from "sonner";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { QueryBoundary } from "@/components/feedback/QueryBoundary";
 import { useTodoMutations } from "@/features/todos/hooks/useTodoMutations";
 import { useTodos } from "@/features/todos/hooks/useTodos";
 import { usePendingIds } from "@/hooks/usePendingIds";
@@ -46,18 +46,22 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
     });
   };
 
-  if (isLoading) return <LoadingSpinner label="Todoを読み込み中..." />;
-  if (error) return <p className="text-red-600">Todoの読み込みに失敗しました。</p>;
-
   return (
-    <div className="space-y-4">
-      <TodoForm members={members} isSubmitting={create.isPending} onSubmit={handleCreate} />
-      <TodoList
-        todos={todos ?? []}
-        onToggle={handleToggle}
-        onDelete={handleDelete}
-        pendingIds={pendingIds}
-      />
-    </div>
+    <QueryBoundary
+      isLoading={isLoading}
+      error={error}
+      loadingLabel="Todoを読み込み中..."
+      errorMessage="Todoの読み込みに失敗しました。"
+    >
+      <div className="space-y-4">
+        <TodoForm members={members} isSubmitting={create.isPending} onSubmit={handleCreate} />
+        <TodoList
+          todos={todos ?? []}
+          onToggle={handleToggle}
+          onDelete={handleDelete}
+          pendingIds={pendingIds}
+        />
+      </div>
+    </QueryBoundary>
   );
 }
