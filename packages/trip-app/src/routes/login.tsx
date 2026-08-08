@@ -7,11 +7,14 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
+import { Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { AppShell } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardBody } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/input";
 import { signIn, useSession } from "@/lib/auth-client";
 
 interface LoginFormProps {
@@ -34,9 +37,7 @@ function LoginForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-          メールアドレス
-        </label>
+        <Label htmlFor="email">メールアドレス</Label>
         <Input
           id="email"
           type="email"
@@ -49,9 +50,7 @@ function LoginForm({
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-          パスワード
-        </label>
+        <Label htmlFor="password">パスワード</Label>
         <Input
           id="password"
           type="password"
@@ -109,32 +108,39 @@ export function LoginPage() {
   if (isPending) return <LoadingSpinner fullScreen />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">ログイン</h1>
+    <AppShell className="flex items-center justify-center px-4">
+      <Card className="w-full max-w-md">
+        <CardBody className="p-8">
+          <div className="mb-6 flex flex-col items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy">
+              <Home size={18} className="text-cream" aria-hidden="true" />
+            </span>
+            <h1 className="font-display text-3xl font-bold text-navy">ログイン</h1>
+          </div>
 
-        <LoginForm
-          email={email}
-          password={password}
-          setEmail={setEmail}
-          setPassword={setPassword}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-        />
+          <LoginForm
+            email={email}
+            password={password}
+            setEmail={setEmail}
+            setPassword={setPassword}
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit}
+          />
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            アカウントをお持ちでない方は{" "}
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/signup" })}
-              className="font-medium text-blue-600 hover:text-blue-700"
-            >
-              新規登録
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-ink-muted">
+              アカウントをお持ちでない方は{" "}
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/signup" })}
+                className="font-medium text-coral hover:text-coral-light"
+              >
+                新規登録
+              </button>
+            </p>
+          </div>
+        </CardBody>
+      </Card>
+    </AppShell>
   );
 }

@@ -26,8 +26,8 @@ const VARIANT_CLASSES: Record<Variant, string> = {
 };
 
 const SIZE_CLASSES: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2",
+  sm: "min-h-11 px-3 py-1.5 text-sm",
+  md: "min-h-11 px-4 py-2",
 };
 
 export function Button({
@@ -43,7 +43,11 @@ export function Button({
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-2xl font-medium transition disabled:opacity-50 disabled:pointer-events-none",
+        "inline-flex items-center justify-center rounded-2xl font-medium",
+        "transition-[transform,background-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
+        "active:scale-[0.97] motion-reduce:active:scale-100",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
+        "disabled:opacity-50 disabled:pointer-events-none",
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className

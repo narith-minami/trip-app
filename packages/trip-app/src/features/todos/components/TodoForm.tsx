@@ -51,6 +51,7 @@ function TagSelector({ selected, onToggle }: TagSelectorProps) {
               onClick={() => onToggle(tag)}
               className={cn(
                 "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
                 isSelected
                   ? "border-transparent text-white"
                   : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"

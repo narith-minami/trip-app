@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ScheduleToolbarProps {
@@ -46,7 +47,12 @@ export function ScheduleToolbar({
           <Button variant="secondary" onClick={onCopy} disabled={datesLength <= 1 || !hasItems}>
             コピー
           </Button>
-          <Button onClick={onAdd}>+ アイテム追加</Button>
+          <Button onClick={onAdd}>
+            <span className="inline-flex items-center gap-1">
+              <Plus size={16} aria-hidden="true" />
+              アイテム追加
+            </span>
+          </Button>
         </>
       )}
     </div>

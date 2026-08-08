@@ -5,8 +5,10 @@
  * Gradient background with countdown badge, title, date range and member avatars.
  */
 
+import { ChevronLeft, Palette } from "lucide-react";
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { TripColorSettings } from "@/features/trips/components/TripColorSettings";
@@ -190,7 +192,10 @@ function TripHeaderTopBar({
         onClick={onBack}
         className="text-white/80 hover:bg-white/10 hover:text-white"
       >
-        ← 戻る
+        <span className="inline-flex items-center gap-1">
+          <ChevronLeft size={16} aria-hidden="true" />
+          戻る
+        </span>
       </Button>
       <div className="flex gap-2">
         {onOpenColorSettings && !editor.isEditing && (
@@ -200,7 +205,10 @@ function TripHeaderTopBar({
             aria-label="配色をカスタマイズ"
             className="text-white/80 hover:bg-white/10 hover:text-white"
           >
-            🎨 配色
+            <span className="inline-flex items-center gap-1">
+              <Palette size={16} aria-hidden="true" />
+              配色
+            </span>
           </Button>
         )}
         {isOwner && <OwnerActions editor={editor} onEdit={onEdit} />}
@@ -255,9 +263,9 @@ export function TripHeader({
           onOpenColorSettings={colorControls ? () => setColorDialogOpen(true) : undefined}
         />
         {days > 0 && (
-          <span className="mb-3 inline-block rounded-full bg-coral px-3 py-1 text-xs font-semibold text-white">
+          <Badge variant="custom" className="mb-3 bg-coral !px-3 !py-1 text-white !font-semibold">
             {days}日後出発
-          </span>
+          </Badge>
         )}
         {editor.isEditing ? (
           <input

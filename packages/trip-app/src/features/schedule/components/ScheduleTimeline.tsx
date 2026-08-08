@@ -22,6 +22,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { CalendarDays } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -299,7 +300,7 @@ export function ScheduleTimeline({
   if (localItems.length === 0) {
     return (
       <EmptyState
-        icon="🗓️"
+        icon={<CalendarDays size={40} strokeWidth={1.5} />}
         title="この日の予定はまだありません"
         description="アイテムを追加して旅程を作りましょう。"
       />

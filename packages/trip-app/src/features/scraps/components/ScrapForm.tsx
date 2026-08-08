@@ -6,6 +6,8 @@
  * ScrapCard (inline edit).
  */
 
+import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
 import { type ScrapFormData, useScrapForm } from "@/features/scraps/hooks/useScrapForm";
@@ -47,7 +49,7 @@ function ImageField({
             aria-label="画像を削除"
             className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
           >
-            ×
+            <X size={14} aria-hidden="true" />
           </button>
         </div>
       ) : (
@@ -84,10 +86,7 @@ function TagField({
       {tags.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center gap-1 rounded-full bg-cream-mid px-3 py-1 text-sm text-navy"
-            >
+            <Badge key={tag} variant="navy" className="!px-3 !py-1 !text-sm">
               {tag}
               <button
                 type="button"
@@ -95,9 +94,9 @@ function TagField({
                 aria-label={`タグ「${tag}」を削除`}
                 className="text-ink-muted hover:text-ink"
               >
-                ×
+                <X size={12} aria-hidden="true" />
               </button>
-            </span>
+            </Badge>
           ))}
         </div>
       )}

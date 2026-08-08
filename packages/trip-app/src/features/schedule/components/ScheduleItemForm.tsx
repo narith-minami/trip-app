@@ -74,6 +74,7 @@ function EventTypeSelector({ values, set }: FieldsProps) {
               onClick={() => set("eventType", selected ? "" : key)}
               className={cn(
                 "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
                 selected
                   ? "border-transparent text-white"
                   : "border-cream-dark bg-white text-ink-muted hover:border-ink-muted hover:text-ink"

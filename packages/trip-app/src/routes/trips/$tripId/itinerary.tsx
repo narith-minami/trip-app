@@ -6,6 +6,8 @@
  */
 
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { ChevronLeft } from "lucide-react";
+import { AppShell } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { ItineraryView } from "@/features/schedule/components/ItineraryView";
 import { useTripColors } from "@/features/trips/hooks/useTripColors";
@@ -24,19 +26,19 @@ export function ItineraryPage() {
     trip?.startDate && trip?.endDate ? generateDateRange(trip.startDate, trip.endDate) : [];
 
   return (
-    <div
-      className={backgroundColor ? "min-h-screen" : "min-h-screen bg-cream"}
-      style={backgroundColor ? { backgroundColor } : undefined}
-    >
-      <main className="mx-auto max-w-4xl px-4 py-6">
+    <AppShell style={backgroundColor ? { backgroundColor } : undefined}>
+      <main className="mx-auto max-w-4xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="font-display text-2xl font-bold text-ink">旅程</h1>
           <Button variant="ghost" onClick={handleBack} aria-label="旅行詳細に戻る">
-            ← 戻る
+            <span className="inline-flex items-center gap-1">
+              <ChevronLeft size={16} aria-hidden="true" />
+              戻る
+            </span>
           </Button>
         </div>
         {isLoading || dates.length === 0 ? null : <ItineraryView tripId={tripId} dates={dates} />}
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -26,9 +26,22 @@
   --font-mono: "DM Mono", ui-monospace, monospace;
 
   /* Shadows (navy-tinted) */
+  --shadow-xs: 0 1px 3px rgba(15, 28, 46, 0.06);
   --shadow-sm: 0 2px 8px rgba(15, 28, 46, 0.08);
   --shadow-md: 0 8px 32px rgba(15, 28, 46, 0.14);
   --shadow-lg: 0 20px 60px rgba(15, 28, 46, 0.2);
+
+  /* Radius scale — softer, more HIG-like corners than Tailwind's defaults */
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 320ms;
 }
 
 :root {
@@ -59,4 +72,24 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+@keyframes dialog-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

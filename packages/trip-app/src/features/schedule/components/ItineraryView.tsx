@@ -5,6 +5,7 @@
  * in a single scrollable view. No edit / delete / drag-and-drop controls.
  */
 
+import { CalendarDays } from "lucide-react";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { groupByDate, useScheduleItems } from "@/features/schedule/hooks/useScheduleItems";
@@ -28,7 +29,7 @@ export function ItineraryView({ tripId, dates }: ItineraryViewProps) {
   if (dates.length === 0 || totalItems === 0) {
     return (
       <EmptyState
-        icon="🗓️"
+        icon={<CalendarDays size={40} strokeWidth={1.5} />}
         title="まだ旅程がありません"
         description="日程に予定が追加されるとここに表示されます。"
       />

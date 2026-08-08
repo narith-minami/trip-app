@@ -19,6 +19,7 @@ function DateCard({ dateStr, isSelected, hasItems, alertCount, onClick }: DateCa
       onClick={onClick}
       className={cn(
         "relative flex min-w-[64px] flex-col items-center rounded-2xl px-3 py-2.5 transition-all",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
         isSelected
           ? "bg-navy text-white"
           : "border border-cream-dark bg-white text-ink hover:bg-cream"

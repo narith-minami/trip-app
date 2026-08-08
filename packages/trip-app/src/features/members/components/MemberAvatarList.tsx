@@ -5,8 +5,8 @@
  */
 
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
 import type { TripMember } from "@/types/entities";
 
 export interface MemberAvatarListProps {
@@ -43,14 +43,9 @@ export function MemberAvatarList({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <span
-                className={cn(
-                  "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                  isOwner ? "bg-coral/10 text-coral" : "bg-cream-dark text-ink-muted"
-                )}
-              >
+              <Badge variant={isOwner ? "coral" : "neutral"}>
                 {isOwner ? "オーナー" : "メンバー"}
-              </span>
+              </Badge>
               {canManage && !isOwner && (
                 <Button
                   size="sm"

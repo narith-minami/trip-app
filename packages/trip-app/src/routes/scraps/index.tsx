@@ -7,6 +7,7 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
+import { ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,10 @@ function ScrapsHeader({ onBack }: { onBack: () => void }) {
     <div className="bg-white shadow-sm">
       <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-4">
         <Button variant="ghost" size="sm" onClick={onBack} aria-label="旅行一覧に戻る">
-          ← 戻る
+          <span className="inline-flex items-center gap-1">
+            <ChevronLeft size={16} aria-hidden="true" />
+            戻る
+          </span>
         </Button>
         <h1 className="font-display text-xl font-semibold text-navy">スクラップ</h1>
       </div>
@@ -101,9 +105,9 @@ export function ScrapsPage() {
     return <LoadingSpinner fullScreen label="スクラップを読み込み中..." />;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream pt-[env(safe-area-inset-top)]">
       <ScrapsHeader onBack={() => navigate({ to: "/trips" })} />
-      <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6">
+      <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <ScrapComposer />
 
         <ScrapFilters

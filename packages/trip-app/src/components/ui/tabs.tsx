@@ -20,17 +20,17 @@ export interface TabsProps {
 
 export function Tabs({ items, value, onValueChange, className }: TabsProps) {
   return (
-    <div className={cn("flex border-b border-cream-dark", className)}>
+    <div className={cn("inline-flex rounded-full bg-cream-mid p-1", className)}>
       {items.map((item) => (
         <button
           key={item.value}
           type="button"
           onClick={() => onValueChange(item.value)}
           className={cn(
-            "px-4 py-2 font-medium transition",
-            value === item.value
-              ? "border-b-2 border-coral text-coral"
-              : "text-ink-muted hover:text-ink"
+            "min-h-9 rounded-full px-4 text-sm font-medium",
+            "transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
+            value === item.value ? "bg-white text-navy shadow-xs" : "text-ink-muted hover:text-ink"
           )}
         >
           {item.label}

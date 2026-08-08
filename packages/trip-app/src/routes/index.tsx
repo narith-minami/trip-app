@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { fetchCurrentUser } from "@/api/users";
+import { AppShell } from "@/components/layout/PageLayout";
 
 export function IndexPage() {
   const navigate = useNavigate();
@@ -33,11 +34,11 @@ export function IndexPage() {
 
   // Show loading state
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <AppShell className="flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-        <p className="text-gray-600">読み込み中...</p>
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-coral" />
+        <p className="text-ink-muted">読み込み中...</p>
       </div>
-    </div>
+    </AppShell>
   );
 }

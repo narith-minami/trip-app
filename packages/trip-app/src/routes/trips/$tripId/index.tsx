@@ -51,7 +51,7 @@ export function TripDetailPage() {
 
   return (
     <div
-      className={backgroundColor ? "min-h-screen" : "min-h-screen bg-cream"}
+      className="min-h-screen bg-cream pt-[env(safe-area-inset-top)]"
       style={backgroundColor ? { backgroundColor } : undefined}
     >
       <TripHeader
@@ -66,13 +66,13 @@ export function TripDetailPage() {
 
       {/* Tab bar on white band */}
       <div className="bg-white shadow-sm">
-        <div className="mx-auto max-w-4xl px-4">
+        <div className="mx-auto max-w-4xl px-4 py-3">
           <Tabs items={TRIP_TABS} value={activeTab} onValueChange={setActiveTab} />
         </div>
       </div>
 
       {/* Content area */}
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="mx-auto max-w-4xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <TripTabsContent tripId={tripId} trip={trip} isOwner={isOwner} activeTab={activeTab} />
       </div>
     </div>

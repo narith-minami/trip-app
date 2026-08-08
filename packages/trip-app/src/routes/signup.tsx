@@ -7,11 +7,14 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
+import { Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { AppShell } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardBody } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/input";
 import { signUp, useSession } from "@/lib/auth-client";
 
 interface SignupValues {
@@ -20,8 +23,6 @@ interface SignupValues {
   password: string;
   confirmPassword: string;
 }
-
-const LABEL_CLASS = "mb-1 block text-sm font-medium text-gray-700";
 
 function validateSignup({ name, email, password, confirmPassword }: SignupValues): string | null {
   if (!name || !email || !password || !confirmPassword) return "すべての項目を入力してください";
@@ -90,9 +91,7 @@ function SignupField({
 }: SignupFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className={LABEL_CLASS}>
-        {label}
-      </label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         type={type}
@@ -175,30 +174,37 @@ export function SignupPage() {
   if (isPending) return <LoadingSpinner fullScreen />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">アカウント作成</h1>
+    <AppShell className="flex items-center justify-center px-4">
+      <Card className="w-full max-w-md">
+        <CardBody className="p-8">
+          <div className="mb-6 flex flex-col items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy">
+              <Home size={18} className="text-cream" aria-hidden="true" />
+            </span>
+            <h1 className="font-display text-3xl font-bold text-navy">アカウント作成</h1>
+          </div>
 
-        <SignupForm
-          values={values}
-          setField={setField}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-        />
+          <SignupForm
+            values={values}
+            setField={setField}
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit}
+          />
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            すでにアカウントをお持ちの方は{" "}
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/login" })}
-              className="font-medium text-blue-600 hover:text-blue-700"
-            >
-              ログイン
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-ink-muted">
+              すでにアカウントをお持ちの方は{" "}
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/login" })}
+                className="font-medium text-coral hover:text-coral-light"
+              >
+                ログイン
+              </button>
+            </p>
+          </div>
+        </CardBody>
+      </Card>
+    </AppShell>
   );
 }
