@@ -6,7 +6,7 @@
  * so there's no isomorphic Zod schema to share with a route handler here).
  */
 
-export const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MIN_LENGTH = 8;
 
 /**
  * Validates a password + confirmation pair. Returns the first user-facing
