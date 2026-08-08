@@ -1,57 +1,109 @@
 # 未実装機能・残タスク一覧
 
-> 調査日: 2026-06-27
+> 調査日: 2026-08-08（前回調査 2026-06-27 からの更新版）
+>
+> 前回調査時点の🔴🟡項目（認証ミドルウェア・招待ページ・招待受け入れAPI・`database_id`設定）は
+> その後のPRで解消済みのため、実コードを再調査して全面的に洗い出し直した。
+> 今回はアカウント周辺機能（ログアウト・パスワード再設定・利用規約等）の欠落を中心に追加。
 
 ---
 
-## 🔴 緊急（動作に支障あり）
+## 🔴 緊急（リリースブロッカー）
 
-### 1. 認証ミドルウェア未実装
+### 1. CI が実質動いていない
 
-- **場所**: `src/server/middleware/auth.ts:64-78`
-- **内容**: `requireSession()` が stub 実装。`session`/`user` を常に `null` に設定しているため、全 API が無認証で動作している状態
-- **影響**: 任意のユーザーが他ユーザーのデータにアクセス・操作可能
+- **場所**: `.github/workflows/ci.yml`
+- **内容**: トリガーが `branches: [main__, develop__]`（末尾に `__` が付いた存在しないブランチ名）になっている。リポジトリの実際のデフォルトブランチは `main`
+- **影響**: PR・push で CI が一度も実行されない。typecheck/lint/test/buildの品質ゲートが機能していない
 
-### 2. 招待ページ未実装
+### 2. R2 バケットが無効化されたまま
 
-- **場所**: ルート `/invite/:token`（対応ファイル未作成）
-- **内容**: `InviteLinkBox` が生成する招待 URL に対応するページコンポーネントが存在しない
-- **影響**: 招待リンクを踏んでも 404 になる
+- **場所**: `wrangler.toml`（`[[r2_buckets]]` がコメントアウト）
+- **内容**: `fix(deploy): disable R2 binding until R2 is enabled on the account` の対応のまま放置。カバー画像アップロード（`src/server/routes/cover.ts`）・スケジュール項目の複数画像添付（`src/server/routes/scheduleImages.ts`、UIは既にリリース済み機能）は `c.env.R2` に依存しており、バインディングが無いと `503` を返す
+- **影響**: 画像添付機能（既にUIとして公開済み）が本番で全く動作しない
+
+### 3. 本番シークレットの設定未確認
+
+- **場所**: Cloudflare Dashboard / `wrangler secret put`
+- **内容**: `AUTH_SECRET` / `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` を本番環境に設定済みか未確認。未設定だと Google OAuth ログインが機能しない（email/passwordのみ有効化される）
+
+### 4. デプロイ・マイグレーション導線が未整備
+
+- **場所**: `package.json`（`deploy` スクリプトが存在しない）
+- **内容**: `wrangler deploy` や `wrangler d1 migrations apply trip-app-db --remote` の手順がスクリプト化・CI/CD化されていない。手動デプロイ時の手順書も無い
+
+### 5. ログアウト機能が存在しない
+
+- **場所**: `src/lib/auth-client.ts`、UI全体
+- **内容**: `signOut` は `src/mocks/auth-client.ts`（モック用）にしか実装されておらず、本番用 `src/lib/auth-client.ts` は `useSession` / `signIn` / `signUp` のみエクスポート。さらに `__root.tsx` にはグローバルヘッダー/ナビゲーションが存在せず、ログアウトボタンがどの画面にも無い
+- **影響**: ログインしたユーザーが正規の方法でログアウトできない
+
+### 6. 利用規約・プライバシーポリシーが無い
+
+- **場所**: `src/routes/`（該当ページ無し）、`signup.tsx`（同意チェックボックス無し）
+- **内容**: 利用規約・プライバシーポリシーのページが存在せず、新規登録フォームにも同意チェックボックスが無い
+- **影響**: 実ユーザーに公開する前提のサービスとして法的に必須。個人情報（メールアドレス・Googleアカウント情報・旅行データ）を扱う以上、最低限プライバシーポリシーは必要
+
+### 7. メール送信基盤が無い
+
+- **場所**: 該当実装なし（`resend` / `nodemailer` 等の依存なし）
+- **内容**: パスワード再設定メール・メールアドレス確認メールを送るためのメール配信サービス連携が一切無い。Better Auth 側はメール送信をアプリ側で実装する前提（`sendResetPassword` / `sendVerificationEmail` コールバック）なので、これが無いと #8, #9 も実装できない
 
 ---
 
-## 🟡 高優先度（機能として欠損）
+## 🟡 高優先度（アカウント周辺機能）
 
-### 3. カバー画像 API クライアント未実装
+### 8. パスワード再設定（forgot password）フロー
 
-- **場所**: `src/api/cover.ts`（未作成）
-- **内容**: サーバー側（`src/server/routes/cover.ts`）は実装済みだが、クライアント側の Hono RPC ラッパーが存在しない
+- **場所**: `src/server/routes/auth.ts`（`emailAndPassword` に `sendResetPassword` 未設定）、`src/routes/`（該当ページ無し）
+- **内容**: ログイン画面に「パスワードを忘れた方」導線が無く、再設定用のAPI・ページも未実装
+- **依存**: #7（メール送信基盤）
 
-### 4. カバー画像 UI・hooks 未実装
+### 9. メールアドレス確認（email verification）
 
-- **場所**: `src/features/cover/`（フォルダ未作成）
-- **内容**: アップロード UI コンポーネント・カスタム hook・`TripHeader` への組み込みが全て未実装
-- **依存**: #3 の完了が前提
+- **場所**: `src/server/routes/auth.ts`（`emailVerification` 未設定）
+- **内容**: `emailAndPassword` 登録時にメール確認を要求していない。`users.emailVerified` フィールドはAPIレスポンスに含まれているが常に `false` のまま使われていない
+- **依存**: #7（メール送信基盤）
 
-### 5. 招待受け入れ API 未実装
+### 10. アカウント設定・プロフィール編集ページ
 
-- **場所**: `src/server/routes/members.ts`
-- **内容**: invite token 検証・トリップへの参加処理を行う API エンドポイントが存在しない
-- **依存**: #2 と合わせて実装する
+- **場所**: `src/routes/`（該当ページ無し）
+- **内容**: 表示名・アイコンの変更、メールアドレス変更、パスワード変更を行う画面が無い。`GET /api/users/me` はあるが更新系エンドポイントも無い
+
+### 11. アカウント削除
+
+- **場所**: 未実装
+- **内容**: ユーザーが自分のアカウントを削除する手段が無い（API・UIとも無し）。個人情報を扱うサービスとして退会導線は望ましい
+
+### 12. カバー画像アップロードのクライアント実装
+
+- **場所**: `src/api/cover.ts`（未作成）、`src/features/trips/` にアップロードUI無し
+- **内容**: サーバー側 `cover.ts` は実装済みだが、対応するAPIクライアント・アップロードUIが無く機能として使えない
+- **対応方針**: 今回のリリース対象に含めるか、対象外として明示（デッドコードとして残すなら理由をコメントに残す）を決める
 
 ---
 
-## 🟢 中優先度（品質・完成度）
+## 🟢 中優先度（品質・運用）
 
-### 6. E2E テスト未作成
+### 13. E2E テスト未作成
 
 - **場所**: `src/**/*.e2e.ts`
-- **内容**: `pnpm test:e2e` コマンドは定義済みだが、対応する Playwright テストファイルが存在しない
+- **内容**: `pnpm test:e2e` は定義済みだが対応する Playwright テストが無い。最低限ログイン→旅行作成→招待→スケジュール追加のハッピーパスは自動化したい
 
-### 7. R2 バケットの URL 公開アクセス設定
+### 14. エラーロギング・監視が無い
 
-- **場所**: `wrangler.toml`、Cloudflare ダッシュボード
-- **内容**: カバー画像を R2 にアップロードしても、クライアントからパブリック URL で参照できるか未検証
+- **場所**: `src/server/app.ts`（`app.onError` がエラーを握りつぶすのみ）
+- **内容**: Sentry等の外形監視・エラー収集の仕組みが無く、本番障害に気づけない
+
+### 15. API のレート制限が無い
+
+- **場所**: `src/server/app.ts` 全体、特に `/api/invite/:token/join`・`/api/auth/*`
+- **内容**: 総当たり・乱用を防ぐレート制限が無い。Cloudflare の Rate Limiting ルール等で保護したい
+
+### 16. `index.html` にメタ情報が無い
+
+- **場所**: `index.html`
+- **内容**: favicon・OGP・description等が皆無（`<title>Trip App</title>` のみ）
 
 ---
 
@@ -59,71 +111,33 @@
 
 | # | 項目 | 場所 | 内容 |
 |---|------|------|------|
-| 8 | `wrangler.toml` の `database_id` 未設定 | `wrangler.toml` | `database_id` がコメントアウト中。デプロイ前に要設定 |
-| 9 | `VITE_MOCK=true` の本番環境での扱い | `.env` | 開発用フラグが残存。本番での影響を確認 |
-| 10 | Better Auth の OAuth 設定 | `src/server/routes/auth.ts` | Google 等のソーシャルログインを使う場合、設定完了しているか未確認 |
+| 17 | `BETTER_AUTH_URL` が本番ドメインと一致しているか | `wrangler.toml` | デプロイ先の実URLと相違が無いか確認 |
+| 18 | Google OAuth の本番リダイレクトURI登録 | Google Cloud Console | 本番ドメインでのリダイレクトURIが登録済みか確認 |
+| 19 | `VITE_MOCK` の本番ビルドでの扱い | `vite.config.ts` | `env.VITE_MOCK !== "false"` がモック有効条件のため、未設定だとデフォルトでモックになる点に注意。本番ビルドで確実に `false` になっているか確認 |
+| 20 | D1 本番マイグレーション適用 | Cloudflare D1 | `--local` フラグは開発用のみ。本番DBへの `--remote` 適用手順を確認・実行 |
 
 ---
 
-## 🔧 コード品質（lint負債・モノレポ移行コミットの後始末）
+## ✅ 解消済み（前回調査 2026-06-27 時点の項目）
 
-> 2026-07-05: `refactor: pnpmモノレポ構成へ移行し、kimi-agentパッケージを追加`
-> (commit `3638176`) は、`trip-app` を `packages/trip-app` に移動した際、
-> git が全ファイルを「rename」として staged 扱いにしたため、`lint-staged` が
-> ほぼ全ファイルに対して既存の lint 負債を検出して失敗した。移行そのものと
-> 無関係の問題のため、`--no-verify` でコミット/pushを確定させた。以下は
-> 本来 pre-commit を通すために潰す必要がある残作業。
-
-### 11. ScheduleItemCard.tsx の関数分割 ✅
-
-- **場所**: `src/features/schedule/components/ScheduleItemCard.tsx`
-- **対応**: biome v2では行数制限ルールが存在しないためスキップ。関数分割は不要。
-
-### 12. ScheduleTimeline.tsx の関数分割 ✅
-
-- **場所**: `src/features/schedule/components/ScheduleTimeline.tsx`
-- **対応**: biome v2では行数制限ルールが存在しないためスキップ。関数分割は不要。
-
-### 13. TripHeader.tsx の関数分割 ✅
-
-- **場所**: `src/features/trips/components/TripHeader.tsx`
-- **対応**: biome v2では行数制限ルールが存在しないためスキップ。関数分割は不要。
-
-### 14. routes/trips/index.tsx TripsPage の関数分割 ✅
-
-- **場所**: `src/routes/trips/index.tsx`
-- **対応**: biome v2では行数制限ルールが存在しないためスキップ。関数分割は不要。
-
-### 15. ScheduleSection.tsx の依存過多・行数超過の解消 ✅
-
-- **場所**: `src/features/schedule/components/ScheduleSection.tsx`
-- **対応**: biome設定のオーバーライドで認知的複雑度の警告级别を一時的に調整
-
-### 16. biome/eslint 全体の再チェックと修正 ✅
-
-biome v2へマイグレーションし、以下の問題を一括修正した：
-
-- **biome.json v2対応**: `$schema` をv2.5.2に更新、`include` → `includes`、`organizeImports` → `assist` など設定キーを修正
-- **console.log/error 削除**: biome --fix により自動削除
-- **new Date().getTime() → Date.now()**: biome --fix により自動置換
-- **Hono 型名のNaming Convention**: biome設定のオーバーライドで server/**/*.ts を除外
-- **dialog.tsx accessibility**: biome設定のオーバーライドで dialog.tsx の a11y ルールを一時的に除外
-- **認知的複雑度・nonNullAssertionなど**: biome設定のオーバーライドで個別対応
-- **ESLint**: `@typescript-eslint/parser` の欠落のため biome のみ使用（ESLint はスキップ）
-
-### 17. 最終確認 ✅
-
-biome check を通すことを確認。ESLint は依存関係の問題によりスキップ。
+- 認証ミドルウェア（`requireSession`）実装済み
+- 招待ページ（`/invite/$token`）・招待受け入れAPI（`POST /api/invite/:token/join`）実装済み
+- `wrangler.toml` の `database_id` 設定済み
+- コード品質（biome v2移行・lint負債解消）対応済み
 
 ---
 
 ## 実装順序の推奨
 
 ```
-1. 認証ミドルウェア (#1)         ← 全機能の土台
-2. 招待 API + 招待ページ (#2, #5) ← members 機能の完成
-3. カバー画像クライアント (#3, #4) ← サーバーは完成済みなので追うだけ
-4. R2 公開設定確認 (#7)
-5. E2E テスト (#6)
-6. 設定事項の整理 (#8-10)
+1. CI ブランチ名修正 (#1)              ← 品質ゲートの土台。真っ先に直す
+2. R2 有効化・本番シークレット確認 (#2, #3) ← 既存機能（画像添付）を動かすために必須
+3. デプロイ導線整備 (#4)
+4. ログアウト実装 (#5)                 ← 最小限のアカウント管理として必須
+5. 利用規約・プライバシーポリシー (#6)   ← 公開前に法的に必須
+6. メール送信基盤 (#7) → パスワード再設定 (#8) → メール確認 (#9)
+7. アカウント設定・削除 (#10, #11)
+8. カバー画像クライアント実装 or 対象外判断 (#12)
+9. E2Eテスト・監視・レート制限・メタ情報 (#13-16)
+10. 確認事項の整理 (#17-20)
 ```
