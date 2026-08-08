@@ -94,7 +94,7 @@ export function ScheduleToolbar({
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const close = () => setMenuOpen(false);
-  useCloseOnOutsideOrEscape(menuOpen, close, containerRef);
+  useCloseOnOutsideOrEscape(menuOpen, close, [containerRef]);
 
   return (
     <div

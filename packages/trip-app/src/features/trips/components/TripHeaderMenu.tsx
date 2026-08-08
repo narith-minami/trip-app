@@ -8,8 +8,14 @@
 
 import { MoreVertical, Palette, Pencil, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { MenuItem, MenuPanel, useCloseOnOutsideOrEscape } from "@/components/ui/menu";
+import {
+  MenuItem,
+  MenuPanel,
+  useCloseOnOutsideOrEscape,
+  useMenuPosition,
+} from "@/components/ui/menu";
 import type { useTripEditor } from "@/features/trips/hooks/useTripEditor";
 
 type TripEditor = ReturnType<typeof useTripEditor>;
@@ -43,15 +49,18 @@ export function TripHeaderMenu({
   onOpenColorSettings?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const close = () => setMenuOpen(false);
-  useCloseOnOutsideOrEscape(menuOpen, close, containerRef);
+  const position = useMenuPosition(menuOpen, triggerRef);
+  useCloseOnOutsideOrEscape(menuOpen, close, [triggerRef, menuRef]);
 
   if (!onOpenColorSettings && !isOwner) return null;
 
   return (
-    <div ref={containerRef} className="relative">
+    <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setMenuOpen((prev) => !prev)}
         aria-label="旅行の操作"
@@ -61,42 +70,50 @@ export function TripHeaderMenu({
       >
         <MoreVertical size={20} aria-hidden={true} />
       </button>
-      {menuOpen && (
-        <MenuPanel aria-label="旅行の操作メニュー" className="absolute right-0 top-full z-40 mt-2">
-          {onOpenColorSettings && (
-            <MenuItem
-              icon={Palette}
-              label="配色"
-              onClick={() => {
-                close();
-                onOpenColorSettings();
-              }}
-            />
-          )}
-          {isOwner && (
-            <>
+      {menuOpen &&
+        position &&
+        createPortal(
+          <MenuPanel
+            ref={menuRef}
+            aria-label="旅行の操作メニュー"
+            className="fixed z-50"
+            style={{ top: position.top, right: position.right }}
+          >
+            {onOpenColorSettings && (
               <MenuItem
-                icon={Pencil}
-                label="編集"
+                icon={Palette}
+                label="配色"
                 onClick={() => {
                   close();
-                  onEdit();
+                  onOpenColorSettings();
                 }}
               />
-              <MenuItem
-                icon={Trash2}
-                label="削除"
-                danger
-                disabled={editor.isDeleting}
-                onClick={() => {
-                  close();
-                  editor.remove();
-                }}
-              />
-            </>
-          )}
-        </MenuPanel>
-      )}
-    </div>
+            )}
+            {isOwner && (
+              <>
+                <MenuItem
+                  icon={Pencil}
+                  label="編集"
+                  onClick={() => {
+                    close();
+                    onEdit();
+                  }}
+                />
+                <MenuItem
+                  icon={Trash2}
+                  label="削除"
+                  danger
+                  disabled={editor.isDeleting}
+                  onClick={() => {
+                    close();
+                    editor.remove();
+                  }}
+                />
+              </>
+            )}
+          </MenuPanel>,
+          document.body
+        )}
+    </>
   );
 }

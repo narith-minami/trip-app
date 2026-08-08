@@ -6,19 +6,20 @@
  * header's edit/delete actions, or a screen's secondary floating actions).
  */
 
-import type { ComponentType, HTMLAttributes, RefObject } from "react";
-import { useEffect } from "react";
+import type { ComponentType, HTMLAttributes, Ref, RefObject } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 
 export function useCloseOnOutsideOrEscape(
   open: boolean,
   close: () => void,
-  containerRef: RefObject<HTMLElement | null>
+  refs: RefObject<HTMLElement | null>[]
 ) {
   useEffect(() => {
     if (!open) return;
     const handlePointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) close();
+      const target = e.target as Node;
+      if (refs.every((ref) => !ref.current?.contains(target))) close();
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
@@ -29,12 +30,44 @@ export function useCloseOnOutsideOrEscape(
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open, close, containerRef]);
+  }, [open, close, refs]);
 }
 
-export function MenuPanel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+/**
+ * Screen position for a menu that needs to escape an `overflow: hidden`
+ * ancestor (e.g. a hero header) by portaling to `document.body` and
+ * positioning itself with `position: fixed` off the trigger's own rect,
+ * rather than `position: absolute` inside the clipped container.
+ *
+ * This can't be computed during render: `getBoundingClientRect()` needs the
+ * trigger's real layout, which only exists once refs are attached post-commit.
+ * useLayoutEffect (not useEffect) measures and applies it before the browser
+ * paints, so there's no visible frame with the menu in the wrong place.
+ */
+export function useMenuPosition(open: boolean, triggerRef: RefObject<HTMLElement | null>) {
+  const [position, setPosition] = useState<{ top: number; right: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) {
+      setPosition(null);
+      return;
+    }
+    const rect = triggerRef.current.getBoundingClientRect();
+    setPosition({ top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right) });
+  }, [open, triggerRef]);
+
+  return position;
+}
+
+// React 19: ref is a normal prop, no forwardRef needed.
+export function MenuPanel({
+  className,
+  ref,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> }) {
   return (
     <div
+      ref={ref}
       role="menu"
       className={cn(
         "flex w-56 flex-col overflow-hidden rounded-2xl bg-white py-1 text-left shadow-lg",
