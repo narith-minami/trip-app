@@ -11,10 +11,10 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { generateId } from "@/lib/utils";
 import { getDb, trips } from "../db";
+import { uploadImage } from "../lib/upload";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
-import { requireMember } from "../middleware/requireMember";
-import { requireOwner } from "../middleware/requireOwner";
+import { requireMember, requireOwner } from "../middleware/requireMember";
 
 /**
  * POST /api/trips/:tripId/cover
@@ -29,48 +29,21 @@ const coverRouter = new Hono<TripMemberContext>().post(
     const tripId = c.get("tripId");
     const db = getDb(c.env.DB);
 
-    // Get file from form data
-    const formData = await c.req.formData();
-    const file = formData.get("file") as File;
+    const result = await uploadImage({
+      formData: await c.req.formData(),
+      bucket: c.env.R2,
+      buildKey: (extension) => `${tripId}-${generateId("cover")}.${extension}`,
+    });
 
-    if (!file) {
-      return c.json({ error: "ファイルが提供されていません" }, 400);
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      return c.json({ error: "ファイルは画像でなければなりません" }, 400);
-    }
-
-    // Validate file size (5MB max, per spec)
-    const MAX_COVER_BYTES = 5 * 1024 * 1024;
-    if (file.size > MAX_COVER_BYTES) {
-      return c.json({ error: "ファイルサイズは5MB以内にしてください" }, 400);
-    }
-
-    // Upload to R2
-    if (!c.env.R2) {
-      return c.json({ error: "R2ストレージが設定されていません" }, 503);
-    }
-
-    const buffer = await file.arrayBuffer();
-    const fileName = `${tripId}-${generateId("cover")}.${file.type.split("/")[1]}`;
-
-    try {
-      await c.env.R2.put(fileName, buffer, {
-        httpMetadata: {
-          contentType: file.type,
-        },
-      });
-    } catch (_error) {
-      return c.json({ error: "画像のアップロードに失敗しました" }, 500);
+    if (!result.ok) {
+      return c.json({ error: result.message }, result.status);
     }
 
     // Update trip with R2 key. RETURNING gives the stored row back
     // without a second round trip.
     const [updated] = await db
       .update(trips)
-      .set({ coverImageUrl: fileName })
+      .set({ coverImageUrl: result.key })
       .where(eq(trips.id, tripId))
       .returning();
 

@@ -9,16 +9,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
+import { MemoSchema } from "@/lib/schemas/memo";
 import { getDb, tripMemos } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
-
-// Schemas for memo
-const MemoSchema = z.object({
-  content: z.string(),
-});
 
 /**
  * GET /api/trips/:tripId/memo

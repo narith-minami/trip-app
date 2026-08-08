@@ -11,39 +11,33 @@
 import { zValidator } from "@hono/zod-validator";
 import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
+import type { UpdateTrip } from "@/lib/schemas/trip";
 import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
 import { generateId } from "@/lib/utils";
 import { getDb, tripMembers, trips, userSummaryColumns } from "../db";
 import { ERROR_MESSAGES } from "../lib/errors";
+import { pickDefined } from "../lib/update";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
-import { requireMember } from "../middleware/requireMember";
-import { requireOwner } from "../middleware/requireOwner";
+import { requireMember, requireOwner } from "../middleware/requireMember";
 
 type TripUpdateInput = Partial<typeof trips.$inferInsert>;
 
 /**
  * Build the set of fields to update from validated input, skipping
- * undefined values so untouched columns are left unchanged.
+ * undefined values so untouched columns are left unchanged (fields sent as
+ * "" / null are persisted, so optional columns can be cleared — AGENTS.md #8).
  *
  * Note: `description` has no column on the `trips` table (it maps to
  * `destination` via `location`), so it is intentionally not persisted.
- * `location` uses an explicit `!== undefined` check so it can be cleared.
  */
-function buildTripUpdate(validated: {
-  title?: string;
-  startDate?: string;
-  endDate?: string;
-  location?: string;
-  coverImageUrl?: string | null;
-}): TripUpdateInput {
-  const updateData: TripUpdateInput = { updatedAt: Date.now() };
-  if (validated.title) updateData.title = validated.title;
-  if (validated.startDate) updateData.startDate = validated.startDate;
-  if (validated.endDate) updateData.endDate = validated.endDate;
-  if (validated.location !== undefined) updateData.destination = validated.location;
-  if (validated.coverImageUrl !== undefined) updateData.coverImageUrl = validated.coverImageUrl;
-  return updateData;
+function buildTripUpdate(validated: Omit<UpdateTrip, "id">): TripUpdateInput {
+  const { description: _description, location, ...rest } = validated;
+  return {
+    ...pickDefined(rest),
+    ...(location !== undefined ? { destination: location } : {}),
+    updatedAt: Date.now(),
+  };
 }
 
 /** Shared relation shape: trip with owner and member users embedded. */

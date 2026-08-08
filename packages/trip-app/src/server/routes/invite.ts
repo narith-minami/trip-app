@@ -22,9 +22,6 @@ const ERR_INVALID_TOKEN = "招待リンクが無効です";
 const inviteRouter = new Hono<AuthContext>()
   .get("/:token", async (c) => {
     const token = c.req.param("token");
-    if (!token) {
-      return c.json({ error: ERR_INVALID_TOKEN }, 404);
-    }
     const db = getDb(c.env.DB);
 
     const trip = await db.query.trips.findFirst({

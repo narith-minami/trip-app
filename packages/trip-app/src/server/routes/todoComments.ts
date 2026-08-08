@@ -94,8 +94,9 @@ const commentsRouter = new Hono<TripMemberContext>()
     const todoId = c.req.param("todoId");
     const commentId = c.req.param("commentId");
     const user = c.get("user");
-    if (!todoId || !commentId) {
-      return c.json({ error: "IDが必要です" }, 400);
+    // todoId comes from the mount path, so Hono types it string | undefined
+    if (!todoId) {
+      return c.json({ error: "TodoのIDが必要です" }, 400);
     }
     if (!user) {
       return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);

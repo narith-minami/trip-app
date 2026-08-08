@@ -8,9 +8,15 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
+import type { UpdateFacility } from "@/lib/schemas/facility";
+import {
+  CreateFacilitySchema,
+  FacilitySearchQuerySchema,
+  UpdateFacilitySchema,
+} from "@/lib/schemas/facility";
 import { generateId } from "@/lib/utils";
 import { facilities, getDb, scheduleItems } from "../db";
+import { pickDefined } from "../lib/update";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -20,33 +26,6 @@ const ERR_NOT_FOUND = "施設が見つかりません";
 const ERR_SEARCH_UNAVAILABLE = "施設検索機能は現在利用できません";
 const ERR_SEARCH_FAILED = "施設検索に失敗しました";
 
-const FACILITY_CATEGORY_VALUES = [
-  "hotel",
-  "restaurant",
-  "sightseeing",
-  "shopping",
-  "transport",
-  "other",
-] as const;
-
-const CreateFacilitySchema = z.object({
-  category: z.enum(FACILITY_CATEGORY_VALUES),
-  name: z.string().min(1),
-  address: z.string().nullable().optional(),
-  lat: z.number().nullable().optional(),
-  lng: z.number().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  businessHours: z.string().nullable().optional(),
-  url: z.string().nullable().optional(),
-  memo: z.string().nullable().optional(),
-});
-
-const UpdateFacilitySchema = CreateFacilitySchema.partial();
-
-const SearchQuerySchema = z.object({
-  q: z.string().min(1),
-});
-
 type FacilityUpdateInput = Partial<typeof facilities.$inferInsert>;
 
 /**
@@ -54,23 +33,14 @@ type FacilityUpdateInput = Partial<typeof facilities.$inferInsert>;
  * `!== undefined` checks let callers explicitly clear nullable fields.
  */
 function buildFacilityUpdate(
-  validated: z.infer<typeof UpdateFacilitySchema>,
+  validated: UpdateFacility,
   userId: string | null
 ): FacilityUpdateInput {
-  const updateData: FacilityUpdateInput = {
+  return {
+    ...pickDefined(validated),
     updatedBy: userId,
     updatedAt: Date.now(),
   };
-  if (validated.category !== undefined) updateData.category = validated.category;
-  if (validated.name !== undefined) updateData.name = validated.name;
-  if (validated.address !== undefined) updateData.address = validated.address;
-  if (validated.lat !== undefined) updateData.lat = validated.lat;
-  if (validated.lng !== undefined) updateData.lng = validated.lng;
-  if (validated.phone !== undefined) updateData.phone = validated.phone;
-  if (validated.businessHours !== undefined) updateData.businessHours = validated.businessHours;
-  if (validated.url !== undefined) updateData.url = validated.url;
-  if (validated.memo !== undefined) updateData.memo = validated.memo;
-  return updateData;
 }
 
 /**
@@ -95,7 +65,7 @@ const facilitiesRouter = new Hono<TripMemberContext>()
    * Search external facility info (name/address/phone/coordinates) via YOLP.
    * Must be registered before "/:facilityId" so "search" isn't captured as an ID.
    */
-  .get("/search", zValidator("query", SearchQuerySchema), async (c) => {
+  .get("/search", zValidator("query", FacilitySearchQuerySchema), async (c) => {
     const appId = c.env.YAHOO_CLIENT_ID;
     if (!appId) {
       return c.json({ error: ERR_SEARCH_UNAVAILABLE }, 503);
@@ -115,9 +85,6 @@ const facilitiesRouter = new Hono<TripMemberContext>()
   .get("/:facilityId", async (c) => {
     const tripId = c.get("tripId");
     const facilityId = c.req.param("facilityId");
-    if (!facilityId) {
-      return c.json({ error: "施設IDが必要です" }, 400);
-    }
 
     const db = getDb(c.env.DB);
     const facility = await db.query.facilities.findFirst({
@@ -171,9 +138,6 @@ const facilitiesRouter = new Hono<TripMemberContext>()
     const userId = c.get("user")?.id ?? null;
     const tripId = c.get("tripId");
     const facilityId = c.req.param("facilityId");
-    if (!facilityId) {
-      return c.json({ error: "施設IDが必要です" }, 400);
-    }
     const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
@@ -203,9 +167,6 @@ const facilitiesRouter = new Hono<TripMemberContext>()
   .delete("/:facilityId", async (c) => {
     const tripId = c.get("tripId");
     const facilityId = c.req.param("facilityId");
-    if (!facilityId) {
-      return c.json({ error: "施設IDが必要です" }, 400);
-    }
 
     const db = getDb(c.env.DB);
 

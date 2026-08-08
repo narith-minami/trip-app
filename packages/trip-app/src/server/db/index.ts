@@ -12,17 +12,6 @@ import * as schema from "./schema";
 
 export type {
   Facility,
-  NewFacility,
-  NewScheduleItem,
-  NewScheduleItemImage,
-  NewScrap,
-  NewScrapTag,
-  NewTodo,
-  NewTodoComment,
-  NewTodoTag,
-  NewTrip,
-  NewTripMember,
-  NewTripMemo,
   ScheduleItem,
   ScheduleItemImage,
   Scrap,

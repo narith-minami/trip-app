@@ -11,8 +11,7 @@ import { Hono } from "hono";
 import { getDb, tripMembers, userSummaryColumns } from "../db";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
-import { requireMember } from "../middleware/requireMember";
-import { requireOwner } from "../middleware/requireOwner";
+import { requireMember, requireOwner } from "../middleware/requireMember";
 
 /**
  * GET /api/trips/:tripId/members

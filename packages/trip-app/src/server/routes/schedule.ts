@@ -8,52 +8,19 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
+import type { UpdateScheduleItem } from "@/lib/schemas/schedule";
+import {
+  CopyScheduleItemsSchema,
+  CreateScheduleItemSchema,
+  ReorderScheduleItemsSchema,
+  UpdateScheduleItemSchema,
+} from "@/lib/schemas/schedule";
 import { generateId } from "@/lib/utils";
 import { facilities, getDb, scheduleItemImages, scheduleItems } from "../db";
+import { pickDefined } from "../lib/update";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
-
-const EVENT_TYPE_VALUES = [
-  "food",
-  "flight",
-  "train",
-  "sightseeing",
-  "activity",
-  "hotel",
-  "shopping",
-  "other",
-] as const;
-
-// Schemas for schedule items
-const CreateScheduleItemSchema = z.object({
-  date: z.iso.date(),
-  startTime: z.string().nullable().optional(),
-  endTime: z.string().nullable().optional(),
-  title: z.string().min(1),
-  eventType: z.enum(EVENT_TYPE_VALUES).nullable().optional(),
-  isTentative: z.boolean().optional(),
-  placeName: z.string().nullable().optional(),
-  placeUrl: z.url().nullable().optional(),
-  memo: z.string().nullable().optional(),
-  facilityId: z.string().nullable().optional(),
-  orderIndex: z.number().int().default(0),
-});
-
-const UpdateScheduleItemSchema = CreateScheduleItemSchema.partial();
-
-const ReorderScheduleItemsSchema = z.object({
-  items: z
-    .array(z.object({ id: z.string(), orderIndex: z.number().int().min(0) }))
-    .min(1)
-    .max(100),
-});
-
-const CopyScheduleItemsSchema = z.object({
-  targetDate: z.iso.date(),
-  itemIds: z.array(z.string()).min(1).max(50),
-});
 
 type ScheduleUpdateInput = Partial<typeof scheduleItems.$inferInsert>;
 
@@ -63,22 +30,6 @@ function withRelations() {
     images: { orderBy: [asc(scheduleItemImages.orderIndex)] },
     facility: true as const,
   };
-}
-
-/**
- * Applies the place/memo/eventType/tentative fields to `updateData`.
- * Split out of `buildScheduleUpdate` to keep cognitive complexity in check.
- */
-function applyScheduleDetailFields(
-  updateData: ScheduleUpdateInput,
-  validated: z.infer<typeof UpdateScheduleItemSchema>
-) {
-  if (validated.eventType !== undefined) updateData.eventType = validated.eventType;
-  if (validated.isTentative !== undefined) updateData.isTentative = validated.isTentative ? 1 : 0;
-  if (validated.placeName !== undefined) updateData.placeName = validated.placeName;
-  if (validated.placeUrl !== undefined) updateData.placeUrl = validated.placeUrl;
-  if (validated.memo !== undefined) updateData.memo = validated.memo;
-  if (validated.facilityId !== undefined) updateData.facilityId = validated.facilityId;
 }
 
 /**
@@ -99,23 +50,20 @@ async function isFacilityInTrip(
 
 /**
  * Build the schedule-item fields to update from validated input.
- * `!== undefined` checks let callers explicitly clear nullable fields.
+ * `!== undefined` checks let callers explicitly clear nullable fields;
+ * `isTentative` maps boolean → 0/1.
  */
 function buildScheduleUpdate(
-  validated: z.infer<typeof UpdateScheduleItemSchema>,
+  validated: UpdateScheduleItem,
   userId: string | null
 ): ScheduleUpdateInput {
-  const updateData: ScheduleUpdateInput = {
+  const { isTentative, ...rest } = validated;
+  return {
+    ...pickDefined(rest),
+    ...(isTentative !== undefined ? { isTentative: isTentative ? 1 : 0 } : {}),
     updatedBy: userId,
     updatedAt: Date.now(),
   };
-  if (validated.date) updateData.date = validated.date;
-  if (validated.startTime !== undefined) updateData.startTime = validated.startTime;
-  if (validated.endTime !== undefined) updateData.endTime = validated.endTime;
-  if (validated.title) updateData.title = validated.title;
-  applyScheduleDetailFields(updateData, validated);
-  if (validated.orderIndex !== undefined) updateData.orderIndex = validated.orderIndex;
-  return updateData;
 }
 
 /**
@@ -185,9 +133,6 @@ const scheduleRouter = new Hono<TripMemberContext>()
     const userId = c.get("user")?.id ?? null;
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
-    if (!itemId) {
-      return c.json({ error: "アイテムIDが必要です" }, 400);
-    }
     const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
@@ -316,9 +261,6 @@ const scheduleRouter = new Hono<TripMemberContext>()
   .delete("/:itemId", async (c) => {
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
-    if (!itemId) {
-      return c.json({ error: "アイテムIDが必要です" }, 400);
-    }
     const db = getDb(c.env.DB);
 
     // Verify item belongs to trip

@@ -8,14 +8,14 @@
 import { Hono } from "hono";
 import { ERROR_MESSAGES } from "../lib/errors";
 import type { AuthContext } from "../middleware/auth";
-import { getUser, requireSession } from "../middleware/auth";
+import { requireSession } from "../middleware/auth";
 
 /**
  * GET /api/users/me
  * Get current user session info
  */
 const usersRouter = new Hono<AuthContext>().get("/me", requireSession(), async (c) => {
-  const user = getUser(c);
+  const user = c.get("user");
 
   if (!user) {
     return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);

@@ -87,7 +87,3 @@ export function requireSession() {
     }
   };
 }
-
-export function getUser(c: Context<AuthContext>): Session["user"] | null {
-  return c.get("user") ?? null;
-}

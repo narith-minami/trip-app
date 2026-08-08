@@ -9,36 +9,16 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
-import { TodoDescriptionSchema, TodoDueDateSchema, TodoTagsSchema } from "@/lib/schemas/todo";
-import { TODO_PRIORITY_KEYS } from "@/lib/todoPriority";
+import type { UpdateTodo } from "@/lib/schemas/todo";
+import { CreateTodoSchema, UpdateTodoSchema } from "@/lib/schemas/todo";
 import { generateId } from "@/lib/utils";
+import type { Database } from "../db";
 import { getDb, todoComments, todos, todoTags, userSummaryColumns } from "../db";
+import { flattenTags, insertTagsStmt, uniqueTags } from "../lib/tags";
+import { pickDefined } from "../lib/update";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
-
-type Db = ReturnType<typeof getDb>;
-
-// Schemas for todos
-const CreateTodoSchema = z.object({
-  title: z.string().min(1),
-  description: TodoDescriptionSchema,
-  dueDate: TodoDueDateSchema,
-  assigneeId: z.string().optional(),
-  priority: z.enum(TODO_PRIORITY_KEYS).optional(),
-  tags: TodoTagsSchema.optional(),
-});
-
-const UpdateTodoSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: TodoDescriptionSchema,
-  dueDate: TodoDueDateSchema,
-  isDone: z.boolean().optional(),
-  assigneeId: z.string().optional().nullable(),
-  priority: z.enum(TODO_PRIORITY_KEYS).optional(),
-  tags: TodoTagsSchema.optional(),
-});
 
 type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 
@@ -57,8 +37,8 @@ type TodoDetailWithRelations = TodoWithRelations & {
  * Strips the comments relation (only attached for the detail endpoint).
  */
 function serialize(todo: TodoWithRelations) {
-  const { tags, comments: _comments, ...rest } = todo;
-  return { ...rest, tags: tags.map((t) => t.tag) };
+  const { comments: _comments, ...rest } = todo;
+  return flattenTags(rest);
 }
 
 /**
@@ -66,28 +46,13 @@ function serialize(todo: TodoWithRelations) {
  * renders inline (it never fetches comments separately).
  */
 function serializeDetail(todo: TodoDetailWithRelations) {
-  return { ...serialize(todo), comments: todo.comments };
-}
-
-/**
- * Deduplicate incoming tags (already trimmed/validated by Zod).
- */
-function uniqueTags(tags: string[] | undefined): string[] {
-  return [...new Set(tags ?? [])];
-}
-
-/**
- * Build the bulk tag-insert statement, or null when there are no tags.
- */
-function insertTagsStmt(db: Db, todoId: string, tags: string[]) {
-  if (tags.length === 0) return null;
-  return db.insert(todoTags).values(tags.map((tag) => ({ todoId, tag })));
+  return flattenTags(todo);
 }
 
 /**
  * Fetch a single todo with its assignee and tags (no comments).
  */
-async function findTodo(db: Db, todoId: string) {
+async function findTodo(db: Database, todoId: string) {
   return db.query.todos.findFirst({
     where: eq(todos.id, todoId),
     with: { assignee: { columns: userSummaryColumns }, tags: true },
@@ -97,7 +62,7 @@ async function findTodo(db: Db, todoId: string) {
 /**
  * Fetch a single todo with assignee, tags and comments (for detail endpoint).
  */
-async function findTodoDetail(db: Db, todoId: string) {
+async function findTodoDetail(db: Database, todoId: string) {
   return db.query.todos.findFirst({
     where: eq(todos.id, todoId),
     with: {
@@ -112,17 +77,16 @@ async function findTodoDetail(db: Db, todoId: string) {
 }
 
 /**
- * Build the todo fields to update from validated input.
+ * Build the todo fields to update from validated input. `tags` is handled
+ * separately (join table) and `isDone` maps boolean → 0/1.
  */
-function buildTodoUpdate(validated: z.infer<typeof UpdateTodoSchema>): TodoUpdateInput {
-  const updateData: TodoUpdateInput = { updatedAt: Date.now() };
-  if (validated.title) updateData.title = validated.title;
-  if (validated.description !== undefined) updateData.description = validated.description;
-  if (validated.dueDate !== undefined) updateData.dueDate = validated.dueDate;
-  if (validated.isDone !== undefined) updateData.isDone = validated.isDone ? 1 : 0;
-  if (validated.assigneeId !== undefined) updateData.assigneeId = validated.assigneeId;
-  if (validated.priority !== undefined) updateData.priority = validated.priority;
-  return updateData;
+function buildTodoUpdate(validated: UpdateTodo): TodoUpdateInput {
+  const { isDone, tags: _tags, ...rest } = validated;
+  return {
+    ...pickDefined(rest),
+    ...(isDone !== undefined ? { isDone: isDone ? 1 : 0 } : {}),
+    updatedAt: Date.now(),
+  };
 }
 
 /**
@@ -131,9 +95,9 @@ function buildTodoUpdate(validated: z.infer<typeof UpdateTodoSchema>): TodoUpdat
  * update; omitting `tags` leaves them untouched (e.g. a checkbox toggle).
  */
 async function persistTodoUpdate(
-  db: Db,
+  db: Database,
   todoId: string,
-  validated: z.infer<typeof UpdateTodoSchema>
+  validated: UpdateTodo
 ): Promise<void> {
   const updateTodo = db.update(todos).set(buildTodoUpdate(validated)).where(eq(todos.id, todoId));
   if (validated.tags === undefined) {
@@ -141,7 +105,10 @@ async function persistTodoUpdate(
     return;
   }
   const deleteTags = db.delete(todoTags).where(eq(todoTags.todoId, todoId));
-  const tagStmt = insertTagsStmt(db, todoId, uniqueTags(validated.tags));
+  const tagStmt = insertTagsStmt(db, todoTags, uniqueTags(validated.tags), (tag) => ({
+    todoId,
+    tag,
+  }));
   await (tagStmt
     ? db.batch([updateTodo, deleteTags, tagStmt])
     : db.batch([updateTodo, deleteTags]));
@@ -174,9 +141,6 @@ const todosRouter = new Hono<TripMemberContext>()
   .get("/:todoId", async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
-    if (!todoId) {
-      return c.json({ error: "TodoのIDが必要です" }, 400);
-    }
     const db = getDb(c.env.DB);
 
     const todo = await findTodoDetail(db, todoId);
@@ -205,12 +169,12 @@ const todosRouter = new Hono<TripMemberContext>()
       description: validated.description ?? null,
       dueDate: validated.dueDate ?? null,
       assigneeId: validated.assigneeId,
-      priority: validated.priority ?? "medium",
+      priority: validated.priority,
     });
 
     // Bulk-insert tags in a single batch with the todo for atomicity
     // and to avoid N+1 round trips (AGENTS.md #4/#8).
-    const tagStmt = insertTagsStmt(db, todoId, tags);
+    const tagStmt = insertTagsStmt(db, todoTags, tags, (tag) => ({ todoId, tag }));
     await (tagStmt ? db.batch([insertTodo, tagStmt]) : insertTodo);
 
     const created = await findTodo(db, todoId);
@@ -227,9 +191,6 @@ const todosRouter = new Hono<TripMemberContext>()
   .put("/:todoId", zValidator("json", UpdateTodoSchema), async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
-    if (!todoId) {
-      return c.json({ error: "TodoのIDが必要です" }, 400);
-    }
     const validated = c.req.valid("json");
 
     const db = getDb(c.env.DB);
@@ -259,9 +220,6 @@ const todosRouter = new Hono<TripMemberContext>()
   .delete("/:todoId", async (c) => {
     const tripId = c.get("tripId");
     const todoId = c.req.param("todoId");
-    if (!todoId) {
-      return c.json({ error: "TodoのIDが必要です" }, 400);
-    }
     const db = getDb(c.env.DB);
 
     // Verify todo belongs to trip

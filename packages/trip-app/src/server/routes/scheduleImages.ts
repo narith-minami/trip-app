@@ -13,6 +13,7 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { generateId } from "@/lib/utils";
 import { getDb, scheduleItemImages, scheduleItems } from "../db";
+import { uploadImage } from "../lib/upload";
 import { requireSession } from "../middleware/auth";
 import type { TripMemberContext } from "../middleware/requireMember";
 import { requireMember } from "../middleware/requireMember";
@@ -48,30 +49,16 @@ const scheduleImagesRouter = new Hono<TripMemberContext>()
       return c.json({ error: ERR_ITEM_NOT_FOUND }, 404);
     }
 
-    const formData = await c.req.formData();
-    const file = formData.get("file") as File;
+    // Shared upload flow also enforces the 5MB cap that cover.ts uses
+    // (previously schedule photos had no size limit).
+    const result = await uploadImage({
+      formData: await c.req.formData(),
+      bucket: c.env.R2,
+      buildKey: (extension) => `${tripId}-${itemId}-${generateId("scheduleImage")}.${extension}`,
+    });
 
-    if (!file) {
-      return c.json({ error: "ファイルが提供されていません" }, 400);
-    }
-
-    if (!file.type.startsWith("image/")) {
-      return c.json({ error: "ファイルは画像でなければなりません" }, 400);
-    }
-
-    if (!c.env.R2) {
-      return c.json({ error: "R2ストレージが設定されていません" }, 503);
-    }
-
-    const buffer = await file.arrayBuffer();
-    const fileName = `${tripId}-${itemId}-${generateId("schedule-image")}.${file.type.split("/")[1]}`;
-
-    try {
-      await c.env.R2.put(fileName, buffer, {
-        httpMetadata: { contentType: file.type },
-      });
-    } catch (_error) {
-      return c.json({ error: "画像のアップロードに失敗しました" }, 500);
+    if (!result.ok) {
+      return c.json({ error: result.message }, result.status);
     }
 
     const existing = await db.query.scheduleItemImages.findMany({
@@ -85,13 +72,13 @@ const scheduleImagesRouter = new Hono<TripMemberContext>()
     await db.insert(scheduleItemImages).values({
       id: imageId,
       scheduleItemId: itemId,
-      imageUrl: fileName,
+      imageUrl: result.key,
       orderIndex,
       createdAt: now,
     });
 
     return c.json(
-      { id: imageId, scheduleItemId: itemId, imageUrl: fileName, orderIndex, createdAt: now },
+      { id: imageId, scheduleItemId: itemId, imageUrl: result.key, orderIndex, createdAt: now },
       201
     );
   })
@@ -103,8 +90,9 @@ const scheduleImagesRouter = new Hono<TripMemberContext>()
     const tripId = c.get("tripId");
     const itemId = c.req.param("itemId");
     const imageId = c.req.param("imageId");
-    if (!itemId || !imageId) {
-      return c.json({ error: "IDが必要です" }, 400);
+    // itemId comes from the mount path, so Hono types it string | undefined
+    if (!itemId) {
+      return c.json({ error: "アイテムIDが必要です" }, 400);
     }
     const db = getDb(c.env.DB);
 
