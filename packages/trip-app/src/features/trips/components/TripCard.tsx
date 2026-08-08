@@ -5,6 +5,8 @@
  */
 
 import { Badge } from "@/components/ui/badge";
+import { resolveCoverImageSrc } from "@/features/trips/lib/coverImage";
+import { getTripStatus, parseLocalDate, type TripStatus } from "@/features/trips/lib/tripStatus";
 import { cn } from "@/lib/cn";
 import type { Trip, TripMemberRole } from "@/types/entities";
 
@@ -32,14 +34,32 @@ function coverGradient(id: string): string {
 }
 
 function formatDateRange(start: string, end: string): string {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+  const fmt = (d: string) => {
+    const date = parseLocalDate(d);
+    return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+  };
   return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function StatusBadge({ status }: { status: TripStatus }) {
+  if (status.type === "ongoing") {
+    return <Badge variant="sage">{status.label}</Badge>;
+  }
+  if (status.type === "finished") {
+    return (
+      <Badge variant="neutral" className="opacity-70">
+        {status.label}
+      </Badge>
+    );
+  }
+  return <Badge variant="gold">{status.label}</Badge>;
 }
 
 export function TripCard({ trip, onClick }: TripCardProps) {
   const isOwner = trip.members?.some((m) => m.role === "owner");
   const hasCover = Boolean(trip.coverImageUrl);
+  const status =
+    trip.startDate && trip.endDate ? getTripStatus(trip.startDate, trip.endDate) : null;
 
   return (
     <button
@@ -56,7 +76,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
       <span className="relative block h-44 w-full">
         {hasCover ? (
           <img
-            src={trip.coverImageUrl ?? ""}
+            src={resolveCoverImageSrc(trip.coverImageUrl ?? "")}
             alt={trip.title}
             className="h-full w-full object-cover"
           />
@@ -79,9 +99,12 @@ export function TripCard({ trip, onClick }: TripCardProps) {
       </span>
 
       {/* Body */}
-      <span className="flex items-center justify-between px-4 py-3">
-        <span className="text-xs text-ink-light">
-          {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : ""}
+      <span className="flex items-center justify-between gap-2 px-4 py-3">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-xs text-ink-light">
+            {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : ""}
+          </span>
+          {status && <StatusBadge status={status} />}
         </span>
         <Badge variant={isOwner ? "coral" : "neutral"}>{isOwner ? "オーナー" : "メンバー"}</Badge>
       </span>

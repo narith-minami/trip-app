@@ -38,6 +38,14 @@ export interface R2Object {
   size: number;
   etag: string;
   uploaded: Date;
+  httpMetadata?: {
+    contentType?: string;
+    contentLanguage?: string;
+    contentDisposition?: string;
+    contentEncoding?: string;
+    cacheControl?: string;
+    expires?: Date;
+  };
   customMetadata?: Record<string, string>;
   range?: { offset: number; length: number };
   body?: ReadableStream<Uint8Array>;

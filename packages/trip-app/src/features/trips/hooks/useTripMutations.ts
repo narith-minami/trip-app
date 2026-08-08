@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTrip, deleteTrip, updateTrip } from "@/api/trips";
+import { createTrip, deleteTrip, updateTrip, uploadTripCover } from "@/api/trips";
 import { QUERY_KEYS } from "@/lib/queryKeys";
 
 /**
@@ -32,6 +32,25 @@ export function useUpdateTrip(tripId: string) {
 
   return useMutation({
     mutationFn: (data: Parameters<typeof updateTrip>[1]) => updateTrip(tripId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.trips.detail(tripId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.trips.list(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook for uploading a trip's cover thumbnail image to R2
+ */
+export function useUploadTripCover(tripId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadTripCover(tripId, file),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.trips.detail(tripId),

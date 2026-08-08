@@ -17,6 +17,7 @@ import {
   useMenuPosition,
 } from "@/components/ui/menu";
 import type { useTripEditor } from "@/features/trips/hooks/useTripEditor";
+import { cn } from "@/lib/cn";
 
 type TripEditor = ReturnType<typeof useTripEditor>;
 
@@ -37,16 +38,99 @@ export function EditingActions({ editor }: { editor: TripEditor }) {
   );
 }
 
-export function TripHeaderMenu({
+function MenuTriggerButton({
+  triggerRef,
+  menuOpen,
+  onToggle,
+  iconToneClassName,
+}: {
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+  menuOpen: boolean;
+  onToggle: () => void;
+  iconToneClassName?: string;
+}) {
+  return (
+    <button
+      ref={triggerRef}
+      type="button"
+      onClick={onToggle}
+      aria-label="旅行の操作"
+      aria-haspopup="menu"
+      aria-expanded={menuOpen}
+      className={cn(
+        "flex h-11 w-11 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2",
+        iconToneClassName ?? "text-white/80 hover:bg-white/10 hover:text-white"
+      )}
+    >
+      <MoreVertical size={20} aria-hidden={true} />
+    </button>
+  );
+}
+
+function TripActionMenuItems({
   isOwner,
   editor,
   onEdit,
   onOpenColorSettings,
+  close,
 }: {
   isOwner: boolean;
   editor: TripEditor;
   onEdit: () => void;
   onOpenColorSettings?: () => void;
+  close: () => void;
+}) {
+  return (
+    <>
+      {onOpenColorSettings && (
+        <MenuItem
+          icon={Palette}
+          label="配色"
+          onClick={() => {
+            close();
+            onOpenColorSettings();
+          }}
+        />
+      )}
+      {isOwner && (
+        <>
+          <MenuItem
+            icon={Pencil}
+            label="編集"
+            onClick={() => {
+              close();
+              onEdit();
+            }}
+          />
+          <MenuItem
+            icon={Trash2}
+            label="削除"
+            danger
+            disabled={editor.isDeleting}
+            onClick={() => {
+              close();
+              editor.remove();
+            }}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+export function TripHeaderMenu({
+  isOwner,
+  editor,
+  onEdit,
+  onOpenColorSettings,
+  iconToneClassName,
+}: {
+  isOwner: boolean;
+  editor: TripEditor;
+  onEdit: () => void;
+  onOpenColorSettings?: () => void;
+  /** Tone-matched hover/text classes so the icon stays legible against the header background. */
+  iconToneClassName?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -59,17 +143,12 @@ export function TripHeaderMenu({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setMenuOpen((prev) => !prev)}
-        aria-label="旅行の操作"
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        className="flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2"
-      >
-        <MoreVertical size={20} aria-hidden={true} />
-      </button>
+      <MenuTriggerButton
+        triggerRef={triggerRef}
+        menuOpen={menuOpen}
+        onToggle={() => setMenuOpen((prev) => !prev)}
+        iconToneClassName={iconToneClassName}
+      />
       {menuOpen &&
         position &&
         createPortal(
@@ -79,38 +158,13 @@ export function TripHeaderMenu({
             className="fixed z-50"
             style={{ top: position.top, right: position.right }}
           >
-            {onOpenColorSettings && (
-              <MenuItem
-                icon={Palette}
-                label="配色"
-                onClick={() => {
-                  close();
-                  onOpenColorSettings();
-                }}
-              />
-            )}
-            {isOwner && (
-              <>
-                <MenuItem
-                  icon={Pencil}
-                  label="編集"
-                  onClick={() => {
-                    close();
-                    onEdit();
-                  }}
-                />
-                <MenuItem
-                  icon={Trash2}
-                  label="削除"
-                  danger
-                  disabled={editor.isDeleting}
-                  onClick={() => {
-                    close();
-                    editor.remove();
-                  }}
-                />
-              </>
-            )}
+            <TripActionMenuItems
+              isOwner={isOwner}
+              editor={editor}
+              onEdit={onEdit}
+              onOpenColorSettings={onOpenColorSettings}
+              close={close}
+            />
           </MenuPanel>,
           document.body
         )}

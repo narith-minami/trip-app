@@ -10,12 +10,13 @@ import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
 import { TripColorSettings } from "@/features/trips/components/TripColorSettings";
+import { TripEditFields } from "@/features/trips/components/TripEditFields";
 import { EditingActions, TripHeaderMenu } from "@/features/trips/components/TripHeaderMenu";
 import type { TripColors } from "@/features/trips/hooks/useTripColors";
 import type { useTripEditor } from "@/features/trips/hooks/useTripEditor";
 import { cn } from "@/lib/cn";
+import { getContrastTone } from "@/lib/colorContrast";
 import type { TripMember } from "@/types/entities";
 
 type TripEditor = ReturnType<typeof useTripEditor>;
@@ -39,10 +40,12 @@ function daysUntilDeparture(startDate: string): number {
 }
 
 export interface TripHeaderTrip {
+  id: string;
   title: string;
   destination?: string | null;
   startDate: string;
   endDate: string;
+  coverImageUrl?: string | null;
 }
 
 export interface TripHeaderProps {
@@ -66,6 +69,30 @@ export interface TripHeaderProps {
 }
 
 const DEFAULT_HEADER_BACKGROUND = "linear-gradient(160deg, #5B8A6F 0%, #243D5C 55%, #0F1C2E 100%)";
+/** Representative color used for contrast calculation when no custom header color is set. */
+const DEFAULT_HEADER_ANCHOR = "#243D5C";
+
+interface HeaderToneClasses {
+  text: string;
+  textMuted: string;
+  icon: string;
+}
+
+function getHeaderToneClasses(headerColor: string | null | undefined): HeaderToneClasses {
+  const tone = getContrastTone(headerColor ?? DEFAULT_HEADER_ANCHOR);
+  if (tone === "dark") {
+    return {
+      text: "text-ink",
+      textMuted: "text-ink-light",
+      icon: "text-ink/70 hover:bg-ink/10 hover:text-ink",
+    };
+  }
+  return {
+    text: "text-white",
+    textMuted: "text-cream-mid",
+    icon: "text-white/80 hover:bg-white/10 hover:text-white",
+  };
+}
 
 function MemberStack({ members }: { members: TripMember[] }) {
   const visible = members.slice(0, 3);
@@ -85,43 +112,6 @@ function MemberStack({ members }: { members: TripMember[] }) {
           +{extra}
         </span>
       )}
-    </div>
-  );
-}
-
-function TripEditFields({ editor }: { editor: TripEditor }) {
-  const { editData, setField } = editor;
-  return (
-    <div className="mt-4 space-y-3">
-      <div>
-        <Label className="text-cream-mid">場所</Label>
-        <Input
-          value={editData.location}
-          onChange={(e) => setField("location", e.target.value)}
-          placeholder="場所"
-          className="border-cream-dark/40 bg-navy-mid text-white placeholder:text-ink-light focus:ring-coral"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label className="text-cream-mid">出発日</Label>
-          <Input
-            type="date"
-            value={editData.startDate}
-            onChange={(e) => setField("startDate", e.target.value)}
-            className="border-cream-dark/40 bg-navy-mid text-white focus:ring-coral"
-          />
-        </div>
-        <div>
-          <Label className="text-cream-mid">帰着日</Label>
-          <Input
-            type="date"
-            value={editData.endDate}
-            onChange={(e) => setField("endDate", e.target.value)}
-            className="border-cream-dark/40 bg-navy-mid text-white focus:ring-coral"
-          />
-        </div>
-      </div>
     </div>
   );
 }
@@ -146,20 +136,18 @@ function TripHeaderTopBar({
   onEdit,
   onBack,
   onOpenColorSettings,
+  tone,
 }: {
   isOwner: boolean;
   editor: TripEditor;
   onEdit: () => void;
   onBack: () => void;
   onOpenColorSettings?: () => void;
+  tone: HeaderToneClasses;
 }) {
   return (
     <div className="mb-5 flex items-center justify-between">
-      <Button
-        variant="ghost"
-        onClick={onBack}
-        className="text-white/80 hover:bg-white/10 hover:text-white"
-      >
+      <Button variant="ghost" onClick={onBack} className={tone.icon}>
         <span className="inline-flex items-center gap-1">
           <ChevronLeft size={16} aria-hidden="true" />
           戻る
@@ -174,6 +162,7 @@ function TripHeaderTopBar({
             editor={editor}
             onEdit={onEdit}
             onOpenColorSettings={onOpenColorSettings}
+            iconToneClassName={tone.icon}
           />
         )}
       </div>
@@ -201,6 +190,7 @@ export function TripHeader({
     });
 
   const days = daysUntilDeparture(trip.startDate);
+  const tone = getHeaderToneClasses(headerColor);
 
   return (
     <div
@@ -225,6 +215,7 @@ export function TripHeader({
           onEdit={handleEdit}
           onBack={onBack}
           onOpenColorSettings={colorControls ? () => setColorDialogOpen(true) : undefined}
+          tone={tone}
         />
         {days > 0 && (
           <Badge variant="custom" className="mb-3 bg-coral !px-3 !py-1 text-white !font-semibold">
@@ -236,19 +227,24 @@ export function TripHeader({
             type="text"
             value={editor.editData.title}
             onChange={(e) => editor.setField("title", e.target.value)}
-            className="mb-2 w-full border-b-2 border-coral bg-transparent font-display text-3xl font-bold text-white focus:outline-none"
+            className={cn(
+              "mb-2 w-full border-b-2 border-coral bg-transparent font-display text-3xl font-bold focus:outline-none",
+              tone.text
+            )}
             aria-label="Trip title"
           />
         ) : (
-          <h1 className="mb-2 font-display text-3xl font-bold text-white">{trip.title}</h1>
+          <h1 className={cn("mb-2 font-display text-3xl font-bold", tone.text)}>{trip.title}</h1>
         )}
         <div className="flex items-end justify-between gap-4">
-          <p className="text-sm text-cream-mid">
+          <p className={cn("text-sm", tone.textMuted)}>
             {formatJaDate(trip.startDate)} — {formatJaDate(trip.endDate)}
           </p>
           {members && members.length > 0 && <MemberStack members={members} />}
         </div>
-        {editor.isEditing && <TripEditFields editor={editor} />}
+        {editor.isEditing && (
+          <TripEditFields editor={editor} tripId={trip.id} coverImageUrl={trip.coverImageUrl} />
+        )}
       </div>
     </div>
   );

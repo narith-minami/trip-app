@@ -61,6 +61,7 @@ export async function updateTrip(
     startDate: string;
     endDate: string;
     location: string;
+    coverImageUrl: string | null;
   }>
 ) {
   const res = await apiClient.api.trips[":tripId"].$put({
@@ -69,6 +70,24 @@ export async function updateTrip(
   });
   if (!res.ok) {
     throw new Error("Failed to update trip");
+  }
+  return res.json();
+}
+
+/**
+ * Upload a trip's cover thumbnail image to R2.
+ * Uses a raw fetch (not the RPC client) since Hono RPC has no typed
+ * multipart/form-data support — same pattern as `uploadScheduleItemImage`.
+ */
+export async function uploadTripCover(tripId: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`/api/trips/${tripId}/cover`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    throw new Error("Failed to upload trip cover");
   }
   return res.json();
 }

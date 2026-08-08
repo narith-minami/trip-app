@@ -34,12 +34,14 @@ function buildTripUpdate(validated: {
   startDate?: string;
   endDate?: string;
   location?: string;
+  coverImageUrl?: string | null;
 }): TripUpdateInput {
   const updateData: TripUpdateInput = { updatedAt: Date.now() };
   if (validated.title) updateData.title = validated.title;
   if (validated.startDate) updateData.startDate = validated.startDate;
   if (validated.endDate) updateData.endDate = validated.endDate;
   if (validated.location !== undefined) updateData.destination = validated.location;
+  if (validated.coverImageUrl !== undefined) updateData.coverImageUrl = validated.coverImageUrl;
   return updateData;
 }
 
