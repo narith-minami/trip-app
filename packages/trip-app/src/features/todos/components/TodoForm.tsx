@@ -77,9 +77,13 @@ export function TodoForm({
   const [assigneeId, setAssigneeId] = useState("");
   const [priority, setPriority] = useState<TodoPriority>(DEFAULT_TODO_PRIORITY);
   const [tags, setTags] = useState<string[]>([]);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const toggleTag = (tag: string) =>
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+
+  const hasCustomDetails =
+    priority !== DEFAULT_TODO_PRIORITY || assigneeId !== "" || tags.length > 0;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -90,50 +94,59 @@ export function TodoForm({
     setAssigneeId("");
     setPriority(DEFAULT_TODO_PRIORITY);
     setTags([]);
+    setDetailsOpen(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex gap-2">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onFocus={() => setDetailsOpen(true)}
           placeholder="やることを追加..."
           className="flex-1"
         />
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value as TodoPriority)}
-          aria-label="優先順位"
-          className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
-        >
-          {TODO_PRIORITY_LIST.map((p) => (
-            <option key={p.key} value={p.key}>
-              優先度: {p.label}
-            </option>
-          ))}
-        </select>
-        {members.length > 0 && (
-          <select
-            value={assigneeId}
-            onChange={(e) => setAssigneeId(e.target.value)}
-            aria-label="担当者"
-            className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
-          >
-            <option value="">未割り当て</option>
-            {members.map((member) => (
-              <option key={member.userId} value={member.userId}>
-                {member.user?.name ?? member.userId}
-              </option>
-            ))}
-          </select>
-        )}
         <Button type="submit" disabled={isSubmitting || !title.trim()}>
           追加
         </Button>
       </div>
 
-      <TagSelector selected={tags} onToggle={toggleTag} />
+      {/* Priority/assignee/tags stay collapsed until the input is focused (or
+          already customized) so returning users see their todo list first
+          instead of scrolling past this form every time. */}
+      {(detailsOpen || hasCustomDetails) && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as TodoPriority)}
+            aria-label="優先順位"
+            className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
+          >
+            {TODO_PRIORITY_LIST.map((p) => (
+              <option key={p.key} value={p.key}>
+                優先度: {p.label}
+              </option>
+            ))}
+          </select>
+          {members.length > 0 && (
+            <select
+              value={assigneeId}
+              onChange={(e) => setAssigneeId(e.target.value)}
+              aria-label="担当者"
+              className="rounded-xl border border-cream-dark px-3 py-2 focus:outline-none focus:ring-2 focus:ring-coral"
+            >
+              <option value="">未割り当て</option>
+              {members.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {member.user?.name ?? member.userId}
+                </option>
+              ))}
+            </select>
+          )}
+          <TagSelector selected={tags} onToggle={toggleTag} />
+        </div>
+      )}
     </form>
   );
 }
