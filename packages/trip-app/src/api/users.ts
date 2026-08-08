@@ -5,14 +5,11 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap } from "./unwrap";
 
 /**
  * Fetch current user info
  */
 export async function fetchCurrentUser() {
-  const res = await apiClient.api.users.me.$get();
-  if (!res.ok) {
-    throw new Error("Failed to fetch current user");
-  }
-  return res.json();
+  return unwrap(await apiClient.api.users.me.$get(), "Failed to fetch current user");
 }

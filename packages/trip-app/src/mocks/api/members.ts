@@ -21,7 +21,7 @@ const members = structuredClone(mockMembers);
 
 export async function fetchMembers(tripId: string) {
   const filtered = members.filter((m) => m.tripId === tripId);
-  return { data: filtered };
+  return filtered;
 }
 
 export async function removeMember(tripId: string, memberId: string) {

@@ -6,29 +6,25 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap } from "./unwrap";
 
 /**
  * Fetch list of trips for current user
  */
 export async function fetchTrips() {
-  const res = await apiClient.api.trips.$get();
-  if (!res.ok) {
-    throw new Error("Failed to fetch trips");
-  }
-  return res.json();
+  return unwrap(await apiClient.api.trips.$get(), "Failed to fetch trips");
 }
 
 /**
  * Fetch single trip details
  */
 export async function fetchTrip(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].$get({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch trip");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].$get({
+      param: { tripId },
+    }),
+    "Failed to fetch trip"
+  );
 }
 
 /**
@@ -41,13 +37,12 @@ export async function createTrip(data: {
   endDate: string;
   location?: string;
 }) {
-  const res = await apiClient.api.trips.$post({
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create trip");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips.$post({
+      json: data,
+    }),
+    "Failed to create trip"
+  );
 }
 
 /**
@@ -64,14 +59,13 @@ export async function updateTrip(
     coverImageUrl: string | null;
   }>
 ) {
-  const res = await apiClient.api.trips[":tripId"].$put({
-    param: { tripId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update trip");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].$put({
+      param: { tripId },
+      json: data,
+    }),
+    "Failed to update trip"
+  );
 }
 
 /**
@@ -96,11 +90,10 @@ export async function uploadTripCover(tripId: string, file: File) {
  * Delete trip
  */
 export async function deleteTrip(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].$delete({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete trip");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].$delete({
+      param: { tripId },
+    }),
+    "Failed to delete trip"
+  );
 }

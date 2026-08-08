@@ -12,7 +12,7 @@ import { Hono } from "hono";
 import type { UpdateTodo } from "@/lib/schemas/todo";
 import { CreateTodoSchema, UpdateTodoSchema } from "@/lib/schemas/todo";
 import { generateId } from "@/lib/utils";
-import type { Database } from "../db";
+import type { Database, UserSummaryRow } from "../db";
 import { getDb, todoComments, todos, todoTags, userSummaryColumns } from "../db";
 import { flattenTags, insertTagsStmt, uniqueTags } from "../lib/tags";
 import { pickDefined } from "../lib/update";
@@ -23,13 +23,13 @@ import { requireMember } from "../middleware/requireMember";
 type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 
 type TodoWithRelations = typeof todos.$inferSelect & {
-  assignee?: unknown;
+  assignee?: UserSummaryRow | null;
   tags: { todoId: string; tag: string }[];
   comments?: unknown;
 };
 
 type TodoDetailWithRelations = TodoWithRelations & {
-  comments: (typeof todoComments.$inferSelect & { author?: unknown })[];
+  comments: (typeof todoComments.$inferSelect & { author?: UserSummaryRow | null })[];
 };
 
 /**

@@ -12,10 +12,7 @@ import type { ScheduleItem } from "@/types/entities";
 export function useScheduleItems(tripId: string) {
   return useQuery({
     queryKey: QUERY_KEYS.schedule.list(tripId),
-    queryFn: async () => {
-      const res = await fetchScheduleItems(tripId);
-      return (res as { data: ScheduleItem[] }).data;
-    },
+    queryFn: () => fetchScheduleItems(tripId),
     enabled: !!tripId,
   });
 }

@@ -12,7 +12,7 @@ import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { CreateScrapSchema, UpdateScrapSchema } from "@/lib/schemas/scrap";
 import { generateId } from "@/lib/utils";
-import type { Database } from "../db";
+import type { Database, UserSummaryRow } from "../db";
 import { getDb, scraps, scrapTags, userSummaryColumns } from "../db";
 import { ERROR_MESSAGES } from "../lib/errors";
 import { flattenTags, insertTagsStmt, uniqueTags } from "../lib/tags";
@@ -20,7 +20,7 @@ import type { AuthContext } from "../middleware/auth";
 import { requireSession } from "../middleware/auth";
 
 type ScrapWithRelations = typeof scraps.$inferSelect & {
-  author: unknown;
+  author: UserSummaryRow | null;
   tags: { scrapId: string; tag: string }[];
 };
 

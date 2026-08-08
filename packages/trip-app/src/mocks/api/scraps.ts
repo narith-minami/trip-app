@@ -6,12 +6,7 @@
  */
 
 import type { Scrap, UserSummary } from "@/types/entities";
-
-export interface ScrapInput {
-  content?: string | null;
-  imageData?: string | null;
-  tags?: string[];
-}
+import type { ScrapInput } from "../../api/scraps";
 
 const mockUser: UserSummary = {
   id: "user-1",
@@ -69,7 +64,7 @@ function sortDesc(list: Scrap[]) {
 }
 
 export async function fetchScraps() {
-  return { data: sortDesc(scraps) };
+  return sortDesc(scraps);
 }
 
 export async function createScrap(data: ScrapInput) {

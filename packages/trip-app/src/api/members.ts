@@ -5,29 +5,28 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap, unwrapData } from "./unwrap";
 
 /**
  * Fetch trip members
  */
 export async function fetchMembers(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].members.$get({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch members");
-  }
-  return res.json();
+  return unwrapData(
+    await apiClient.api.trips[":tripId"].members.$get({
+      param: { tripId },
+    }),
+    "Failed to fetch members"
+  );
 }
 
 /**
  * Remove member from trip
  */
 export async function removeMember(tripId: string, memberId: string) {
-  const res = await apiClient.api.trips[":tripId"].members[":memberId"].$delete({
-    param: { tripId, memberId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to remove member");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].members[":memberId"].$delete({
+      param: { tripId, memberId },
+    }),
+    "Failed to remove member"
+  );
 }

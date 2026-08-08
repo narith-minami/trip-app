@@ -6,31 +6,31 @@
 
 import type { Todo, TodoComment, TodoPriority } from "@/types/entities";
 import { apiClient } from "./client";
+import { unwrap, unwrapData } from "./unwrap";
 
 /**
  * Fetch todos for a trip
  */
 export async function fetchTodos(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].todos.$get({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch todos");
-  }
-  return res.json();
+  return unwrapData(
+    await apiClient.api.trips[":tripId"].todos.$get({
+      param: { tripId },
+    }),
+    "Failed to fetch todos"
+  );
 }
 
 /**
  * Fetch a single todo with comments (detail view)
  */
 export async function fetchTodoDetail(tripId: string, todoId: string) {
-  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].$get({
-    param: { tripId, todoId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch todo detail");
-  }
-  return res.json() as Promise<Todo & { comments: TodoComment[] }>;
+  const data = await unwrap(
+    await apiClient.api.trips[":tripId"].todos[":todoId"].$get({
+      param: { tripId, todoId },
+    }),
+    "Failed to fetch todo detail"
+  );
+  return data as Todo & { comments: TodoComment[] };
 }
 
 /**
@@ -47,14 +47,13 @@ export async function createTodo(
     tags?: string[];
   }
 ) {
-  const res = await apiClient.api.trips[":tripId"].todos.$post({
-    param: { tripId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create todo");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].todos.$post({
+      param: { tripId },
+      json: data,
+    }),
+    "Failed to create todo"
+  );
 }
 
 /**
@@ -73,25 +72,23 @@ export async function updateTodo(
     tags: string[];
   }>
 ) {
-  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].$put({
-    param: { tripId, todoId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update todo");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].todos[":todoId"].$put({
+      param: { tripId, todoId },
+      json: data,
+    }),
+    "Failed to update todo"
+  );
 }
 
 /**
  * Delete todo
  */
 export async function deleteTodo(tripId: string, todoId: string) {
-  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].$delete({
-    param: { tripId, todoId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete todo");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].todos[":todoId"].$delete({
+      param: { tripId, todoId },
+    }),
+    "Failed to delete todo"
+  );
 }

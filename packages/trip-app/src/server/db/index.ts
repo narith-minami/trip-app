@@ -62,4 +62,7 @@ export const userSummaryColumns = {
   image: true,
 } as const;
 
+/** Shape of a nested user relation selected with {@link userSummaryColumns}. */
+export type UserSummaryRow = Pick<schema.User, "id" | "name" | "email" | "image">;
+
 export type Database = ReturnType<typeof getDb>;

@@ -5,18 +5,18 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap } from "./unwrap";
 
 /**
  * Fetch a public preview of the trip behind an invite token
  */
 export async function fetchInvitePreview(token: string) {
-  const res = await apiClient.api.invite[":token"].$get({
-    param: { token },
-  });
-  if (!res.ok) {
-    throw new Error("招待リンクが無効です");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.invite[":token"].$get({
+      param: { token },
+    }),
+    "招待リンクが無効です"
+  );
 }
 
 /**
