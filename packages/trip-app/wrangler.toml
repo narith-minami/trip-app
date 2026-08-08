@@ -31,13 +31,18 @@ database_id = "d61efaa7-4652-4955-b92f-52e8f056bc83"
 # ============================================================================
 [vars]
 BETTER_AUTH_URL = "https://trip-app.narith-for-work.workers.dev"
+# Placeholder until a sending domain is verified in the Resend dashboard —
+# replace with a real "Name <address@your-verified-domain>" before relying
+# on password-reset emails in production.
+EMAIL_FROM = "Trip App <noreply@example.com>"
 
 # Note: Sensitive environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET,
-# YAHOO_CLIENT_ID) should be set via Cloudflare Dashboard or wrangler secret commands:
+# YAHOO_CLIENT_ID, RESEND_API_KEY) should be set via Cloudflare Dashboard or wrangler secret commands:
 # - wrangler secret put GOOGLE_CLIENT_ID
 # - wrangler secret put GOOGLE_CLIENT_SECRET
 # - wrangler secret put AUTH_SECRET
 # - wrangler secret put YAHOO_CLIENT_ID
+# - wrangler secret put RESEND_API_KEY
 
 # ============================================================================
 # Service Bindings (optional, for inter-service communication)

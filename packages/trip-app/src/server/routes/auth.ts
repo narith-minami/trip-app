@@ -11,6 +11,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "../db";
 import { accounts, sessions, users, verifications } from "../db/auth-schema";
 import type { Env } from "../env";
+import { sendPasswordResetEmail } from "../lib/email";
 
 /**
  * The 4 Drizzle table models Better Auth's adapter reads/writes.
@@ -41,6 +42,14 @@ export function createAuth(env: Env) {
     baseURL: env.BETTER_AUTH_URL,
     emailAndPassword: {
       enabled: true,
+      // `url` points at Better Auth's own /reset-password/:token endpoint,
+      // which validates the token server-side and redirects the browser to
+      // our `redirectTo` page (see requestPasswordReset's `redirectTo`
+      // param) with `?token=` on success or `?error=INVALID_TOKEN` on
+      // failure — building the link by hand would skip that validation.
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordResetEmail(env, { to: user.email, resetUrl: url });
+      },
     },
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
       ? {

@@ -12,9 +12,11 @@
 
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { RootLayout } from "@/routes/__root";
+import { ForgotPasswordPage } from "@/routes/forgot-password";
 import { IndexPage } from "@/routes/index";
 import { InvitePage } from "@/routes/invite/$token";
 import { LoginPage } from "@/routes/login";
+import { ResetPasswordPage } from "@/routes/reset-password";
 import { ScrapsPage } from "@/routes/scraps/index";
 import { SignupPage } from "@/routes/signup";
 import { FacilityDetailPage } from "@/routes/trips/$tripId/facilities/$facilityId";
@@ -44,6 +46,21 @@ const signupRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/signup",
   component: SignupPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/forgot-password",
+  component: ForgotPasswordPage,
+});
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reset-password",
+  component: ResetPasswordPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: typeof search.token === "string" ? search.token : "",
+  }),
 });
 
 const tripsIndexRoute = createRoute({
@@ -108,6 +125,8 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   signupRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
   tripsIndexRoute,
   scrapsRoute,
   inviteRoute,

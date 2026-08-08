@@ -25,7 +25,7 @@
 ### 3. 本番シークレットの設定未確認
 
 - **場所**: Cloudflare Dashboard / `wrangler secret put`
-- **内容**: `AUTH_SECRET` / `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` を本番環境に設定済みか未確認。未設定だと Google OAuth ログインが機能しない（email/passwordのみ有効化される）
+- **内容**: `AUTH_SECRET` / `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `RESEND_API_KEY` を本番環境に設定済みか未確認。未設定だと Google OAuth ログインが機能しない（email/passwordのみ有効化される）。`RESEND_API_KEY` が無いとパスワード再設定メールが送信できず 500 になる。また `wrangler.toml` の `EMAIL_FROM` はプレースホルダー（`noreply@example.com`）のままなので、Resend でドメイン認証した実アドレスに差し替える必要がある
 
 ### 4. デプロイ・マイグレーション導線が未整備
 
@@ -44,26 +44,15 @@
 - **内容**: 利用規約・プライバシーポリシーのページが存在せず、新規登録フォームにも同意チェックボックスが無い
 - **影響**: 実ユーザーに公開する前提のサービスとして法的に必須。個人情報（メールアドレス・Googleアカウント情報・旅行データ）を扱う以上、最低限プライバシーポリシーは必要
 
-### 7. メール送信基盤が無い
-
-- **場所**: 該当実装なし（`resend` / `nodemailer` 等の依存なし）
-- **内容**: パスワード再設定メール・メールアドレス確認メールを送るためのメール配信サービス連携が一切無い。Better Auth 側はメール送信をアプリ側で実装する前提（`sendResetPassword` / `sendVerificationEmail` コールバック）なので、これが無いと #8, #9 も実装できない
-
 ---
 
 ## 🟡 高優先度（アカウント周辺機能）
-
-### 8. パスワード再設定（forgot password）フロー
-
-- **場所**: `src/server/routes/auth.ts`（`emailAndPassword` に `sendResetPassword` 未設定）、`src/routes/`（該当ページ無し）
-- **内容**: ログイン画面に「パスワードを忘れた方」導線が無く、再設定用のAPI・ページも未実装
-- **依存**: #7（メール送信基盤）
 
 ### 9. メールアドレス確認（email verification）
 
 - **場所**: `src/server/routes/auth.ts`（`emailVerification` 未設定）
 - **内容**: `emailAndPassword` 登録時にメール確認を要求していない。`users.emailVerified` フィールドはAPIレスポンスに含まれているが常に `false` のまま使われていない
-- **依存**: #7（メール送信基盤）
+- **メモ**: メール送信基盤（`src/server/lib/email.ts`、Resend連携）は実装済みのため、`sendVerificationEmail` コールバックと確認用テンプレートを追加すれば良い
 
 ### 10. アカウント設定・プロフィール編集ページ
 
@@ -125,6 +114,13 @@
 - `wrangler.toml` の `database_id` 設定済み
 - コード品質（biome v2移行・lint負債解消）対応済み
 
+## ✅ 解消済み（今回の調査時点の項目）
+
+- メール送信基盤（旧#7）: Resend 連携ラッパー `src/server/lib/email.ts` を追加。`RESEND_API_KEY` /
+  `EMAIL_FROM` を環境変数化（本番値は未設定、上記#3参照）
+- パスワード再設定フロー（旧#8）: `emailAndPassword.sendResetPassword` を配線し、
+  `/forgot-password`・`/reset-password` ページを追加。ログイン画面に「パスワードを忘れた方」導線を追加
+
 ---
 
 ## 実装順序の推奨
@@ -135,7 +131,7 @@
 3. デプロイ導線整備 (#4)
 4. ログアウト実装 (#5)                 ← 最小限のアカウント管理として必須
 5. 利用規約・プライバシーポリシー (#6)   ← 公開前に法的に必須
-6. メール送信基盤 (#7) → パスワード再設定 (#8) → メール確認 (#9)
+6. メール確認 (#9)                     ← メール送信基盤は実装済み、コールバック追加のみ
 7. アカウント設定・削除 (#10, #11)
 8. カバー画像クライアント実装 or 対象外判断 (#12)
 9. E2Eテスト・監視・レート制限・メタ情報 (#13-16)

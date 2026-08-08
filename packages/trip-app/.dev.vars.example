@@ -26,3 +26,12 @@ BETTER_AUTH_URL="http://localhost:5173"
 # per app per day. When omitted, the facility search feature is disabled and
 # users fall back to manual entry.
 # YAHOO_CLIENT_ID=""
+
+# Required: Resend API key, used to send password-reset emails.
+# Get one at https://resend.com/api-keys
+RESEND_API_KEY=""
+
+# Required: "from" address for transactional emails.
+# Resend's shared "onboarding@resend.dev" address works for local testing
+# without verifying a domain; replace with a verified domain in production.
+EMAIL_FROM="Trip App <onboarding@resend.dev>"

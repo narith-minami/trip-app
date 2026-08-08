@@ -38,6 +38,16 @@ export async function signOut() {
   // no-op
 }
 
+export async function requestPasswordReset(_: unknown) {
+  // no-op: mock always reports success without sending an email
+  return { data: { status: true }, error: null };
+}
+
+export async function resetPassword(_: unknown) {
+  // no-op
+  return { data: { status: true }, error: null };
+}
+
 export async function getSession() {
   return {
     data: {
@@ -53,4 +63,6 @@ export const authClient = {
   signIn,
   signUp,
   signOut,
+  requestPasswordReset,
+  resetPassword,
 };

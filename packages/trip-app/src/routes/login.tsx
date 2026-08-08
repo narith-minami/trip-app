@@ -34,6 +34,8 @@ function LoginForm({
   isSubmitting,
   onSubmit,
 }: LoginFormProps) {
+  const navigate = useNavigate();
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
@@ -50,7 +52,16 @@ function LoginForm({
       </div>
 
       <div>
-        <Label htmlFor="password">パスワード</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">パスワード</Label>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/forgot-password" })}
+            className="mb-1 text-sm font-medium text-coral hover:text-coral-light"
+          >
+            パスワードを忘れた方
+          </button>
+        </div>
         <Input
           id="password"
           type="password"

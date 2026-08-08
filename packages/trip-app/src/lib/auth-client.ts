@@ -21,4 +21,4 @@ const authClient = createAuthClient({
 /**
  * Re-export commonly used auth functions and hooks
  */
-export const { useSession, signIn, signUp } = authClient;
+export const { useSession, signIn, signUp, requestPasswordReset, resetPassword } = authClient;
