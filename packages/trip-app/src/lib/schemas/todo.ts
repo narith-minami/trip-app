@@ -7,6 +7,7 @@
  */
 
 import { z } from "zod";
+import { DEFAULT_TODO_PRIORITY, TODO_PRIORITY_KEYS } from "@/lib/todoPriority";
 import { isValidDateString } from "@/lib/utils";
 
 /** Max characters for a single todo tag. */
@@ -55,3 +56,31 @@ export const TodoCommentContentSchema = z
   .trim()
   .min(1, "コメントを入力してください")
   .max(TODO_COMMENT_MAX, "コメントは1000文字以内で入力してください");
+
+/**
+ * Schema for creating a todo. `priority` falls back to
+ * {@link DEFAULT_TODO_PRIORITY} at the schema level.
+ */
+export const CreateTodoSchema = z.object({
+  title: z.string().min(1),
+  description: TodoDescriptionSchema,
+  dueDate: TodoDueDateSchema,
+  assigneeId: z.string().optional(),
+  priority: z.enum(TODO_PRIORITY_KEYS).default(DEFAULT_TODO_PRIORITY),
+  tags: TodoTagsSchema.optional(),
+});
+
+/**
+ * Schema for updating a todo (checkbox toggle, priority, assignee, tags).
+ */
+export const UpdateTodoSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: TodoDescriptionSchema,
+  dueDate: TodoDueDateSchema,
+  isDone: z.boolean().optional(),
+  assigneeId: z.string().optional().nullable(),
+  priority: z.enum(TODO_PRIORITY_KEYS).optional(),
+  tags: TodoTagsSchema.optional(),
+});
+
+export type UpdateTodo = z.infer<typeof UpdateTodoSchema>;

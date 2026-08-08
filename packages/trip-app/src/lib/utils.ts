@@ -16,23 +16,6 @@ export function generateId(prefix: string): string {
 }
 
 /**
- * Format date string to YYYY-MM-DD
- */
-export function formatDate(date: Date | string): string {
-  if (typeof date === "string") {
-    return date;
-  }
-  return date.toISOString().split("T")[0];
-}
-
-/**
- * Parse ISO timestamp to readable format
- */
-export function formatDateTime(timestamp: number): string {
-  return new Date(timestamp).toISOString();
-}
-
-/**
  * Check if date string is valid YYYY-MM-DD format
  */
 export function isValidDateString(dateStr: string): boolean {
@@ -40,13 +23,6 @@ export function isValidDateString(dateStr: string): boolean {
   if (!regex.test(dateStr)) return false;
   const date = new Date(dateStr);
   return date instanceof Date && !Number.isNaN(date.getTime());
-}
-
-/** Format a YYYY-MM-DD due date to "M月D日" without timezone shift (AGENTS.md #5). */
-export function formatDueDate(dateStr: string): string {
-  const [, m, d] = dateStr.split("-").map(Number);
-  if (!m || !d) return dateStr;
-  return `${m}月${d}日`;
 }
 
 /** Enumerate every YYYY-MM-DD date from `start` to `end`, inclusive. */

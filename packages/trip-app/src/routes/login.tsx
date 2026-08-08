@@ -8,14 +8,14 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { Home } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { AuthCard } from "@/components/auth/AuthCard";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { AppShell } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardBody } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
-import { signIn, useSession } from "@/lib/auth-client";
+import { useRedirectIfAuthenticated } from "@/hooks/useRedirectIfAuthenticated";
+import { signIn } from "@/lib/auth-client";
 
 interface LoginFormProps {
   email: string;
@@ -82,17 +82,10 @@ function LoginForm({
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
+  const { isPending } = useRedirectIfAuthenticated();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!isPending && session) {
-      navigate({ to: "/trips" });
-    }
-  }, [session, isPending, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,39 +112,28 @@ export function LoginPage() {
   if (isPending) return <LoadingSpinner fullScreen />;
 
   return (
-    <AppShell className="flex items-center justify-center px-4">
-      <Card className="w-full max-w-md">
-        <CardBody className="p-8">
-          <div className="mb-6 flex flex-col items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy">
-              <Home size={18} className="text-cream" aria-hidden="true" />
-            </span>
-            <h1 className="font-display text-3xl font-bold text-navy">ログイン</h1>
-          </div>
+    <AuthCard icon={Home} title="ログイン">
+      <LoginForm
+        email={email}
+        password={password}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit}
+      />
 
-          <LoginForm
-            email={email}
-            password={password}
-            setEmail={setEmail}
-            setPassword={setPassword}
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-          />
-
-          <div className="mt-4 text-center">
-            <p className="text-sm text-ink-muted">
-              アカウントをお持ちでない方は{" "}
-              <button
-                type="button"
-                onClick={() => navigate({ to: "/signup" })}
-                className="font-medium text-coral hover:text-coral-light"
-              >
-                新規登録
-              </button>
-            </p>
-          </div>
-        </CardBody>
-      </Card>
-    </AppShell>
+      <div className="mt-4 text-center">
+        <p className="text-sm text-ink-muted">
+          アカウントをお持ちでない方は{" "}
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/signup" })}
+            className="font-medium text-coral hover:text-coral-light"
+          >
+            新規登録
+          </button>
+        </p>
+      </div>
+    </AuthCard>
   );
 }

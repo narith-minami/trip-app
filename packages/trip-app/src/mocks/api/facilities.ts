@@ -71,6 +71,7 @@ const mockSearchResults: FacilitySearchResult[] = [
   },
 ];
 
+// Shared with ./schedule.ts (mock-internal seed state)
 export const facilities = structuredClone(mockFacilities);
 
 export async function fetchFacilities(tripId: string) {
@@ -78,7 +79,7 @@ export async function fetchFacilities(tripId: string) {
     .filter((f) => f.tripId === tripId)
     .sort((a, b) => a.category.localeCompare(b.category) || a.createdAt - b.createdAt);
 
-  return { data: items };
+  return items;
 }
 
 export async function fetchFacility(tripId: string, facilityId: string) {

@@ -9,22 +9,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { Facility } from "@/types/entities";
 import type { FacilityFormValues } from "../components/FacilityForm";
+import { toFacilityPayload } from "../lib/toFacilityPayload";
 import { useFacilities } from "./useFacilities";
 import { useFacilityMutations } from "./useFacilityMutations";
-
-function toPayload(values: FacilityFormValues) {
-  return {
-    category: values.category,
-    name: values.name,
-    address: values.address || null,
-    lat: values.lat,
-    lng: values.lng,
-    phone: values.phone || null,
-    businessHours: values.businessHours || null,
-    url: values.url || null,
-    memo: values.memo || null,
-  };
-}
 
 export function useFacilitySection(tripId: string) {
   const { data: facilities, isLoading, error } = useFacilities(tripId);
@@ -42,29 +29,26 @@ export function useFacilitySection(tripId: string) {
   };
   const close = () => setIsOpen(false);
 
-  const handleSubmit = async (values: FacilityFormValues) => {
-    try {
-      if (editing) {
-        await update.mutateAsync({ facilityId: editing.id, data: toPayload(values) });
-        toast.success("施設を更新しました");
-      } else {
-        await create.mutateAsync(toPayload(values));
-        toast.success("施設を追加しました");
-      }
+  const handleSubmit = (values: FacilityFormValues) => {
+    const data = toFacilityPayload(values);
+    const onSuccess = () => {
+      toast.success(editing ? "施設を更新しました" : "施設を追加しました");
       setIsOpen(false);
-    } catch {
-      toast.error("施設の保存に失敗しました");
+    };
+    const onError = () => toast.error("施設の保存に失敗しました");
+    if (editing) {
+      update.mutate({ facilityId: editing.id, data }, { onSuccess, onError });
+    } else {
+      create.mutate(data, { onSuccess, onError });
     }
   };
 
-  const handleDelete = async (facility: Facility) => {
+  const handleDelete = (facility: Facility) => {
     if (!window.confirm("この施設を削除しますか？")) return;
-    try {
-      await remove.mutateAsync(facility.id);
-      toast.success("施設を削除しました");
-    } catch {
-      toast.error("施設の削除に失敗しました");
-    }
+    remove.mutate(facility.id, {
+      onSuccess: () => toast.success("施設を削除しました"),
+      onError: () => toast.error("施設の削除に失敗しました"),
+    });
   };
 
   return {

@@ -13,7 +13,7 @@ export interface ScheduleCopyDialogProps {
   sourceDate: string;
   items: ScheduleItem[];
   dates: string[];
-  onCopy: (targetDate: string, itemIds: string[]) => Promise<void>;
+  onCopy: (targetDate: string, itemIds: string[]) => void;
   onClose: () => void;
   isSubmitting?: boolean;
 }

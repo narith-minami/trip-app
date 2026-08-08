@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono";
 import type { Env } from "../env";
+import { ERROR_MESSAGES } from "../lib/errors";
 import { createAuth } from "../routes/auth";
 
 export interface Session {
@@ -62,7 +63,7 @@ export function requireSession() {
       const sessionData = await auth.api.getSession({ headers: c.req.raw.headers });
 
       if (!sessionData?.user) {
-        return c.json({ error: "Unauthorized" }, 401);
+        return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
       }
 
       const { session, user } = sessionData;
@@ -82,11 +83,7 @@ export function requireSession() {
       c.set("user", sessionUser);
       await next();
     } catch (_error) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
     }
   };
-}
-
-export function getUser(c: Context<AuthContext>): Session["user"] | null {
-  return c.get("user") ?? null;
 }

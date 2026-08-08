@@ -12,17 +12,6 @@ import * as schema from "./schema";
 
 export type {
   Facility,
-  NewFacility,
-  NewScheduleItem,
-  NewScheduleItemImage,
-  NewScrap,
-  NewScrapTag,
-  NewTodo,
-  NewTodoComment,
-  NewTodoTag,
-  NewTrip,
-  NewTripMember,
-  NewTripMemo,
   ScheduleItem,
   ScheduleItemImage,
   Scrap,
@@ -72,5 +61,8 @@ export const userSummaryColumns = {
   email: true,
   image: true,
 } as const;
+
+/** Shape of a nested user relation selected with {@link userSummaryColumns}. */
+export type UserSummaryRow = Pick<schema.User, "id" | "name" | "email" | "image">;
 
 export type Database = ReturnType<typeof getDb>;

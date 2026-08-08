@@ -8,45 +8,35 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { Facility } from "@/types/entities";
 import type { FacilityFormValues } from "../components/FacilityForm";
+import { toFacilityPayload } from "../lib/toFacilityPayload";
 import { useFacilityMutations } from "./useFacilityMutations";
-
-function toPayload(values: FacilityFormValues) {
-  return {
-    category: values.category,
-    name: values.name,
-    address: values.address || null,
-    lat: values.lat,
-    lng: values.lng,
-    phone: values.phone || null,
-    businessHours: values.businessHours || null,
-    url: values.url || null,
-    memo: values.memo || null,
-  };
-}
 
 export function useFacilityDetailEdit(tripId: string, facility: Facility, onDeleted: () => void) {
   const { update, remove } = useFacilityMutations(tripId);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const handleSubmit = async (values: FacilityFormValues) => {
-    try {
-      await update.mutateAsync({ facilityId: facility.id, data: toPayload(values) });
-      toast.success("施設を更新しました");
-      setIsEditOpen(false);
-    } catch {
-      toast.error("施設の保存に失敗しました");
-    }
+  const handleSubmit = (values: FacilityFormValues) => {
+    update.mutate(
+      { facilityId: facility.id, data: toFacilityPayload(values) },
+      {
+        onSuccess: () => {
+          toast.success("施設を更新しました");
+          setIsEditOpen(false);
+        },
+        onError: () => toast.error("施設の保存に失敗しました"),
+      }
+    );
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!window.confirm("この施設を削除しますか？")) return;
-    try {
-      await remove.mutateAsync(facility.id);
-      toast.success("施設を削除しました");
-      onDeleted();
-    } catch {
-      toast.error("施設の削除に失敗しました");
-    }
+    remove.mutate(facility.id, {
+      onSuccess: () => {
+        toast.success("施設を削除しました");
+        onDeleted();
+      },
+      onError: () => toast.error("施設の削除に失敗しました"),
+    });
   };
 
   return {

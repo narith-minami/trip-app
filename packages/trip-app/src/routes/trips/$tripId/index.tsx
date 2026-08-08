@@ -35,6 +35,9 @@ export function TripDetailPage() {
 
   if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
 
+  // Not routed through ErrorState (unlike the other 2 detail pages) — this
+  // file already sits at the import/max-dependencies limit (10 external
+  // modules), so adding it would exceed the threshold.
   if (error || !trip) {
     return (
       <div className="flex min-h-screen items-center justify-center">

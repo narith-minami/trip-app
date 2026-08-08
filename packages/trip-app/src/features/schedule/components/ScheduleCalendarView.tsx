@@ -5,7 +5,7 @@
  * Uses custom PointerEvents (not @dnd-kit) for time-grid drag with 10-min snap.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePinchZoom } from "@/features/schedule/hooks/usePinchZoom";
 import { CalendarFooter } from "./CalendarFooter";
 import { CalendarHeader } from "./CalendarHeader";
@@ -49,11 +49,6 @@ export function ScheduleCalendarView({ tripId, date, dates, onBack }: ScheduleCa
     pxPerMinRef,
     consumePendingScroll,
   });
-
-  useEffect(() => {
-    setPendingChanges(new Map());
-    setDeletedIds(new Set());
-  }, []);
 
   const displayItems = computeDisplayItems(allDateItems, deletedIds, pendingChanges);
   const timedItems = displayItems.filter((i) => i.startTime);

@@ -11,6 +11,7 @@ import type { Context, Next } from "hono";
 import type { TripMember } from "../db";
 import { getDb } from "../db";
 import { tripMembers } from "../db/schema";
+import { ERROR_MESSAGES } from "../lib/errors";
 import type { AuthContext } from "./auth";
 
 /**
@@ -38,35 +39,50 @@ export async function requireMember(
   const user = c.get("user");
 
   if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: ERROR_MESSAGES.UNAUTHORIZED }, 401);
   }
 
   // Extract tripId from route params
   const tripId = c.req.param("tripId");
 
   if (!tripId) {
-    return c.json({ error: "Trip ID is required" }, 400);
+    return c.json({ error: "旅行IDが必要です" }, 400);
   }
 
-  try {
-    const db = getDb(c.env.DB);
+  const db = getDb(c.env.DB);
 
-    // Check if user is a member of this trip
-    const member = await db.query.tripMembers.findFirst({
-      where: and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, user.id)),
-    });
+  // Check if user is a member of this trip
+  const member = await db.query.tripMembers.findFirst({
+    where: and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, user.id)),
+  });
 
-    if (!member) {
-      return c.json({ error: "Forbidden: Not a member of this trip" }, 403);
-    }
-
-    // Store member info in context for downstream handlers
-    c.set("tripMember", member);
-    c.set("tripId", tripId);
-
-    await next();
-  } catch (error) {
-    console.error("requireMember middleware failed", error);
-    return c.json({ error: "Internal server error" }, 500);
+  if (!member) {
+    return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
   }
+
+  // Store member info in context for downstream handlers
+  c.set("tripMember", member);
+  c.set("tripId", tripId);
+
+  await next();
+}
+
+/**
+ * Middleware to ensure user is the owner of the trip. Must run after
+ * `requireMember`, which loads the member row into context — checking `role`
+ * there avoids re-fetching the trip just to compare ownerId.
+ *
+ * @returns 403 if the current member is not the trip owner, otherwise calls next
+ */
+export async function requireOwner(
+  c: Context<TripMemberContext>,
+  next: Next
+): Promise<Response | undefined> {
+  const member = c.get("tripMember");
+
+  if (member?.role !== "owner") {
+    return c.json({ error: ERROR_MESSAGES.FORBIDDEN }, 403);
+  }
+
+  await next();
 }

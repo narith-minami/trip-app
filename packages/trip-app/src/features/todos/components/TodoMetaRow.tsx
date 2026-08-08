@@ -5,9 +5,9 @@
  */
 
 import { Avatar } from "@/components/ui/avatar";
+import { formatMD } from "@/lib/japaneseDate";
 import { resolveTodoPriority } from "@/lib/todoPriority";
 import { resolveTodoTag } from "@/lib/todoTags";
-import { formatDueDate } from "@/lib/utils";
 import type { TripMember } from "@/types/entities";
 import type { TodoDetail as TodoDetailData } from "../hooks/useTodoDetail";
 
@@ -40,7 +40,7 @@ export function TodoMetaRow({ todo, members, showDueDate }: TodoMetaRowProps) {
         </span>
       )}
       {showDueDate && todo.dueDate && (
-        <span className="text-ink-muted">期日: {formatDueDate(todo.dueDate)}</span>
+        <span className="text-ink-muted">期日: {formatMD(todo.dueDate)}</span>
       )}
       {todo.tags.map((tag) => {
         const meta = resolveTodoTag(tag);

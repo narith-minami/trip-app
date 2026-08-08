@@ -13,14 +13,14 @@ export interface MemberAvatarListProps {
   members: TripMember[];
   canManage?: boolean;
   onRemove?: (member: TripMember) => void;
-  pendingId?: string;
+  pendingIds?: ReadonlySet<string>;
 }
 
 export function MemberAvatarList({
   members,
   canManage = false,
   onRemove,
-  pendingId,
+  pendingIds,
 }: MemberAvatarListProps) {
   return (
     <div className="space-y-2">
@@ -50,7 +50,7 @@ export function MemberAvatarList({
                 <Button
                   size="sm"
                   variant="ghost"
-                  disabled={pendingId === member.userId}
+                  disabled={pendingIds?.has(member.userId) ?? false}
                   onClick={() => onRemove?.(member)}
                 >
                   削除

@@ -12,12 +12,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { resolveEventType } from "@/lib/eventTypes";
 import { resolveFacilityType } from "@/lib/facilityTypes";
+import { DAY_MS } from "@/lib/japaneseDate";
 import type { ScheduleItem } from "@/types/entities";
 import { CardImages } from "./ScheduleItemCardImages";
 
 function timeAgo(ms: number): string {
   const diff = Date.now() - ms;
-  const days = Math.floor(diff / 86400000);
+  const days = Math.floor(diff / DAY_MS);
   const hours = Math.floor(diff / 3600000);
   const mins = Math.floor(diff / 60000);
   if (days > 0) return `${days}日前`;

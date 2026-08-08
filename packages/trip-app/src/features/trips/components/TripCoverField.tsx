@@ -24,7 +24,7 @@ export function TripCoverField({
   const updateTrip = useUpdateTrip(tripId);
   const [urlDraft, setUrlDraft] = useState("");
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
@@ -32,24 +32,25 @@ export function TripCoverField({
       toast.error("画像ファイル(5MB以内)を選択してください");
       return;
     }
-    try {
-      await uploadCover.mutateAsync(file);
-      toast.success("サムネイル画像を更新しました");
-    } catch {
-      toast.error("サムネイル画像のアップロードに失敗しました");
-    }
+    uploadCover.mutate(file, {
+      onSuccess: () => toast.success("サムネイル画像を更新しました"),
+      onError: () => toast.error("サムネイル画像のアップロードに失敗しました"),
+    });
   };
 
-  const handleUrlSave = async () => {
+  const handleUrlSave = () => {
     const trimmed = urlDraft.trim();
     if (!trimmed) return;
-    try {
-      await updateTrip.mutateAsync({ coverImageUrl: trimmed });
-      toast.success("サムネイル画像を更新しました");
-      setUrlDraft("");
-    } catch {
-      toast.error("サムネイル画像の設定に失敗しました");
-    }
+    updateTrip.mutate(
+      { coverImageUrl: trimmed },
+      {
+        onSuccess: () => {
+          toast.success("サムネイル画像を更新しました");
+          setUrlDraft("");
+        },
+        onError: () => toast.error("サムネイル画像の設定に失敗しました"),
+      }
+    );
   };
 
   return (

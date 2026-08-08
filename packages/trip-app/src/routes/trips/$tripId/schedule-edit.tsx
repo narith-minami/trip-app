@@ -21,7 +21,7 @@ export function ScheduleEditPage() {
 
   const initialDate = date || dates[0] || "";
 
-  const handleBack = () => navigate({ to: "/trips/$tripId/", params: { tripId } });
+  const handleBack = () => navigate({ to: "/trips/$tripId", params: { tripId } });
 
   return (
     <ScheduleCalendarView tripId={tripId} date={initialDate} dates={dates} onBack={handleBack} />

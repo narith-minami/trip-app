@@ -6,28 +6,41 @@
  */
 
 import { Plus, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
+import { useEscapeKey } from "@/components/ui/dialog";
 import type { ScheduleItem, ScheduleItemImage } from "@/types/entities";
 
 /** Full-screen enlarged view of a single tapped photo. No prev/next navigation. */
 function ImageLightbox({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  useEscapeKey(true, onClose);
 
   return (
-    <button
-      type="button"
-      onClick={onClose}
-      aria-label="拡大表示を閉じる"
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" || e.key === "Enter") onClose();
+      }}
+      role="presentation"
+      tabIndex={-1}
     >
-      <img src={imageUrl} alt="" className="max-h-[85dvh] max-w-full rounded-lg object-contain" />
-    </button>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="拡大表示"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img src={imageUrl} alt="" className="max-h-[85dvh] max-w-full rounded-lg object-contain" />
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="拡大表示を閉じる"
+        className="absolute right-4 top-4 text-white/80 hover:text-white"
+      >
+        <X size={24} aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 

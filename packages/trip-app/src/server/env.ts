@@ -32,7 +32,6 @@ export interface R2Bucket {
   ): Promise<R2Object>;
   get(key: string): Promise<R2Object | null>;
   delete(key: string): Promise<void>;
-  list(options?: R2ListOptions): Promise<R2ObjectList>;
 }
 
 export interface R2Object {
@@ -54,18 +53,6 @@ export interface R2Object {
   body?: ReadableStream<Uint8Array>;
 }
 
-export interface R2ObjectList {
-  objects: Array<{
-    key: string;
-    size: number;
-    etag: string;
-    uploaded: Date;
-  }>;
-  truncated: boolean;
-  cursor?: string;
-  delimitedPrefixes?: string[];
-}
-
 export interface R2PutOptions {
   customMetadata?: Record<string, string>;
   httpMetadata?: {
@@ -76,11 +63,4 @@ export interface R2PutOptions {
     cacheControl?: string;
     expires?: Date;
   };
-}
-
-export interface R2ListOptions {
-  prefix?: string;
-  delimiter?: string;
-  cursor?: string;
-  limit?: number;
 }

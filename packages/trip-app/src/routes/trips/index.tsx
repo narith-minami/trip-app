@@ -8,7 +8,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Home, Plus } from "lucide-react";
 import { useState } from "react";
-import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
+import { QueryBoundary } from "@/components/feedback/QueryBoundary";
 import { AppShell, PageContainer } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { CreateTripModal } from "@/features/trips/components/CreateTripModal";
@@ -56,46 +56,43 @@ export function TripsPage() {
   const navigate = useNavigate();
   const { data: tripsData, isLoading, error } = useTrips();
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  if (isLoading) return <LoadingSpinner fullScreen label="旅行を読み込み中..." />;
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-red-600">旅行の読み込みに失敗しました</p>
-      </div>
-    );
-  }
-
   const trips = (tripsData?.data ?? []) as TripCardData[];
 
   return (
-    <AppShell>
-      <TripsHeader
-        onCreate={() => setShowCreateModal(true)}
-        onOpenScraps={() => navigate({ to: "/scraps" })}
-      />
-      <PageContainer className="!py-8">
-        {trips.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="mb-6 text-ink-muted">
-              旅行がまだありません。最初の旅行を作成しましょう！
-            </p>
-            <Button onClick={() => setShowCreateModal(true)}>最初の旅行を作成</Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {trips.map((trip) => (
-              <TripCard
-                key={trip.id}
-                trip={trip}
-                onClick={() => navigate({ to: `/trips/${trip.id}` })}
-              />
-            ))}
-          </div>
-        )}
-      </PageContainer>
-      <CreateTripModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
-    </AppShell>
+    <QueryBoundary
+      isLoading={isLoading}
+      error={error}
+      fullScreen
+      loadingLabel="旅行を読み込み中..."
+      errorMessage="旅行の読み込みに失敗しました"
+    >
+      <AppShell>
+        <TripsHeader
+          onCreate={() => setShowCreateModal(true)}
+          onOpenScraps={() => navigate({ to: "/scraps" })}
+        />
+        <PageContainer className="!py-8">
+          {trips.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="mb-6 text-ink-muted">
+                旅行がまだありません。最初の旅行を作成しましょう！
+              </p>
+              <Button onClick={() => setShowCreateModal(true)}>最初の旅行を作成</Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {trips.map((trip) => (
+                <TripCard
+                  key={trip.id}
+                  trip={trip}
+                  onClick={() => navigate({ to: `/trips/${trip.id}` })}
+                />
+              ))}
+            </div>
+          )}
+        </PageContainer>
+        <CreateTripModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      </AppShell>
+    </QueryBoundary>
   );
 }

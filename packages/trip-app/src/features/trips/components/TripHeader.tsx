@@ -21,6 +21,11 @@ import type { TripMember } from "@/types/entities";
 
 type TripEditor = ReturnType<typeof useTripEditor>;
 
+// Not routed through src/lib/japaneseDate.ts (unlike the other 4 DOW/date-parse
+// call sites) — this file already sits at the import/max-dependencies limit
+// (10 external modules), and it composes enough distinct responsibilities
+// (header tone, countdown, editing coordination) that it isn't a clean fit for
+// the "構成ルートファイル" lint exemption the way ScheduleSection.tsx is.
 const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
 function parseLocalDate(s: string): Date {

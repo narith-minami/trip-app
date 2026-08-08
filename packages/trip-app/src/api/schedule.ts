@@ -6,18 +6,18 @@
 
 import type { EventType } from "@/lib/eventTypes";
 import { apiClient } from "./client";
+import { unwrap, unwrapData } from "./unwrap";
 
 /**
  * Fetch schedule items for a trip
  */
 export async function fetchScheduleItems(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].schedule.$get({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch schedule items");
-  }
-  return res.json();
+  return unwrapData(
+    await apiClient.api.trips[":tripId"].schedule.$get({
+      param: { tripId },
+    }),
+    "Failed to fetch schedule items"
+  );
 }
 
 /**
@@ -39,14 +39,13 @@ export async function createScheduleItem(
     orderIndex?: number;
   }
 ) {
-  const res = await apiClient.api.trips[":tripId"].schedule.$post({
-    param: { tripId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create schedule item");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule.$post({
+      param: { tripId },
+      json: data,
+    }),
+    "Failed to create schedule item"
+  );
 }
 
 /**
@@ -69,14 +68,13 @@ export async function updateScheduleItem(
     orderIndex: number;
   }>
 ) {
-  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].$put({
-    param: { tripId, itemId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update schedule item");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule[":itemId"].$put({
+      param: { tripId, itemId },
+      json: data,
+    }),
+    "Failed to update schedule item"
+  );
 }
 
 /**
@@ -86,14 +84,13 @@ export async function reorderScheduleItems(
   tripId: string,
   items: Array<{ id: string; orderIndex: number }>
 ) {
-  const res = await apiClient.api.trips[":tripId"].schedule.reorder.$patch({
-    param: { tripId },
-    json: { items },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to reorder schedule items");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule.reorder.$patch({
+      param: { tripId },
+      json: { items },
+    }),
+    "Failed to reorder schedule items"
+  );
 }
 
 /**
@@ -103,27 +100,25 @@ export async function copyScheduleItems(
   tripId: string,
   data: { targetDate: string; itemIds: string[] }
 ) {
-  const res = await apiClient.api.trips[":tripId"].schedule.copy.$post({
-    param: { tripId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to copy schedule items");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule.copy.$post({
+      param: { tripId },
+      json: data,
+    }),
+    "Failed to copy schedule items"
+  );
 }
 
 /**
  * Delete schedule item
  */
 export async function deleteScheduleItem(tripId: string, itemId: string) {
-  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].$delete({
-    param: { tripId, itemId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete schedule item");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule[":itemId"].$delete({
+      param: { tripId, itemId },
+    }),
+    "Failed to delete schedule item"
+  );
 }
 
 /**
@@ -152,11 +147,10 @@ export async function uploadScheduleItemImage(tripId: string, itemId: string, fi
  * Delete a single photo from a schedule item
  */
 export async function deleteScheduleItemImage(tripId: string, itemId: string, imageId: string) {
-  const res = await apiClient.api.trips[":tripId"].schedule[":itemId"].images[":imageId"].$delete({
-    param: { tripId, itemId, imageId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete schedule item image");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].schedule[":itemId"].images[":imageId"].$delete({
+      param: { tripId, itemId, imageId },
+    }),
+    "Failed to delete schedule item image"
+  );
 }

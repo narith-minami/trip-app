@@ -94,6 +94,22 @@
 - **場所**: `index.html`
 - **内容**: favicon・OGP・description等が皆無（`<title>Trip App</title>` のみ）
 
+### 21. `src/types/entities.ts` の手書き型をHono RPCの型推論から導出したい（アーキテクチャ判断が必要）
+
+- **場所**: `src/types/entities.ts`、`src/routes/trips/index.tsx:59`、`src/routes/trips/$tripId/index.tsx:65`
+- **内容**: `entities.ts` の12個の型（`Trip`/`TripMember`/`Todo`等）は手書きで、サーバーのDrizzleスキーマ・Honoルートの実レスポンス形と同期を保つ責務が人手に依存している。実際すでにズレがあり、次の2箇所で `as` キャストによる回避が必要になっている:
+  - `routes/trips/index.tsx:59`: `(tripsData?.data ?? []) as TripCardData[]`
+  - `routes/trips/$tripId/index.tsx:65`: `trip.members as TripMember[] | undefined`
+
+  理想は `hc<AppType>` クライアント（`src/api/client.ts`）の `InferResponseType` から型を導出し、`entities.ts` をその再エクスポート窓口にすること（クリーンコードレビュー計画のPhase 10として着手を検討）。
+
+- **調査結果（今回、実装はせず調査のみ実施）**: `.dependency-cruiser.cjs` の `types-have-no-deps` ルール（severity: error）が `src/types/` から `src/api/`（および `features/components/routes/hooks/lib/server`）への依存を明示的に禁止しており、`entities.ts` が `src/api/client.ts`（延いては `src/server/app.ts` の `AppType`）に依存する形にすると即座にlintエラーになることを確認した。これは元のリファクタ計画自身が定めていた中止条件（「depcruiseが types→api/client の import を拒否した場合はこのフェーズを中止」）に該当する。
+- **対応方針の選択肢**（要アーキテクチャ判断のため未着手）:
+  1. `entities.ts` を対象外に `types-have-no-deps` へ例外を追加する（境界ルールの意図的な緩和）
+  2. RPC由来の型定義を `src/api/` 側の新規ファイル（例: `src/api/entities.ts`）に置き、`src/types/entities.ts` は廃止して全消費側のimportを切り替える（`types` を唯一の窓口に保つという元計画の前提を変更することになり、影響範囲が広い）
+  3. 現状維持し、ズレが生じた箇所だけ都度 `as` キャストで対応する（現状の運用）
+- **影響**: 実害は上記2箇所の型キャストのみで、機能的なバグではない。ただし今後サーバー側レスポンス形が変わった際にも `entities.ts` 側の手動更新漏れで同様の型ズレ・キャストが増える可能性がある
+
 ---
 
 ## ⚪ 確認・設定事項

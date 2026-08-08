@@ -13,16 +13,20 @@ import "@/styles/globals.css";
 
 const router = createRouter({ routeTree });
 
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
   throw new Error('Root element with id "root" was not found in index.html');
 }
 
-if (!rootElement.innerHTML) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>
-  );
-}
+createRoot(rootElement).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
+);

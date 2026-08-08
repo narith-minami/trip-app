@@ -72,7 +72,7 @@ export async function fetchTodos(tripId: string) {
     .filter((t) => t.tripId === tripId)
     // List view does not need comments; strip them to keep payloads light.
     .map(({ comments: _comments, ...rest }) => rest);
-  return { data: items };
+  return items;
 }
 
 export async function fetchTodoDetail(tripId: string, todoId: string) {

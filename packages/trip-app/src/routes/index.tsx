@@ -10,13 +10,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { fetchCurrentUser } from "@/api/users";
 import { AppShell } from "@/components/layout/PageLayout";
+import { QUERY_KEYS } from "@/lib/queryKeys";
 
 export function IndexPage() {
   const navigate = useNavigate();
 
   // Try to fetch current user to check if authenticated
   const { data: user, isLoading } = useQuery({
-    queryKey: ["currentUser"],
+    queryKey: QUERY_KEYS.auth.user(),
     queryFn: fetchCurrentUser,
   });
 

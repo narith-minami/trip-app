@@ -8,19 +8,19 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap } from "./unwrap";
 
 /**
  * Create a comment on a todo as the current session user.
  */
 export async function createTodoComment(tripId: string, todoId: string, content: string) {
-  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].comments.$post({
-    param: { tripId, todoId },
-    json: { content },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create todo comment");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].todos[":todoId"].comments.$post({
+      param: { tripId, todoId },
+      json: { content },
+    }),
+    "Failed to create todo comment"
+  );
 }
 
 /**
@@ -28,11 +28,10 @@ export async function createTodoComment(tripId: string, todoId: string, content:
  * enforces ownership).
  */
 export async function deleteTodoComment(tripId: string, todoId: string, commentId: string) {
-  const res = await apiClient.api.trips[":tripId"].todos[":todoId"].comments[":commentId"].$delete({
-    param: { tripId, todoId, commentId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete todo comment");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].todos[":todoId"].comments[":commentId"].$delete({
+      param: { tripId, todoId, commentId },
+    }),
+    "Failed to delete todo comment"
+  );
 }

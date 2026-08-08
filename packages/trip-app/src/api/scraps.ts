@@ -5,6 +5,7 @@
  */
 
 import { apiClient } from "./client";
+import { unwrap, unwrapData } from "./unwrap";
 
 export interface ScrapInput {
   content?: string | null;
@@ -16,47 +17,37 @@ export interface ScrapInput {
  * Fetch all scraps (newest first).
  */
 export async function fetchScraps() {
-  const res = await apiClient.api.scraps.$get();
-  if (!res.ok) {
-    throw new Error("Failed to fetch scraps");
-  }
-  return res.json();
+  return unwrapData(await apiClient.api.scraps.$get(), "Failed to fetch scraps");
 }
 
 /**
  * Create a scrap.
  */
 export async function createScrap(data: ScrapInput) {
-  const res = await apiClient.api.scraps.$post({ json: data });
-  if (!res.ok) {
-    throw new Error("Failed to create scrap");
-  }
-  return res.json();
+  return unwrap(await apiClient.api.scraps.$post({ json: data }), "Failed to create scrap");
 }
 
 /**
  * Update a scrap.
  */
 export async function updateScrap(scrapId: string, data: ScrapInput) {
-  const res = await apiClient.api.scraps[":scrapId"].$put({
-    param: { scrapId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update scrap");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.scraps[":scrapId"].$put({
+      param: { scrapId },
+      json: data,
+    }),
+    "Failed to update scrap"
+  );
 }
 
 /**
  * Delete a scrap.
  */
 export async function deleteScrap(scrapId: string) {
-  const res = await apiClient.api.scraps[":scrapId"].$delete({
-    param: { scrapId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete scrap");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.scraps[":scrapId"].$delete({
+      param: { scrapId },
+    }),
+    "Failed to delete scrap"
+  );
 }

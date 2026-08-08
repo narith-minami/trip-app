@@ -1,13 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { formatMD, JA_DOW, parseLocalDate } from "@/lib/japaneseDate";
 import type { ScheduleItem } from "@/types/entities";
-
-const DOW = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
-function formatDateLabel(dateStr: string): string {
-  const [, m, d] = dateStr.split("-").map(Number);
-  return `${m}月${d}日`;
-}
 
 interface DateButtonProps {
   dateStr: string;
@@ -16,8 +10,9 @@ interface DateButtonProps {
 }
 
 function DateButton({ dateStr, isSelected, onClick }: DateButtonProps) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dow = DOW[new Date(y, m - 1, d).getDay()];
+  const date = parseLocalDate(dateStr);
+  const d = date.getDate();
+  const dow = JA_DOW[date.getDay()];
   return (
     <button
       type="button"
@@ -63,7 +58,7 @@ export function CopyStepItems({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-ink-muted">{formatDateLabel(sourceDate)}の予定</span>
+        <span className="text-sm text-ink-muted">{formatMD(sourceDate)}の予定</span>
         <button
           type="button"
           onClick={onToggleAll}
@@ -176,9 +171,9 @@ export function CopyStepConfirm({
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink">
-        <span className="font-semibold">{formatDateLabel(sourceDate)}</span>の
+        <span className="font-semibold">{formatMD(sourceDate)}</span>の
         <span className="font-semibold">{selectedItems.length}件</span>の予定を
-        <span className="font-semibold">{formatDateLabel(targetDate)}</span>にコピーします。
+        <span className="font-semibold">{formatMD(targetDate)}</span>にコピーします。
       </p>
       <ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg bg-cream p-3">
         {selectedItems.map((item) => (

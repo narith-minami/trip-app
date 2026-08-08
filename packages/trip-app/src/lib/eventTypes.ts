@@ -1,6 +1,12 @@
 import type { LucideIcon } from "lucide-react";
 import { BedDouble, Bike, Landmark, Plane, ShoppingBag, Tag, Train, Utensils } from "lucide-react";
+import type { EventType } from "@/lib/eventTypeKeys";
 
+export type { EventType } from "@/lib/eventTypeKeys";
+
+// `satisfies Record<EventType, ...>` ties this metadata to EVENT_TYPE_KEYS:
+// adding/removing a key on either side is a compile error, so the server Zod
+// enum and this UI list can never drift apart.
 export const EVENT_TYPES = {
   food: { label: "食事", icon: Utensils, color: "#E8643A" },
   flight: { label: "飛行機", icon: Plane, color: "#3B82F6" },
@@ -10,9 +16,7 @@ export const EVENT_TYPES = {
   hotel: { label: "ホテル", icon: BedDouble, color: "#6366F1" },
   shopping: { label: "買い物", icon: ShoppingBag, color: "#EC4899" },
   other: { label: "その他", icon: Tag, color: "#9CA3AF" },
-} as const satisfies Record<string, { label: string; icon: LucideIcon; color: string }>;
-
-export type EventType = keyof typeof EVENT_TYPES;
+} as const satisfies Record<EventType, { label: string; icon: LucideIcon; color: string }>;
 
 export const EVENT_TYPE_LIST = Object.entries(EVENT_TYPES).map(([key, value]) => ({
   key: key as EventType,

@@ -82,7 +82,7 @@ export function CreateTripModal({ open, onClose }: CreateTripModalProps) {
 
   const set: SetTripField = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
 
-  const handleCreate = async (e: FormEvent) => {
+  const handleCreate = (e: FormEvent) => {
     e.preventDefault();
 
     if (!formData.title || !formData.startDate || !formData.endDate) {
@@ -90,14 +90,14 @@ export function CreateTripModal({ open, onClose }: CreateTripModalProps) {
       return;
     }
 
-    try {
-      await createTripMutation.mutateAsync(formData);
-      toast.success("旅行を作成しました");
-      setFormData(EMPTY_FORM);
-      onClose();
-    } catch {
-      toast.error("旅行の作成に失敗しました");
-    }
+    createTripMutation.mutate(formData, {
+      onSuccess: () => {
+        toast.success("旅行を作成しました");
+        setFormData(EMPTY_FORM);
+        onClose();
+      },
+      onError: () => toast.error("旅行の作成に失敗しました"),
+    });
   };
 
   return (

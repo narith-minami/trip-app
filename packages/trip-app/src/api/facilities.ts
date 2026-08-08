@@ -6,6 +6,7 @@
 
 import type { FacilityCategory } from "@/lib/facilityTypes";
 import { apiClient } from "./client";
+import { unwrap, unwrapData } from "./unwrap";
 
 export interface FacilityInput {
   category: FacilityCategory;
@@ -32,40 +33,37 @@ export interface FacilitySearchResult {
  * Fetch facilities for a trip
  */
 export async function fetchFacilities(tripId: string) {
-  const res = await apiClient.api.trips[":tripId"].facilities.$get({
-    param: { tripId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch facilities");
-  }
-  return res.json();
+  return unwrapData(
+    await apiClient.api.trips[":tripId"].facilities.$get({
+      param: { tripId },
+    }),
+    "Failed to fetch facilities"
+  );
 }
 
 /**
  * Fetch a single facility's detail
  */
 export async function fetchFacility(tripId: string, facilityId: string) {
-  const res = await apiClient.api.trips[":tripId"].facilities[":facilityId"].$get({
-    param: { tripId, facilityId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch facility");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].facilities[":facilityId"].$get({
+      param: { tripId, facilityId },
+    }),
+    "Failed to fetch facility"
+  );
 }
 
 /**
  * Create a facility
  */
 export async function createFacility(tripId: string, data: FacilityInput) {
-  const res = await apiClient.api.trips[":tripId"].facilities.$post({
-    param: { tripId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to create facility");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].facilities.$post({
+      param: { tripId },
+      json: data,
+    }),
+    "Failed to create facility"
+  );
 }
 
 /**
@@ -76,14 +74,13 @@ export async function updateFacility(
   facilityId: string,
   data: Partial<FacilityInput>
 ) {
-  const res = await apiClient.api.trips[":tripId"].facilities[":facilityId"].$put({
-    param: { tripId, facilityId },
-    json: data,
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update facility");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].facilities[":facilityId"].$put({
+      param: { tripId, facilityId },
+      json: data,
+    }),
+    "Failed to update facility"
+  );
 }
 
 /**
@@ -107,11 +104,10 @@ export async function searchFacilities(tripId: string, query: string) {
  * Delete a facility
  */
 export async function deleteFacility(tripId: string, facilityId: string) {
-  const res = await apiClient.api.trips[":tripId"].facilities[":facilityId"].$delete({
-    param: { tripId, facilityId },
-  });
-  if (!res.ok) {
-    throw new Error("Failed to delete facility");
-  }
-  return res.json();
+  return unwrap(
+    await apiClient.api.trips[":tripId"].facilities[":facilityId"].$delete({
+      param: { tripId, facilityId },
+    }),
+    "Failed to delete facility"
+  );
 }

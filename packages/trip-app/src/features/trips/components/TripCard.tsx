@@ -6,8 +6,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { resolveCoverImageSrc } from "@/features/trips/lib/coverImage";
-import { getTripStatus, parseLocalDate, type TripStatus } from "@/features/trips/lib/tripStatus";
+import { getTripStatus, type TripStatus } from "@/features/trips/lib/tripStatus";
 import { cn } from "@/lib/cn";
+import { parseLocalDate } from "@/lib/japaneseDate";
+import { pickByHash } from "@/lib/pickByHash";
 import type { Trip, TripMemberRole } from "@/types/entities";
 
 export interface TripCardData extends Trip {
@@ -24,14 +26,6 @@ const COVER_GRADIENTS = [
   "linear-gradient(160deg, #FF6B47 0%, #D4A854 60%, #FF8F72 100%)",
   "linear-gradient(160deg, #5B8A6F 0%, #1A2E48 60%, #243D5C 100%)",
 ] as const;
-
-function coverGradient(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return COVER_GRADIENTS[hash % COVER_GRADIENTS.length];
-}
 
 function formatDateRange(start: string, end: string): string {
   const fmt = (d: string) => {
@@ -83,7 +77,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         ) : (
           <span
             className="block h-full w-full"
-            style={{ background: coverGradient(trip.id) }}
+            style={{ background: pickByHash(trip.id, COVER_GRADIENTS) }}
             aria-hidden="true"
           />
         )}

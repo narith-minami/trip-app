@@ -66,5 +66,5 @@ export function useScheduleAlertsData(
     () => alerts.find((a) => a.date === selectedDate)?.missing ?? [],
     [alerts, selectedDate]
   );
-  return { alerts, alertCountByDate, selectedMissing };
+  return { alertCountByDate, selectedMissing };
 }

@@ -67,7 +67,7 @@ export async function fetchScheduleItems(tripId: string) {
     })
     .map(withFacility);
 
-  return { data: items };
+  return items;
 }
 
 export async function createScheduleItem(
