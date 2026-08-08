@@ -32,11 +32,12 @@ database_id = "d61efaa7-4652-4955-b92f-52e8f056bc83"
 [vars]
 BETTER_AUTH_URL = "https://trip-app.narith-for-work.workers.dev"
 
-# Note: Sensitive environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET)
-# should be set via Cloudflare Dashboard or wrangler secret commands:
+# Note: Sensitive environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET,
+# YAHOO_CLIENT_ID) should be set via Cloudflare Dashboard or wrangler secret commands:
 # - wrangler secret put GOOGLE_CLIENT_ID
 # - wrangler secret put GOOGLE_CLIENT_SECRET
 # - wrangler secret put AUTH_SECRET
+# - wrangler secret put YAHOO_CLIENT_ID
 
 # ============================================================================
 # Service Bindings (optional, for inter-service communication)

@@ -6,16 +6,20 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
+import type { FacilitySearchResult } from "@/api/facilities";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { FACILITY_TYPE_LIST, type FacilityCategory } from "@/lib/facilityTypes";
 import type { Facility } from "@/types/entities";
+import { FacilitySearchPanel } from "./FacilitySearchPanel";
 
 export interface FacilityFormValues {
   category: FacilityCategory;
   name: string;
   address: string;
+  lat: number | null;
+  lng: number | null;
   phone: string;
   businessHours: string;
   url: string;
@@ -23,6 +27,7 @@ export interface FacilityFormValues {
 }
 
 export interface FacilityFormProps {
+  tripId: string;
   initial?: Facility;
   isSubmitting?: boolean;
   onSubmit: (values: FacilityFormValues) => void;
@@ -34,6 +39,8 @@ function toValues(item?: Facility): FacilityFormValues {
     category: (item?.category as FacilityCategory | undefined) ?? "hotel",
     name: item?.name ?? "",
     address: item?.address ?? "",
+    lat: item?.lat ?? null,
+    lng: item?.lng ?? null,
     phone: item?.phone ?? "",
     businessHours: item?.businessHours ?? "",
     url: item?.url ?? "",
@@ -80,40 +87,18 @@ function CategorySelector({ values, set }: FieldsProps) {
   );
 }
 
-export function FacilityForm({
-  initial,
-  isSubmitting = false,
-  onSubmit,
-  onCancel,
-}: FacilityFormProps) {
-  const [values, setValues] = useState<FacilityFormValues>(() => toValues(initial));
+interface DetailFieldsProps extends FieldsProps {
+  onAddressChange: (value: string) => void;
+}
 
-  const set: SetField = (key, value) => setValues((prev) => ({ ...prev, [key]: value }));
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSubmit(values);
-  };
-
+function DetailFields({ values, set, onAddressChange }: DetailFieldsProps) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label>施設名 *</Label>
-        <Input
-          value={values.name}
-          onChange={(e) => set("name", e.target.value)}
-          placeholder="例：グランドホテル東京"
-          required
-        />
-      </div>
-
-      <CategorySelector values={values} set={set} />
-
+    <>
       <div>
         <Label>住所</Label>
         <Input
           value={values.address}
-          onChange={(e) => set("address", e.target.value)}
+          onChange={(e) => onAddressChange(e.target.value)}
           placeholder="例：東京都港区海岸1-1-1"
         />
       </div>
@@ -156,6 +141,60 @@ export function FacilityForm({
           placeholder="メモ..."
         />
       </div>
+    </>
+  );
+}
+
+export function FacilityForm({
+  tripId,
+  initial,
+  isSubmitting = false,
+  onSubmit,
+  onCancel,
+}: FacilityFormProps) {
+  const [values, setValues] = useState<FacilityFormValues>(() => toValues(initial));
+
+  const set: SetField = (key, value) => setValues((prev) => ({ ...prev, [key]: value }));
+
+  const handleAddressChange = (value: string) => {
+    // Manual address edits invalidate any coordinates pulled from a search result.
+    setValues((prev) => ({ ...prev, address: value, lat: null, lng: null }));
+  };
+
+  const handleSearchSelect = (result: FacilitySearchResult) => {
+    setValues((prev) => ({
+      ...prev,
+      name: result.name || prev.name,
+      address: result.address ?? prev.address,
+      phone: result.phone ?? prev.phone,
+      url: result.url ?? prev.url,
+      lat: result.lat,
+      lng: result.lng,
+    }));
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit(values);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <FacilitySearchPanel tripId={tripId} onSelect={handleSearchSelect} />
+
+      <div>
+        <Label>施設名 *</Label>
+        <Input
+          value={values.name}
+          onChange={(e) => set("name", e.target.value)}
+          placeholder="例：グランドホテル東京"
+          required
+        />
+      </div>
+
+      <CategorySelector values={values} set={set} />
+
+      <DetailFields values={values} set={set} onAddressChange={handleAddressChange} />
 
       <div className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1">
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
