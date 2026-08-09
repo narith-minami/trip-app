@@ -113,9 +113,6 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         overlayAnimation
       )}
       onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === "Escape" || e.key === "Enter") onClose();
-      }}
       role="presentation"
       tabIndex={-1}
     >
