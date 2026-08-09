@@ -109,7 +109,7 @@ export function CardImages({ item, canEdit, onDeleteImage }: CardImagesProps) {
 
   return (
     <>
-      <div className="mt-2 flex gap-2 overflow-x-auto">
+      <div className="mt-2 flex touch-pan-x gap-2 overflow-x-auto overscroll-x-contain">
         {item.images.map((image) => (
           <ImageThumbnail
             key={image.id}
