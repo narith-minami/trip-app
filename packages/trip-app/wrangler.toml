@@ -17,14 +17,14 @@ database_id = "d61efaa7-4652-4955-b92f-52e8f056bc83"
 
 # ============================================================================
 # R2 Bucket Binding
-# The "trip-app-photos" bucket does not exist in the Cloudflare account yet.
-# Create it first (Dashboard → R2 → Create bucket, or
-# `wrangler r2 bucket create trip-app-photos`), then uncomment below.
-# Cover thumbnail upload/serving returns 503 until this is enabled.
+# R2 must be enabled for this Cloudflare account (Dashboard → R2 → Enable R2)
+# and the "trip-app-photos" bucket created (`wrangler r2 bucket create
+# trip-app-photos`) before `wrangler deploy` will succeed with this binding
+# uncommented. Cover thumbnail upload/serving returns 503 until then.
 # ============================================================================
-# [[r2_buckets]]
-# binding = "R2"
-# bucket_name = "trip-app-photos"
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "trip-app-photos"
 
 # ============================================================================
 # Environment Variables (public)
@@ -50,3 +50,28 @@ EMAIL_FROM = "Trip App <noreply@example.com>"
 # [[services]]
 # binding = "AUTH_SERVICE"
 # service = "auth-worker"
+
+# ============================================================================
+# Preview Environment (`wrangler deploy --env preview`, for branches other
+# than main)
+#
+# `name` must be set explicitly — wrangler does NOT auto-suffix the
+# top-level name for named environments, so omitting this would deploy over
+# the production worker.
+#
+# vars and bindings are NOT inherited from the top level in wrangler.toml,
+# so they're redeclared below. D1/R2 are intentionally left unbound: the
+# client bundle for this environment is built with VITE_MOCK=true (see
+# `pnpm deploy:preview`), which swaps in the mock API/auth modules and
+# never issues real fetches, so preview has no need to touch production
+# data or storage. If a future preview build ever expects real API traffic,
+# add dedicated (non-production) d1_databases/r2_buckets entries here first.
+# ============================================================================
+[env.preview]
+name = "trip-app-preview"
+
+[env.preview.vars]
+# Placeholder — replace with this environment's actual workers.dev/custom
+# domain once the preview worker has been deployed once and its URL known.
+BETTER_AUTH_URL = "https://trip-app-preview.workers.dev"
+EMAIL_FROM = "Trip App <noreply@example.com>"
