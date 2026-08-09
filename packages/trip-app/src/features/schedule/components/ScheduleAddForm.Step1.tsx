@@ -6,6 +6,7 @@ import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
 interface Step1FormProps {
   selectedType: EventType | "";
   onSelect: (type: EventType | "") => void;
+  onNext: () => void;
   onCancel: () => void;
 }
 
@@ -47,11 +48,11 @@ function EventTypeSelector({
   );
 }
 
-export function Step1Form({ selectedType, onSelect, onCancel }: Step1FormProps) {
+export function Step1Form({ selectedType, onSelect, onNext, onCancel }: Step1FormProps) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (selectedType) {
-      // Parent will handle step transition
+      onNext();
     }
   };
 
@@ -67,14 +68,7 @@ export function Step1Form({ selectedType, onSelect, onCancel }: Step1FormProps) 
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>
-        <Button
-          type="submit"
-          className="flex-1"
-          onClick={() => {
-            // Handled by parent
-          }}
-          disabled={!selectedType}
-        >
+        <Button type="submit" className="flex-1" disabled={!selectedType}>
           次へ
         </Button>
       </div>

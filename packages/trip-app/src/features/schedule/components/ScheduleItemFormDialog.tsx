@@ -36,14 +36,10 @@ export function ScheduleItemFormDialog({
   );
 
   const isAdding = !editing;
+  const dialogTitle = isAdding ? "スケジュール追加" : title;
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      title={isAdding ? undefined : title}
-      fullscreen={isAdding}
-    >
+    <Dialog open={isOpen} onClose={onClose} title={dialogTitle} fullscreen={isAdding}>
       {isAdding ? (
         <ScheduleAddForm
           facilities={facilities}

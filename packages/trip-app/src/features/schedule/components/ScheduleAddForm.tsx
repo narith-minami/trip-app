@@ -16,7 +16,10 @@ interface ScheduleAddFormProps {
 
 function addOneHour(time: string): string {
   const [h, m] = time.split(":").map(Number);
-  return `${String((h + 1) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  if (h === 23) {
+    return "";
+  }
+  return `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 export function ScheduleAddForm({
@@ -66,12 +69,8 @@ export function ScheduleAddForm({
     return (
       <Step1Form
         selectedType={eventType}
-        onSelect={(type) => {
-          setEventType(type);
-          if (type) {
-            setStep(2);
-          }
-        }}
+        onSelect={setEventType}
+        onNext={() => setStep(2)}
         onCancel={onCancel}
       />
     );

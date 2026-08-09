@@ -33,22 +33,30 @@ function BaseFields({
   return (
     <>
       <div>
-        <Label>日付 *</Label>
-        <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} required />
+        <Label htmlFor="schedule-date">日付 *</Label>
+        <Input
+          id="schedule-date"
+          type="date"
+          value={date}
+          onChange={(e) => onDateChange(e.target.value)}
+          required
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>開始時刻</Label>
+          <Label htmlFor="schedule-start-time">開始時刻</Label>
           <Input
+            id="schedule-start-time"
             type="time"
             value={startTime}
             onChange={(e) => onStartTimeChange(e.target.value)}
           />
         </div>
         <div>
-          <Label>終了時刻</Label>
+          <Label htmlFor="schedule-end-time">終了時刻</Label>
           <Input
+            id="schedule-end-time"
             type="time"
             value={endTime}
             min={startTime || undefined}
@@ -58,8 +66,9 @@ function BaseFields({
       </div>
 
       <div>
-        <Label>タイトル *</Label>
+        <Label htmlFor="schedule-title">タイトル *</Label>
         <Input
+          id="schedule-title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="例：ホテルチェックイン"

@@ -140,7 +140,7 @@ export function Dialog({
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="shrink-0 px-6 pt-6">
+          <div className={cn("shrink-0 px-6 pt-6", fullscreen && "sr-only")}>
             <h2 id={titleId} className="text-2xl font-bold">
               {title}
             </h2>
