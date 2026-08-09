@@ -17,25 +17,11 @@ export function useScheduleItems(tripId: string) {
   });
 }
 
-function hasStartTime(item: ScheduleItem): boolean {
-  return typeof item.startTime === "string" && item.startTime.length > 0;
-}
+// Sentinel greater than any "HH:MM" value, so untimed items sort after timed ones.
+const UNTIMED_SORT_KEY = "24:00";
 
 function compareByStartTime(a: ScheduleItem, b: ScheduleItem): number {
-  const aHasTime = hasStartTime(a);
-  const bHasTime = hasStartTime(b);
-
-  // If both have times, compare them
-  if (aHasTime && bHasTime) {
-    return a.startTime.localeCompare(b.startTime);
-  }
-
-  // Items with times come before untimed items
-  if (aHasTime) return -1;
-  if (bHasTime) return 1;
-
-  // Both untimed, preserve original order
-  return 0;
+  return (a.startTime || UNTIMED_SORT_KEY).localeCompare(b.startTime || UNTIMED_SORT_KEY);
 }
 
 /**
