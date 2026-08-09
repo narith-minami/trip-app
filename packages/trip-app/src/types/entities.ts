@@ -85,6 +85,8 @@ export interface Todo {
   assignee?: UserSummary | null;
   priority: TodoPriority;
   tags: string[];
+  /** Only populated on the list endpoint; absent on single-item responses. */
+  commentCount?: number;
   createdAt: number;
   updatedAt: number;
 }

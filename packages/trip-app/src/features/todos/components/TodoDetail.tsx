@@ -7,11 +7,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/cn";
 import type { TripMember } from "@/types/entities";
 import type { TodoDetail as TodoDetailData } from "../hooks/useTodoDetail";
+import { useTodoDetailDelete } from "../hooks/useTodoDetailDelete";
 import { useTodoDetailEdit } from "../hooks/useTodoDetailEdit";
 import { TodoCommentsSection } from "./TodoCommentsSection";
+import { TodoDetailHeader } from "./TodoDetailHeader";
 import { TodoEditForm } from "./TodoEditForm";
 import { TodoMetaRow } from "./TodoMetaRow";
 
@@ -36,26 +37,19 @@ export function TodoDetail({ tripId, todo, members, currentUserId }: TodoDetailP
     handleToggle,
     isPending,
   } = useTodoDetailEdit(tripId, todo);
+  const { handleDelete, isDeleting } = useTodoDetailDelete(tripId, todo.id, todo.title);
 
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col gap-4 p-4">
-        {/* Title + done toggle */}
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={handleToggle}
-            disabled={isPending}
-            className="mt-1 h-5 w-5 rounded border-cream-dark text-coral focus:ring-coral"
-            aria-label="完了"
-          />
-          <h1
-            className={cn("text-xl font-bold", done ? "text-ink-light line-through" : "text-ink")}
-          >
-            {todo.title}
-          </h1>
-        </div>
+        <TodoDetailHeader
+          title={todo.title}
+          done={done}
+          isToggling={isPending}
+          onToggle={handleToggle}
+          isDeleting={isDeleting}
+          onDelete={handleDelete}
+        />
 
         {/* Meta row */}
         <TodoMetaRow todo={todo} members={members} showDueDate={!editing} />

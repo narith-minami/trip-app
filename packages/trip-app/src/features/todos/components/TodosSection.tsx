@@ -39,8 +39,10 @@ export function TodosSection({ tripId, members }: TodosSectionProps) {
   };
 
   const handleDelete = (todo: Todo) => {
+    if (!window.confirm(`「${todo.title}」を削除しますか？`)) return;
     addPending(todo.id);
     remove.mutate(todo.id, {
+      onSuccess: () => toast.success("Todoを削除しました"),
       onError: () => toast.error("Todoの削除に失敗しました"),
       onSettled: () => clearPending(todo.id),
     });

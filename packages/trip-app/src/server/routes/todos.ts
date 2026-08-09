@@ -25,7 +25,7 @@ type TodoUpdateInput = Partial<typeof todos.$inferInsert>;
 type TodoWithRelations = typeof todos.$inferSelect & {
   assignee?: UserSummaryRow | null;
   tags: { todoId: string; tag: string }[];
-  comments?: unknown;
+  comments?: { id: string }[];
 };
 
 type TodoDetailWithRelations = TodoWithRelations & {
@@ -34,11 +34,12 @@ type TodoDetailWithRelations = TodoWithRelations & {
 
 /**
  * Flatten the `todo_tags` join rows into a plain string[] for the client.
- * Strips the comments relation (only attached for the detail endpoint).
+ * Strips the comments relation, replacing it with a count when present (list
+ * endpoint only — single-item responses never fetch comments).
  */
 function serialize(todo: TodoWithRelations) {
-  const { comments: _comments, ...rest } = todo;
-  return flattenTags(rest);
+  const { comments, ...rest } = todo;
+  return { ...flattenTags(rest), ...(comments ? { commentCount: comments.length } : {}) };
 }
 
 /**
@@ -129,6 +130,8 @@ const todosRouter = new Hono<TripMemberContext>()
       with: {
         assignee: { columns: userSummaryColumns },
         tags: true,
+        // Only the id is needed to compute a comment count for the list view.
+        comments: { columns: { id: true } },
       },
     });
 

@@ -132,7 +132,7 @@ export function Dialog({
         className={cn(
           "flex flex-col bg-white shadow-xl",
           fullscreen
-            ? "w-screen h-screen max-w-full max-h-screen rounded-none"
+            ? "w-screen h-dvh max-w-full max-h-dvh rounded-none"
             : "w-full max-w-md max-h-[90dvh] rounded-2xl",
           panelAnimation,
           className

@@ -5,6 +5,7 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
+import { MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ import { formatMD } from "@/lib/japaneseDate";
 import { resolveTodoPriority } from "@/lib/todoPriority";
 import { resolveTodoTag } from "@/lib/todoTags";
 import type { Todo } from "@/types/entities";
+
+const DESCRIPTION_PREVIEW_LENGTH = 20;
 
 export interface TodoItemProps {
   todo: Todo;
@@ -43,10 +46,28 @@ function TagChip({ tag }: { tag: string }) {
   );
 }
 
+function CommentBadge({ count }: { count: number }) {
+  return (
+    <Badge variant="neutral">
+      <MessageCircle size={12} />
+      {count}
+    </Badge>
+  );
+}
+
+function descriptionPreview(description: Todo["description"]): string | null {
+  if (!description) return null;
+  return description.length > DESCRIPTION_PREVIEW_LENGTH
+    ? `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH)}…`
+    : description;
+}
+
 export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoItemProps) {
   const navigate = useNavigate();
   const done = todo.isDone === 1;
   const hasMeta = todo.tags.length > 0;
+  const preview = descriptionPreview(todo.description);
+  const commentCount = todo.commentCount ?? 0;
 
   const openDetail = () => {
     void navigate({
@@ -72,10 +93,12 @@ export function TodoItem({ todo, onToggle, onDelete, disabled = false }: TodoIte
           >
             {todo.title}
           </button>
+          {preview && <span className="truncate text-xs text-ink-light">{preview}</span>}
           <span className="flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={todo.priority} />
             {todo.dueDate && <Badge variant="navy">期日 {formatMD(todo.dueDate)}</Badge>}
             {hasMeta && todo.tags.map((tag) => <TagChip key={tag} tag={tag} />)}
+            {commentCount > 0 && <CommentBadge count={commentCount} />}
           </span>
         </span>
       </div>

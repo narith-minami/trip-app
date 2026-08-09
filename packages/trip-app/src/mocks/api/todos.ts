@@ -70,8 +70,11 @@ const todos = structuredClone(mockTodos);
 export async function fetchTodos(tripId: string) {
   const items = todos
     .filter((t) => t.tripId === tripId)
-    // List view does not need comments; strip them to keep payloads light.
-    .map(({ comments: _comments, ...rest }) => rest);
+    // List view does not need full comments; replace with a count.
+    .map(({ comments: _comments, ...rest }) => ({
+      ...rest,
+      commentCount: mockComments.filter((c) => c.todoId === rest.id).length,
+    }));
   return items;
 }
 
