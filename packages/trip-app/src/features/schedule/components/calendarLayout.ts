@@ -27,6 +27,12 @@ export function minutesToTime(min: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+/** Shifts `endTime` by the same amount `startTime` moved from `prevStart`, preserving the duration. */
+export function shiftEndTime(prevStart: string, nextStart: string, endTime: string): string {
+  const delta = timeToMinutes(nextStart) - timeToMinutes(prevStart);
+  return minutesToTime(timeToMinutes(endTime) + delta);
+}
+
 export function formatDayHeading(dateStr: string): string {
   if (!dateStr) return "";
   const parts = dateStr.split("-").map(Number);

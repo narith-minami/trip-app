@@ -9,7 +9,7 @@
  */
 
 import { zValidator } from "@hono/zod-validator";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { UpdateTrip } from "@/lib/schemas/trip";
 import { CreateTripSchema, UpdateTripSchema } from "@/lib/schemas/trip";
@@ -83,7 +83,7 @@ const tripsRouter = new Hono<TripMemberContext>()
     // Get trip details with owner info
     const tripsData = await db.query.trips.findMany({
       where: (trips, { inArray }) => inArray(trips.id, tripIds),
-      orderBy: desc(trips.createdAt),
+      orderBy: [asc(trips.startDate), desc(trips.createdAt)],
       with: withOwnerAndMembers,
     });
 
