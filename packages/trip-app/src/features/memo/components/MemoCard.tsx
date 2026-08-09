@@ -35,16 +35,18 @@ function MemoFooter({ memo }: { memo: TripMemo }) {
   const wasUpdated = memo.updatedAt !== memo.createdAt || memo.updatedBy !== memo.createdBy;
 
   return (
-    <div className="flex flex-col gap-1.5 border-t border-cream-dark pt-3 text-sm text-ink-muted">
-      <div className="flex items-center gap-2">
-        <Avatar name={memo.creator?.name ?? "?"} image={memo.creator?.image} className="h-7 w-7" />
-        <span>{memo.creator?.name ?? "不明"}が作成</span>
-        <span className="text-xs text-ink-light">{formatDate(memo.createdAt)}</span>
+    <div className="flex flex-col gap-1 border-t border-cream-dark pt-2 text-xs text-ink-light">
+      <div className="flex items-center gap-1.5">
+        <Avatar name={memo.creator?.name ?? "?"} image={memo.creator?.image} className="h-5 w-5" />
+        <span>
+          {memo.creator?.name ?? "不明"}が作成・{formatDate(memo.createdAt)}
+        </span>
       </div>
       {wasUpdated && (
-        <div className="flex items-center gap-2 pl-9">
-          <span>{memo.updater?.name ?? "不明"}が更新</span>
-          <span className="text-xs text-ink-light">{formatDate(memo.updatedAt)}</span>
+        <div className="pl-[26px]">
+          <span>
+            {memo.updater?.name ?? "不明"}が更新・{formatDate(memo.updatedAt)}
+          </span>
         </div>
       )}
     </div>

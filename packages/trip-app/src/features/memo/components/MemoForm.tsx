@@ -56,15 +56,15 @@ export function MemoForm({
           maxLength={MEMO_CONTENT_MAX}
         />
       </div>
-      <div className="flex gap-2">
-        <Button type="submit" disabled={!canSubmit || submitting}>
-          {submitting ? "保存中..." : submitLabel}
-        </Button>
+      <div className="flex justify-end gap-2">
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
             キャンセル
           </Button>
         )}
+        <Button type="submit" disabled={!canSubmit || submitting}>
+          {submitting ? "保存中..." : submitLabel}
+        </Button>
       </div>
     </form>
   );
