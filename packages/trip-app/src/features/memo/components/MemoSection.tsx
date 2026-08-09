@@ -1,42 +1,36 @@
 /**
  * src/features/memo/components/MemoSection.tsx
  *
- * Container for the trip detail "Memo" tab.
+ * Container for the trip detail "Memo" tab: a board of sticky-note memos any
+ * trip member can add or edit, sorted by most recently updated first.
  */
 
-import { toast } from "sonner";
 import { QueryBoundary } from "@/components/feedback/QueryBoundary";
-import { useTripMemo } from "@/features/memo/hooks/useMemo";
-import { useMemoUpdateMutation } from "@/features/memo/hooks/useMemoUpdateMutation";
-import { MemoEditor } from "./MemoEditor";
+import { useMemos } from "@/features/memo/hooks/useMemos";
+import { useSession } from "@/lib/auth-client";
+import { MemoComposer } from "./MemoComposer";
+import { MemoList } from "./MemoList";
 
 export interface MemoSectionProps {
   tripId: string;
 }
 
 export function MemoSection({ tripId }: MemoSectionProps) {
-  const { data: memo, isLoading, error } = useTripMemo(tripId);
-  const updateMutation = useMemoUpdateMutation(tripId);
-
-  const handleSave = (content: string) => {
-    updateMutation.mutate(content, {
-      onSuccess: () => toast.success("メモを保存しました"),
-      onError: () => toast.error("メモの保存に失敗しました"),
-    });
-  };
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
+  const { data: memos, isLoading, error } = useMemos(tripId);
 
   return (
-    <QueryBoundary
-      isLoading={isLoading}
-      error={error}
-      loadingLabel="メモを読み込み中..."
-      errorMessage="メモの読み込みに失敗しました。"
-    >
-      <MemoEditor
-        content={memo?.content ?? ""}
-        isSaving={updateMutation.isPending}
-        onSave={handleSave}
-      />
-    </QueryBoundary>
+    <div className="flex flex-col gap-6">
+      <MemoComposer tripId={tripId} />
+      <QueryBoundary
+        isLoading={isLoading}
+        error={error}
+        loadingLabel="メモを読み込み中..."
+        errorMessage="メモの読み込みに失敗しました。"
+      >
+        <MemoList tripId={tripId} memos={memos ?? []} currentUserId={currentUserId} />
+      </QueryBoundary>
+    </div>
   );
 }

@@ -138,9 +138,12 @@ erDiagram
   }
 
   trip_memos {
-    text    tripId       PK  "trips.id (1トリップ1メモ)"
+    text    id           PK  "nanoid"
+    text    tripId       FK  "trips.id"
     text    content          "プレーンテキスト"
+    text    createdBy    FK  "users.id"
     text    updatedBy    FK  "users.id (nullable)"
+    int     createdAt        "timestamp"
     int     updatedAt        "timestamp"
   }
 
@@ -151,12 +154,13 @@ erDiagram
   users       ||--o{ trip_members   : "参加する"
   users       ||--o{ todos          : "担当する (assignee)"
   users       ||--o{ schedule_items : "最終更新する"
+  users       ||--o{ trip_memos     : "作成する"
   users       ||--o{ trip_memos     : "最終更新する"
 
   trips       ||--o{ trip_members   : "持つ"
   trips       ||--o{ schedule_items : "持つ"
   trips       ||--o{ todos          : "持つ"
-  trips       ||--|| trip_memos     : "持つ"
+  trips       ||--o{ trip_memos     : "持つ"
 ```
 
 ---
@@ -166,8 +170,10 @@ erDiagram
 ### 複合主キー (trip_members)
 `trip_members` は `(tripId, userId)` の複合主キー。同一ユーザーが同一トリップに重複参加できない制約をDBレベルで保証する。
 
-### trip_memos の主キー
-`tripId` をそのまま PK にすることで「1トリップ1メモ」をスキーマレベルで強制。Drizzle での upsert（`onConflictDoUpdate`）が自然に書ける。
+### trip_memos（付箋メモ）
+1トリップに複数のメモ（付箋）を持てるよう `id` を PK にし、`tripId` は通常の FK として持つ。
+`createdBy`（作成者、not null）と `updatedBy`（最終更新者、nullable）の両方を持ち、
+編集はトリップメンバー全員に許可、削除は `createdBy` 本人のみに制限するアプリ側の権限判定に使う。
 
 ### inviteToken の分離
 招待トークンは `trips` テーブルに持たせる。トリップIDとは独立した nanoid にすることで、トークンを再生成してもトリップIDは不変に保てる。

@@ -51,7 +51,7 @@ const queryKeys = {
    */
   memo: {
     all: (tripId: string) => ["memo", tripId] as const,
-    detail: (tripId: string) => [...queryKeys.memo.all(tripId), "detail"] as const,
+    list: (tripId: string) => [...queryKeys.memo.all(tripId), "list"] as const,
   },
 
   /**

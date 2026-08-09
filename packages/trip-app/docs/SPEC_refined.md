@@ -235,9 +235,12 @@ export const todos = sqliteTable('todos', {
 })
 
 export const tripMemos = sqliteTable('trip_memos', {
-  tripId:    text('trip_id').primaryKey(),       // 1トリップ1メモ
+  id:        text('id').primaryKey(),            // 付箋メモ: 1トリップに複数持てる
+  tripId:    text('trip_id').notNull(),          // FK: trips.id
   content:   text('content').notNull().default(''),
-  updatedBy: text('updated_by'),                 // FK: users.id
+  createdBy: text('created_by').notNull(),        // FK: users.id
+  updatedBy: text('updated_by'),                  // FK: users.id, nullable
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 ```
