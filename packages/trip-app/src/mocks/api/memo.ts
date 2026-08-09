@@ -75,8 +75,8 @@ export async function createMemo(tripId: string, content: string) {
   return newMemo;
 }
 
-export async function updateMemo(_tripId: string, memoId: string, content: string) {
-  const memo = memos.find((m) => m.id === memoId);
+export async function updateMemo(tripId: string, memoId: string, content: string) {
+  const memo = memos.find((m) => m.id === memoId && m.tripId === tripId);
   if (!memo) throw new Error(`Memo ${memoId} not found`);
 
   memo.content = content;
@@ -86,9 +86,12 @@ export async function updateMemo(_tripId: string, memoId: string, content: strin
   return memo;
 }
 
-export async function deleteMemo(_tripId: string, memoId: string) {
-  const index = memos.findIndex((m) => m.id === memoId);
+export async function deleteMemo(tripId: string, memoId: string) {
+  const index = memos.findIndex((m) => m.id === memoId && m.tripId === tripId);
   if (index === -1) throw new Error(`Memo ${memoId} not found`);
+  if (memos[index].createdBy !== mockUser.id) {
+    throw new Error("Forbidden");
+  }
   memos.splice(index, 1);
   return { success: true };
 }

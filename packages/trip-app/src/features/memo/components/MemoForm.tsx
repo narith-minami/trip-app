@@ -38,6 +38,10 @@ export function MemoForm({
     try {
       await onSubmit(content);
       if (resetOnSubmit) setContent("");
+    } catch {
+      // The caller (MemoComposer/MemoCard) already reports the error via
+      // toast; swallow it here so the rejection doesn't escape the submit
+      // handler, keeping the content in place for retry.
     } finally {
       setSubmitting(false);
     }
@@ -54,6 +58,7 @@ export function MemoForm({
           placeholder="付箋に書きたいことを..."
           rows={4}
           maxLength={MEMO_CONTENT_MAX}
+          required
         />
       </div>
       <div className="flex justify-end gap-2">

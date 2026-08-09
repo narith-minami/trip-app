@@ -37,7 +37,7 @@ graph TB
 
   Trip -->|"日程を持つ (0..n)"| ScheduleItem
   Trip -->|"Todoを持つ (0..n)"| Todo
-  Trip -->|"メモを持つ (1)"| TripMemo
+  Trip -->|"メモを持つ (0..n)"| TripMemo
   Trip -->|"カバー写真を持つ"| R2
 
   ScheduleItem -->|"写真を持つ (0..1)"| R2
