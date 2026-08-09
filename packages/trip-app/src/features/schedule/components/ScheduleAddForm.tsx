@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import type { EventType } from "@/lib/eventTypes";
 import type { Facility } from "@/types/entities";
+import { shiftEndTime } from "./calendarLayout";
 import { Step1Form } from "./ScheduleAddForm.Step1";
 import { Step2Form } from "./ScheduleAddForm.Step2";
 import type { ScheduleFormValues } from "./ScheduleItemForm";
@@ -12,14 +13,6 @@ interface ScheduleAddFormProps {
   isSubmitting?: boolean;
   onSubmit: (values: ScheduleFormValues) => void;
   onCancel: () => void;
-}
-
-function addOneHour(time: string): string {
-  const [h, m] = time.split(":").map(Number);
-  if (h === 23) {
-    return "";
-  }
-  return `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 export function ScheduleAddForm({
@@ -42,9 +35,10 @@ export function ScheduleAddForm({
   const [facilityId, setFacilityId] = useState("");
 
   const handleStartTimeChange = (value: string) => {
+    const prevStart = startTime;
     setStartTime(value);
-    if (!endTime && value) {
-      setEndTime(addOneHour(value));
+    if (endTime && prevStart && value) {
+      setEndTime(shiftEndTime(prevStart, value, endTime));
     }
   };
 

@@ -12,6 +12,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { EVENT_TYPE_LIST, type EventType } from "@/lib/eventTypes";
 import type { Facility, ScheduleItem } from "@/types/entities";
+import { shiftEndTime } from "./calendarLayout";
 
 export interface ScheduleFormValues {
   date: string;
@@ -56,11 +57,6 @@ type SetField = (key: keyof ScheduleFormValues, value: string | boolean) => void
 interface FieldsProps {
   values: ScheduleFormValues;
   set: SetField;
-}
-
-function addOneHour(time: string): string {
-  const [h, m] = time.split(":").map(Number);
-  return `${String((h + 1) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function EventTypeSelector({ values, set }: FieldsProps) {
@@ -117,9 +113,10 @@ function TentativeToggle({ values, set }: FieldsProps) {
 
 function ScheduleDateTitleFields({ values, set }: FieldsProps) {
   const handleStartTimeChange = (value: string) => {
+    const prevStart = values.startTime;
     set("startTime", value);
-    if (!values.endTime && value) {
-      set("endTime", addOneHour(value));
+    if (values.endTime && prevStart && value) {
+      set("endTime", shiftEndTime(prevStart, value, values.endTime));
     }
   };
 
