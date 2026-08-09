@@ -14,10 +14,32 @@ import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const isMock = env.VITE_MOCK !== "false";
+
+  // Cloudflare Workers Builds runs the exact same "Build command" for every
+  // branch (its dashboard settings only let build/deploy commands differ
+  // production-vs-preview at the *deploy* step, not build) — so the
+  // build:production npm script (VITE_MOCK=false) never actually runs in
+  // CI; the dashboard always invokes plain `pnpm run build`. Without this
+  // fallback, merging to main silently keeps shipping mock mode. When
+  // VITE_MOCK isn't set explicitly, infer it from the CI-injected branch
+  // name instead: real mode on the production branch, mock everywhere else.
+  const isWorkersCi = env.WORKERS_CI === "1";
+  const isProductionBranch = env.WORKERS_CI_BRANCH === "main";
+  const isMock =
+    env.VITE_MOCK !== undefined
+      ? env.VITE_MOCK !== "false"
+      : isWorkersCi
+        ? !isProductionBranch
+        : true;
 
   console.log("[vite.config.js] mode:", mode);
   console.log("[vite.config.js] VITE_MOCK env var:", env.VITE_MOCK);
+  console.log(
+    "[vite.config.js] WORKERS_CI:",
+    env.WORKERS_CI,
+    "WORKERS_CI_BRANCH:",
+    env.WORKERS_CI_BRANCH
+  );
   console.log("[vite.config.js] isMock:", isMock);
 
   return {
