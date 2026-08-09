@@ -255,7 +255,10 @@ export function ScheduleItemForm({
       <EventTypeSelector values={values} set={set} />
       <SchedulePlaceFields facilities={facilities} values={values} set={set} />
 
-      <div className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1">
+      <div
+        className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1"
+        style={{ paddingBottom: "max(0.25rem, var(--safe-area-inset-bottom))" }}
+      >
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>

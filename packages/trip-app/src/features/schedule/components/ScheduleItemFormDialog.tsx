@@ -1,5 +1,6 @@
 import { Dialog } from "@/components/ui/dialog";
 import type { Facility, ScheduleItem } from "@/types/entities";
+import { ScheduleAddForm } from "./ScheduleAddForm";
 import { type ScheduleFormValues, ScheduleItemForm } from "./ScheduleItemForm";
 
 interface ScheduleItemFormDialogProps {
@@ -34,16 +35,29 @@ export function ScheduleItemFormDialog({
     "スケジュール追加"
   );
 
+  const isAdding = !editing;
+  const dialogTitle = isAdding ? "スケジュール追加" : title;
+
   return (
-    <Dialog open={isOpen} onClose={onClose} title={title}>
-      <ScheduleItemForm
-        facilities={facilities}
-        initial={editing ?? undefined}
-        defaultDate={defaultDate}
-        isSubmitting={isSubmitting}
-        onSubmit={onSubmit}
-        onCancel={onClose}
-      />
+    <Dialog open={isOpen} onClose={onClose} title={dialogTitle} fullscreen={isAdding}>
+      {isAdding ? (
+        <ScheduleAddForm
+          facilities={facilities}
+          defaultDate={defaultDate}
+          isSubmitting={isSubmitting}
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
+      ) : (
+        <ScheduleItemForm
+          facilities={facilities}
+          initial={editing ?? undefined}
+          defaultDate={defaultDate}
+          isSubmitting={isSubmitting}
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
+      )}
     </Dialog>
   );
 }

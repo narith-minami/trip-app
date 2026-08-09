@@ -8,7 +8,7 @@ import type { InputHTMLAttributes, Ref, SelectHTMLAttributes, TextareaHTMLAttrib
 import { cn } from "@/lib/cn";
 
 const FIELD_BASE_CLASSES =
-  "px-3 py-2 border border-cream-dark rounded-xl transition-shadow duration-[var(--duration-fast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-coral";
+  "px-3 py-2 border border-cream-dark rounded-lg transition-shadow duration-[var(--duration-fast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-coral";
 // Input/Textarea default to full width; Select doesn't (it's commonly one of
 // several inline controls in a row), so it's built from the base directly.
 const FIELD_CLASSES = cn("w-full", FIELD_BASE_CLASSES);

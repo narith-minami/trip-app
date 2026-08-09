@@ -14,6 +14,7 @@ export interface DialogProps {
   title?: ReactNode;
   children: ReactNode;
   className?: string;
+  fullscreen?: boolean;
 }
 
 // Keep in sync with the animate-[dialog-*-in_...] durations below.
@@ -87,7 +88,14 @@ export function useEscapeKey(enabled: boolean, onClose: () => void) {
   }, [enabled, onClose]);
 }
 
-export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  children,
+  className,
+  fullscreen = false,
+}: DialogProps) {
   const titleId = useId();
   const { mounted, closing } = useDialogVisibility(open);
 
@@ -109,7 +117,8 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4",
+        "fixed inset-0 z-50",
+        fullscreen ? "flex" : "flex items-center justify-center bg-black bg-opacity-50 p-4",
         overlayAnimation
       )}
       onClick={onClose}
@@ -121,20 +130,30 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={cn(
-          "flex w-full max-w-md flex-col rounded-2xl bg-white shadow-xl max-h-[90dvh]",
+          "flex flex-col bg-white shadow-xl",
+          fullscreen
+            ? "w-screen h-screen max-w-full max-h-screen rounded-none"
+            : "w-full max-w-md max-h-[90dvh] rounded-2xl",
           panelAnimation,
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="shrink-0 px-6 pt-6">
+          <div className={cn("shrink-0 px-6 pt-6", fullscreen && "sr-only")}>
             <h2 id={titleId} className="text-2xl font-bold">
               {title}
             </h2>
           </div>
         )}
-        <div className={cn("flex-1 overflow-y-auto p-6", title != null && "pt-4")}>{children}</div>
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto",
+            fullscreen ? "p-6" : cn("p-6", title != null && "pt-4")
+          )}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
