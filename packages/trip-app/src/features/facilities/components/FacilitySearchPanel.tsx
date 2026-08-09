@@ -6,7 +6,7 @@
  */
 
 import { Search } from "lucide-react";
-import type { FormEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { useState } from "react";
 import type { FacilitySearchResult } from "@/api/facilities";
 import { Button } from "@/components/ui/button";
@@ -22,10 +22,25 @@ export function FacilitySearchPanel({ tripId, onSelect }: FacilitySearchPanelPro
   const [keyword, setKeyword] = useState("");
   const { results, isSearching, search, reset } = useFacilitySearch(tripId);
 
-  const handleSearch = (e: FormEvent) => {
+  const handleSearch = () => {
+    const trimmedKeyword = keyword.trim();
+    if (isSearching || !trimmedKeyword) return;
+    search(trimmedKeyword);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+    // Let IME candidate-confirmation Enter presses through untouched, so
+    // composing Japanese input doesn't get submitted as a search early.
+    // nativeEvent.isComposing is the primary signal; keyCode 229 is the
+    // legacy fallback for browsers that fire composing keydowns without it.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    // This panel lives inside FacilityForm's own <form>; a nested <form> here
+    // is invalid HTML and lets Enter fall through to a native (unhandled)
+    // submission of the outer form, reloading the page. Handle Enter
+    // ourselves instead of using a second <form>.
     e.preventDefault();
-    if (!keyword.trim()) return;
-    search(keyword.trim());
+    handleSearch();
   };
 
   const handleSelect = (result: FacilitySearchResult) => {
@@ -36,19 +51,25 @@ export function FacilitySearchPanel({ tripId, onSelect }: FacilitySearchPanelPro
 
   return (
     <div className="rounded-xl border border-cream-dark bg-cream-mid/40 p-3">
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <div className="flex gap-2">
         <Input
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="施設名で検索（例：東京タワー）"
           aria-label="施設をキーワードで検索"
           className="bg-white"
         />
-        <Button type="submit" variant="secondary" disabled={isSearching || !keyword.trim()}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleSearch}
+          disabled={isSearching || !keyword.trim()}
+        >
           <Search size={16} className="mr-1.5" />
           {isSearching ? "検索中..." : "検索"}
         </Button>
-      </form>
+      </div>
 
       {results.length > 0 && (
         <ul className="mt-3 space-y-2">
