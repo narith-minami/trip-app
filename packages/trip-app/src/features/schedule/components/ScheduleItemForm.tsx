@@ -33,6 +33,8 @@ export interface ScheduleItemFormProps {
   initial?: ScheduleItem;
   defaultDate?: string;
   isSubmitting?: boolean;
+  /** True while the delete mutation for this item is in flight. */
+  isDeleting?: boolean;
   onSubmit: (values: ScheduleFormValues) => void;
   onCancel: () => void;
   /** Shown as a trash icon in the footer when editing an existing item. */
@@ -236,6 +238,7 @@ export function ScheduleItemForm({
   initial,
   defaultDate,
   isSubmitting = false,
+  isDeleting = false,
   onSubmit,
   onCancel,
   onDelete,
@@ -265,6 +268,7 @@ export function ScheduleItemForm({
             variant="ghost"
             className="shrink-0 px-2 text-red-600 hover:bg-red-50"
             aria-label="この予定を削除"
+            disabled={isSubmitting || isDeleting}
             onClick={onDelete}
           >
             <Trash2 size={18} aria-hidden="true" />
@@ -273,8 +277,8 @@ export function ScheduleItemForm({
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>
-        <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? "保存中..." : "保存"}
+        <Button type="submit" className="flex-1" disabled={isSubmitting || isDeleting}>
+          {isSubmitting ? "保存中..." : isDeleting ? "削除中..." : "保存"}
         </Button>
       </div>
     </form>

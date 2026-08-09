@@ -99,8 +99,11 @@ function AddPhotoButton({ itemId, onUploadImage }: AddPhotoButtonProps) {
     e.target.value = "";
     if (!file || !onUploadImage) return;
     setIsUploading(true);
-    await onUploadImage(itemId, file);
-    setIsUploading(false);
+    try {
+      await onUploadImage(itemId, file);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -115,14 +118,14 @@ function AddPhotoButton({ itemId, onUploadImage }: AddPhotoButtonProps) {
         accept="image/*"
         className="hidden"
         onChange={handleFileChange}
-        disabled={isUploading}
+        disabled={isUploading || !onUploadImage}
       />
       <Button
         size="sm"
         variant="ghost"
         className="px-2"
         aria-label="写真を追加"
-        disabled={isUploading}
+        disabled={isUploading || !onUploadImage}
         onClick={() => inputRef.current?.click()}
       >
         <ImagePlus size={16} aria-hidden="true" />
@@ -182,6 +185,7 @@ function CardHeader({ tripId, item, canEdit, onEdit, onUploadImage }: CardHeader
             variant="ghost"
             className="px-2"
             aria-label="編集"
+            disabled={!onEdit}
             onClick={() => onEdit?.(item)}
           >
             <Pencil size={16} aria-hidden="true" />

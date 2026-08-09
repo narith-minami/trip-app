@@ -9,6 +9,7 @@ interface ScheduleItemFormDialogProps {
   editing: ScheduleItem | null;
   defaultDate: string;
   isSubmitting: boolean;
+  isDeleting: boolean;
   onSubmit: (values: ScheduleFormValues) => void;
   onClose: () => void;
   onDelete: (item: ScheduleItem) => void;
@@ -20,6 +21,7 @@ export function ScheduleItemFormDialog({
   editing,
   defaultDate,
   isSubmitting,
+  isDeleting,
   onSubmit,
   onClose,
   onDelete,
@@ -56,6 +58,7 @@ export function ScheduleItemFormDialog({
           initial={editing ?? undefined}
           defaultDate={defaultDate}
           isSubmitting={isSubmitting}
+          isDeleting={isDeleting}
           onSubmit={onSubmit}
           onCancel={onClose}
           onDelete={editing ? () => onDelete(editing) : undefined}

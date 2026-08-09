@@ -89,6 +89,7 @@ export function ScheduleSection({
           editing={sec.editing}
           defaultDate={selectedDate || (defaultDate ?? "")}
           isSubmitting={sec.isSubmitting}
+          isDeleting={sec.isDeleting}
           onSubmit={sec.handleSubmit}
           onClose={sec.close}
           onDelete={sec.handleDelete}
