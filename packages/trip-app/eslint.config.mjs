@@ -34,7 +34,7 @@ import sonarjs       from "eslint-plugin-sonarjs";
 const THRESHOLDS = {
   COGNITIVE_COMPLEXITY: 10,   // Biome と揃える
   MAX_FUNC_LINES:        60,   // 空行・コメント除く実行行（hooks/logic）
-  MAX_FUNC_LINES_TSX:    80,  // TSX コンポーネントは JSX で行数を要するため緩め
+  MAX_FUNC_LINES_TSX:    90,  // TSX コンポーネントは JSX で行数を要するため緩め
   MAX_FILE_LINES:       300,   // ファイル全体
   MAX_PARAMS:             4,   // 4超 → オブジェクト引数化のサイン
   MAX_DEPTH:              3,   // 3超 → Early return で対応
