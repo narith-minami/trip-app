@@ -53,6 +53,7 @@
   color-scheme: light;
   --color-bg: #fff8f0;
   --color-fg: #0f1c2e;
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
 }
 
 *,

@@ -60,7 +60,10 @@ export function Step1Form({ selectedType, onSelect, onCancel }: Step1FormProps) 
       <div className="flex-1 overflow-y-auto space-y-6">
         <EventTypeSelector selectedType={selectedType} onSelect={onSelect} />
       </div>
-      <div className="sticky bottom-0 flex gap-3 bg-white -mx-6 px-6 pt-3 pb-4 border-t border-cream">
+      <div
+        className="sticky bottom-0 flex gap-3 bg-white -mx-6 px-6 pt-3 pb-4 border-t border-cream"
+        style={{ paddingBottom: "max(1rem, var(--safe-area-inset-bottom))" }}
+      >
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>
