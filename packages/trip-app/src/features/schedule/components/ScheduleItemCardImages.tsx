@@ -8,6 +8,7 @@
 import { Plus, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { useEscapeKey } from "@/components/ui/dialog";
+import { resolveImageSrc } from "@/lib/imageSrc";
 import type { ScheduleItem, ScheduleItemImage } from "@/types/entities";
 
 /** Full-screen enlarged view of a single tapped photo. No prev/next navigation. */
@@ -61,7 +62,7 @@ function ImageThumbnail({ image, canEdit, isDeleting, onOpen, onDelete }: ImageT
         className="h-full w-full overflow-hidden rounded-lg"
         aria-label="写真を拡大表示"
       >
-        <img src={image.imageUrl} alt="" className="h-full w-full object-cover" />
+        <img src={resolveImageSrc(image.imageUrl)} alt="" className="h-full w-full object-cover" />
       </button>
       {canEdit && (
         <button
@@ -175,7 +176,10 @@ export function CardImages({ item, canEdit, onUploadImage, onDeleteImage }: Card
         {canEdit && <AddImageTile isUploading={isUploading} onSelectFile={handleSelectFile} />}
       </div>
       {lightboxImage && (
-        <ImageLightbox imageUrl={lightboxImage.imageUrl} onClose={() => setLightboxImage(null)} />
+        <ImageLightbox
+          imageUrl={resolveImageSrc(lightboxImage.imageUrl)}
+          onClose={() => setLightboxImage(null)}
+        />
       )}
     </>
   );
