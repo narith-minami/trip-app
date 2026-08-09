@@ -40,10 +40,7 @@ export interface ScheduleItemCardProps {
 function CardFooter({ item }: { item: ScheduleItem }) {
   return (
     <div className="flex items-center justify-between border-t border-cream-dark px-4 py-2">
-      <span className="text-xs text-ink-light">
-        {item.updatedBy ? `${item.updatedBy} · ` : ""}
-        {timeAgo(item.updatedAt)}
-      </span>
+      <span className="text-xs text-ink-light">{timeAgo(item.updatedAt)}</span>
       {item.placeUrl && (
         <a
           href={item.placeUrl}
@@ -220,7 +217,7 @@ export function ScheduleItemCard({
           onUploadImage={onUploadImage}
         />
         {item.memo && (
-          <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted">
+          <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted whitespace-pre-wrap">
             {item.memo}
           </div>
         )}
