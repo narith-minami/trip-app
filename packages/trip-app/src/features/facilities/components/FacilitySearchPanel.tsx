@@ -23,12 +23,18 @@ export function FacilitySearchPanel({ tripId, onSelect }: FacilitySearchPanelPro
   const { results, isSearching, search, reset } = useFacilitySearch(tripId);
 
   const handleSearch = () => {
-    if (!keyword.trim()) return;
-    search(keyword.trim());
+    const trimmedKeyword = keyword.trim();
+    if (isSearching || !trimmedKeyword) return;
+    search(trimmedKeyword);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return;
+    // Let IME candidate-confirmation Enter presses through untouched, so
+    // composing Japanese input doesn't get submitted as a search early.
+    // nativeEvent.isComposing is the primary signal; keyCode 229 is the
+    // legacy fallback for browsers that fire composing keydowns without it.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     // This panel lives inside FacilityForm's own <form>; a nested <form> here
     // is invalid HTML and lets Enter fall through to a native (unhandled)
     // submission of the outer form, reloading the page. Handle Enter
