@@ -79,7 +79,6 @@ export function ScheduleSection({
           items={items}
           canEdit={canEdit}
           onEdit={sec.openEdit}
-          onDelete={sec.handleDelete}
           onReorder={canEdit ? sec.handleReorder : undefined}
           onUploadImage={sec.handleUploadImage}
           onDeleteImage={sec.handleDeleteImage}
@@ -92,6 +91,7 @@ export function ScheduleSection({
           isSubmitting={sec.isSubmitting}
           onSubmit={sec.handleSubmit}
           onClose={sec.close}
+          onDelete={sec.handleDelete}
         />
         {sec.copyOpen && (
           <ScheduleCopyDialog

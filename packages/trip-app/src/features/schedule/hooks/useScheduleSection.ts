@@ -48,11 +48,17 @@ function makeHandleSubmit(
   };
 }
 
-function makeHandleDelete(remove: ReturnType<typeof useScheduleMutations>["remove"]) {
+function makeHandleDelete(
+  remove: ReturnType<typeof useScheduleMutations>["remove"],
+  setIsOpen: (v: boolean) => void
+) {
   return (item: ScheduleItem) => {
     if (!window.confirm("この予定を削除しますか？")) return;
     remove.mutate(item.id, {
-      onSuccess: () => toast.success("予定を削除しました"),
+      onSuccess: () => {
+        toast.success("予定を削除しました");
+        setIsOpen(false);
+      },
       onError: () => toast.error("予定の削除に失敗しました"),
     });
   };
@@ -136,7 +142,7 @@ export function useScheduleSection(tripId: string) {
     openEdit,
     close,
     handleSubmit: makeHandleSubmit(editing, m.create, m.update, setIsOpen),
-    handleDelete: makeHandleDelete(m.remove),
+    handleDelete: makeHandleDelete(m.remove, setIsOpen),
     handleReorder: makeHandleReorder(m.reorder),
     handleUploadImage: makeHandleUploadImage(m.uploadImage),
     handleDeleteImage: makeHandleDeleteImage(m.deleteImage),
