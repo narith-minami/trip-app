@@ -71,6 +71,13 @@
       "when": 1786176980096,
       "tag": "0009_soft_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1786261949016,
+      "tag": "0010_past_lady_vermin",
+      "breakpoints": true
     }
   ]
 }

@@ -156,12 +156,15 @@ export const todoComments = sqliteTable("todo_comments", {
 });
 
 // ============================================================================
-// Trip Memos Table (tripId as primary key - 1 memo per trip)
+// Trip Memos Table (sticky notes - multiple memos per trip)
 // ============================================================================
 export const tripMemos = sqliteTable("trip_memos", {
-  tripId: text("tripId").primaryKey(),
+  id: text("id").primaryKey(),
+  tripId: text("tripId").notNull(),
   content: text("content").notNull().default(""),
+  createdBy: text("createdBy").notNull(), // User ID
   updatedBy: text("updatedBy"), // User ID, nullable
+  createdAt: integer("createdAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
   updatedAt: integer("updatedAt").notNull().default(sql`(cast(unixepoch() * 1000 as integer))`),
 });
 
@@ -204,10 +207,7 @@ export const tripsRelations = relations(trips, ({ one, many }) => ({
   scheduleItems: many(scheduleItems),
   facilities: many(facilities),
   todos: many(todos),
-  memo: one(tripMemos, {
-    fields: [trips.id],
-    references: [tripMemos.tripId],
-  }),
+  memos: many(tripMemos),
 }));
 
 export const tripMembersRelations = relations(tripMembers, ({ one }) => ({
@@ -292,9 +292,15 @@ export const tripMemosRelations = relations(tripMemos, ({ one }) => ({
     fields: [tripMemos.tripId],
     references: [trips.id],
   }),
+  creator: one(users, {
+    fields: [tripMemos.createdBy],
+    references: [users.id],
+    relationName: "memoCreator",
+  }),
   updater: one(users, {
     fields: [tripMemos.updatedBy],
     references: [users.id],
+    relationName: "memoUpdater",
   }),
 }));
 
@@ -318,7 +324,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   tripMemberships: many(tripMembers),
   schedulesUpdated: many(scheduleItems),
   todosAssigned: many(todos),
-  memosUpdated: many(tripMemos),
+  memosCreated: many(tripMemos, { relationName: "memoCreator" }),
+  memosUpdated: many(tripMemos, { relationName: "memoUpdater" }),
   scrapsAuthored: many(scraps),
   todoComments: many(todoComments),
 }));

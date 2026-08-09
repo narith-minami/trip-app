@@ -100,9 +100,14 @@ export interface TodoComment {
 }
 
 export interface TripMemo {
+  id: string;
   tripId: string;
   content: string;
+  createdBy: string;
+  creator?: UserSummary | null;
   updatedBy?: string | null;
+  updater?: UserSummary | null;
+  createdAt: number;
   updatedAt: number;
 }
 

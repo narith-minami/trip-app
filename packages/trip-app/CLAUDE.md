@@ -63,9 +63,9 @@ src/
 │   ├── todos/          # Todo management
 │   │   ├── components/ # TodoForm, TodoItem, TodoList, TodosSection
 │   │   └── hooks/      # useTodos, useTodoMutations
-│   ├── memo/           # Trip memo/notes
-│   │   ├── components/ # MemoEditor, MemoSection
-│   │   └── hooks/      # useMemo, useMemoUpdateMutation
+│   ├── memo/           # Trip memo/notes (sticky notes, multiple per trip)
+│   │   ├── components/ # MemoSection, MemoComposer, MemoCard, MemoForm, MemoList
+│   │   └── hooks/      # useMemos, useMemoMutations
 │   ├── members/        # Trip members/guests
 │   │   ├── components/ # InviteLinkBox, MemberAvatarList, MembersSection
 │   │   └── hooks/      # useMembers
