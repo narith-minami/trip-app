@@ -6,7 +6,8 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
-import { Building2, MapPin } from "lucide-react";
+import { Building2, ImagePlus, MapPin, Pencil } from "lucide-react";
+import { useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -32,7 +33,6 @@ export interface ScheduleItemCardProps {
   item: ScheduleItem;
   canEdit?: boolean;
   onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
 }
@@ -83,15 +83,66 @@ function FacilityLink({ tripId, item }: { tripId: string; item: ScheduleItem }) 
   );
 }
 
+interface AddPhotoButtonProps {
+  itemId: string;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
+}
+
+/** Icon-only photo upload trigger shown in the card header, left of the edit icon. */
+function AddPhotoButton({ itemId, onUploadImage }: AddPhotoButtonProps) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !onUploadImage) return;
+    setIsUploading(true);
+    try {
+      await onUploadImage(itemId, file);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <>
+      <label htmlFor={inputId} className="sr-only">
+        写真を追加
+      </label>
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={isUploading || !onUploadImage}
+      />
+      <Button
+        size="sm"
+        variant="ghost"
+        className="px-2"
+        aria-label="写真を追加"
+        disabled={isUploading || !onUploadImage}
+        onClick={() => inputRef.current?.click()}
+      >
+        <ImagePlus size={16} aria-hidden="true" />
+      </Button>
+    </>
+  );
+}
+
 interface CardHeaderProps {
   tripId: string;
   item: ScheduleItem;
   canEdit: boolean;
   onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
+  onUploadImage?: (itemId: string, file: File) => Promise<void>;
 }
 
-function CardHeader({ tripId, item, canEdit, onEdit, onDelete }: CardHeaderProps) {
+function CardHeader({ tripId, item, canEdit, onEdit, onUploadImage }: CardHeaderProps) {
   const eventType = resolveEventType(item.eventType);
   const Icon = eventType.icon;
 
@@ -127,12 +178,17 @@ function CardHeader({ tripId, item, canEdit, onEdit, onDelete }: CardHeaderProps
         <FacilityLink tripId={tripId} item={item} />
       </div>
       {canEdit && (
-        <div className="flex shrink-0 gap-1">
-          <Button size="sm" variant="ghost" onClick={() => onEdit?.(item)}>
-            編集
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onDelete?.(item)}>
-            削除
+        <div className="flex shrink-0 items-center gap-1">
+          <AddPhotoButton itemId={item.id} onUploadImage={onUploadImage} />
+          <Button
+            size="sm"
+            variant="ghost"
+            className="px-2"
+            aria-label="編集"
+            disabled={!onEdit}
+            onClick={() => onEdit?.(item)}
+          >
+            <Pencil size={16} aria-hidden="true" />
           </Button>
         </div>
       )}
@@ -145,7 +201,6 @@ export function ScheduleItemCard({
   item,
   canEdit = false,
   onEdit,
-  onDelete,
   onUploadImage,
   onDeleteImage,
 }: ScheduleItemCardProps) {
@@ -162,19 +217,14 @@ export function ScheduleItemCard({
           item={item}
           canEdit={canEdit}
           onEdit={onEdit}
-          onDelete={onDelete}
+          onUploadImage={onUploadImage}
         />
         {item.memo && (
           <div className="mt-2 rounded-xl bg-cream px-3 py-2 text-sm text-ink-muted">
             {item.memo}
           </div>
         )}
-        <CardImages
-          item={item}
-          canEdit={canEdit}
-          onUploadImage={onUploadImage}
-          onDeleteImage={onDeleteImage}
-        />
+        <CardImages item={item} canEdit={canEdit} onDeleteImage={onDeleteImage} />
       </div>
       <CardFooter item={item} />
     </div>

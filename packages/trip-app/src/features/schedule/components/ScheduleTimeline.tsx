@@ -52,7 +52,6 @@ export interface ScheduleTimelineProps {
   /** Set to false to suppress the built-in day heading when the caller renders its own. */
   showHeading?: boolean;
   onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
   onReorder?: (items: Array<{ id: string; orderIndex: number }>) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
@@ -67,7 +66,6 @@ interface TimelineContentProps {
   activeId: string | null;
   canEdit: boolean;
   onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
   sensors: ReturnType<typeof useSensors>;
@@ -85,7 +83,6 @@ function TimelineContent({
   activeId,
   canEdit,
   onEdit,
-  onDelete,
   onUploadImage,
   onDeleteImage,
   sensors,
@@ -130,7 +127,6 @@ function TimelineContent({
                   canEdit={canEdit}
                   showDragHandle={showDragHandle}
                   onEdit={onEdit}
-                  onDelete={onDelete}
                   onUploadImage={onUploadImage}
                   onDeleteImage={onDeleteImage}
                 />
@@ -153,7 +149,6 @@ export function ScheduleTimeline({
   canEdit = false,
   showHeading = true,
   onEdit,
-  onDelete,
   onReorder,
   onUploadImage,
   onDeleteImage,
@@ -213,7 +208,6 @@ export function ScheduleTimeline({
       activeId={activeId}
       canEdit={canEdit}
       onEdit={onEdit}
-      onDelete={onDelete}
       onUploadImage={onUploadImage}
       onDeleteImage={onDeleteImage}
       sensors={sensors}

@@ -49,7 +49,6 @@ interface SortableScheduleRowProps {
   canEdit: boolean;
   showDragHandle: boolean;
   onEdit?: (item: ScheduleItem) => void;
-  onDelete?: (item: ScheduleItem) => void;
   onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
 }
@@ -60,7 +59,6 @@ export function SortableScheduleRow({
   canEdit,
   showDragHandle,
   onEdit,
-  onDelete,
   onUploadImage,
   onDeleteImage,
 }: SortableScheduleRowProps) {
@@ -100,7 +98,6 @@ export function SortableScheduleRow({
           item={item}
           canEdit={canEdit}
           onEdit={onEdit}
-          onDelete={onDelete}
           onUploadImage={onUploadImage}
           onDeleteImage={onDeleteImage}
         />

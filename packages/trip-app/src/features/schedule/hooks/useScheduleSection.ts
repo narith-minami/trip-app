@@ -48,11 +48,21 @@ function makeHandleSubmit(
   };
 }
 
-function makeHandleDelete(remove: ReturnType<typeof useScheduleMutations>["remove"]) {
+function makeHandleDelete(
+  remove: ReturnType<typeof useScheduleMutations>["remove"],
+  editing: ScheduleItem | null,
+  setIsOpen: (v: boolean) => void
+) {
   return (item: ScheduleItem) => {
     if (!window.confirm("この予定を削除しますか？")) return;
     remove.mutate(item.id, {
-      onSuccess: () => toast.success("予定を削除しました"),
+      onSuccess: () => {
+        toast.success("予定を削除しました");
+        // Only close the dialog if it's still showing the item we just deleted —
+        // guards against a stale success callback closing a dialog opened for
+        // a different item in the meantime.
+        if (editing?.id === item.id) setIsOpen(false);
+      },
       onError: () => toast.error("予定の削除に失敗しました"),
     });
   };
@@ -136,11 +146,12 @@ export function useScheduleSection(tripId: string) {
     openEdit,
     close,
     handleSubmit: makeHandleSubmit(editing, m.create, m.update, setIsOpen),
-    handleDelete: makeHandleDelete(m.remove),
+    handleDelete: makeHandleDelete(m.remove, editing, setIsOpen),
     handleReorder: makeHandleReorder(m.reorder),
     handleUploadImage: makeHandleUploadImage(m.uploadImage),
     handleDeleteImage: makeHandleDeleteImage(m.deleteImage),
     isSubmitting: m.create.isPending || m.update.isPending,
+    isDeleting: m.remove.isPending,
     groupsMap: groupByDate(items ?? []),
     copyOpen,
     setCopyOpen,

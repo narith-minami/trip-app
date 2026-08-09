@@ -4,7 +4,7 @@
  * Controlled form for creating or editing a schedule item.
  */
 
-import { CircleDashed } from "lucide-react";
+import { CircleDashed, Trash2 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,12 @@ export interface ScheduleItemFormProps {
   initial?: ScheduleItem;
   defaultDate?: string;
   isSubmitting?: boolean;
+  /** True while the delete mutation for this item is in flight. */
+  isDeleting?: boolean;
   onSubmit: (values: ScheduleFormValues) => void;
   onCancel: () => void;
+  /** Shown as a trash icon in the footer when editing an existing item. */
+  onDelete?: () => void;
 }
 
 function toValues(item?: ScheduleItem, defaultDate?: string): ScheduleFormValues {
@@ -234,8 +238,10 @@ export function ScheduleItemForm({
   initial,
   defaultDate,
   isSubmitting = false,
+  isDeleting = false,
   onSubmit,
   onCancel,
+  onDelete,
 }: ScheduleItemFormProps) {
   const [values, setValues] = useState<ScheduleFormValues>(() => toValues(initial, defaultDate));
 
@@ -253,14 +259,26 @@ export function ScheduleItemForm({
       <SchedulePlaceFields facilities={facilities} values={values} set={set} />
 
       <div
-        className="sticky bottom-0 -mx-6 flex gap-3 bg-white px-6 pt-3 pb-1"
+        className="sticky bottom-0 -mx-6 flex items-center gap-3 bg-white px-6 pt-3 pb-1"
         style={{ paddingBottom: "max(0.25rem, var(--safe-area-inset-bottom))" }}
       >
+        {onDelete && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="shrink-0 px-2 text-red-600 hover:bg-red-50"
+            aria-label="この予定を削除"
+            disabled={isSubmitting || isDeleting}
+            onClick={onDelete}
+          >
+            <Trash2 size={18} aria-hidden="true" />
+          </Button>
+        )}
         <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           キャンセル
         </Button>
-        <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting ? "保存中..." : "保存"}
+        <Button type="submit" className="flex-1" disabled={isSubmitting || isDeleting}>
+          {isSubmitting ? "保存中..." : isDeleting ? "削除中..." : "保存"}
         </Button>
       </div>
     </form>

@@ -1,12 +1,14 @@
 /**
  * src/features/schedule/components/ScheduleItemCardImages.tsx
  *
- * Photo gallery (thumbnails, add tile, lightbox) for a schedule item card,
- * split out of ScheduleItemCard.tsx to keep that file under the max-lines limit.
+ * Photo gallery (thumbnails, lightbox) for a schedule item card, split out
+ * of ScheduleItemCard.tsx to keep that file under the max-lines limit. The
+ * "add photo" trigger itself lives in the card header (see AddPhotoButton
+ * in ScheduleItemCard.tsx).
  */
 
-import { Plus, X } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { X } from "lucide-react";
+import { useState } from "react";
 import { useEscapeKey } from "@/components/ui/dialog";
 import { resolveImageSrc } from "@/lib/imageSrc";
 import type { ScheduleItem, ScheduleItemImage } from "@/types/entities";
@@ -82,72 +84,17 @@ function ImageThumbnail({ image, canEdit, isDeleting, onOpen, onDelete }: ImageT
   );
 }
 
-interface AddImageTileProps {
-  isUploading: boolean;
-  onSelectFile: (file: File) => void;
-}
-
-function AddImageTile({ isUploading, onSelectFile }: AddImageTileProps) {
-  const inputId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (file) onSelectFile(file);
-  };
-
-  return (
-    <div className="h-20 w-20 shrink-0">
-      <label htmlFor={inputId} className="sr-only">
-        写真を追加
-      </label>
-      <input
-        ref={inputRef}
-        id={inputId}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-        disabled={isUploading}
-      />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={isUploading}
-        className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-cream-dark text-ink-light hover:border-ink-muted hover:text-ink-muted disabled:opacity-50"
-      >
-        {isUploading ? (
-          <span className="text-lg leading-none">…</span>
-        ) : (
-          <Plus size={18} aria-hidden="true" />
-        )}
-        <span className="text-[10px] leading-none">{isUploading ? "追加中" : "写真を追加"}</span>
-      </button>
-    </div>
-  );
-}
-
 export interface CardImagesProps {
   item: ScheduleItem;
   canEdit: boolean;
-  onUploadImage?: (itemId: string, file: File) => Promise<void>;
   onDeleteImage?: (itemId: string, imageId: string) => Promise<void>;
 }
 
-export function CardImages({ item, canEdit, onUploadImage, onDeleteImage }: CardImagesProps) {
-  const [isUploading, setIsUploading] = useState(false);
+export function CardImages({ item, canEdit, onDeleteImage }: CardImagesProps) {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [lightboxImage, setLightboxImage] = useState<ScheduleItemImage | null>(null);
 
-  if (item.images.length === 0 && !canEdit) return null;
-
-  const handleSelectFile = async (file: File) => {
-    if (!onUploadImage) return;
-    setIsUploading(true);
-    await onUploadImage(item.id, file);
-    setIsUploading(false);
-  };
+  if (item.images.length === 0) return null;
 
   const handleDelete = async (imageId: string) => {
     if (!onDeleteImage) return;
@@ -162,7 +109,7 @@ export function CardImages({ item, canEdit, onUploadImage, onDeleteImage }: Card
 
   return (
     <>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-2 flex touch-pan-x gap-2 overflow-x-auto overscroll-x-contain">
         {item.images.map((image) => (
           <ImageThumbnail
             key={image.id}
@@ -173,7 +120,6 @@ export function CardImages({ item, canEdit, onUploadImage, onDeleteImage }: Card
             onDelete={() => handleDelete(image.id)}
           />
         ))}
-        {canEdit && <AddImageTile isUploading={isUploading} onSelectFile={handleSelectFile} />}
       </div>
       {lightboxImage && (
         <ImageLightbox

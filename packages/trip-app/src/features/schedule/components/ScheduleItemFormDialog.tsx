@@ -9,8 +9,10 @@ interface ScheduleItemFormDialogProps {
   editing: ScheduleItem | null;
   defaultDate: string;
   isSubmitting: boolean;
+  isDeleting: boolean;
   onSubmit: (values: ScheduleFormValues) => void;
   onClose: () => void;
+  onDelete: (item: ScheduleItem) => void;
 }
 
 export function ScheduleItemFormDialog({
@@ -19,8 +21,10 @@ export function ScheduleItemFormDialog({
   editing,
   defaultDate,
   isSubmitting,
+  isDeleting,
   onSubmit,
   onClose,
+  onDelete,
 }: ScheduleItemFormDialogProps) {
   const title = editing ? (
     <span className="flex items-center gap-2">
@@ -54,8 +58,10 @@ export function ScheduleItemFormDialog({
           initial={editing ?? undefined}
           defaultDate={defaultDate}
           isSubmitting={isSubmitting}
+          isDeleting={isDeleting}
           onSubmit={onSubmit}
           onCancel={onClose}
+          onDelete={editing ? () => onDelete(editing) : undefined}
         />
       )}
     </Dialog>
