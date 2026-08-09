@@ -44,6 +44,16 @@ function daysUntilDeparture(startDate: string): number {
   return Math.ceil((parseLocalDate(startDate).getTime() - today.getTime()) / 86400000);
 }
 
+// Mirrors features/trips/lib/coverImage.ts's resolveCoverImageSrc, duplicated
+// locally rather than imported — this file is already at the
+// import/max-dependencies limit (see note above).
+function resolveHeaderCoverSrc(coverImageUrl: string): string {
+  if (/^(https?:|data:)/i.test(coverImageUrl)) {
+    return coverImageUrl;
+  }
+  return `/api/images/${encodeURIComponent(coverImageUrl)}`;
+}
+
 export interface TripHeaderTrip {
   id: string;
   title: string;
@@ -135,6 +145,35 @@ function TripHeaderBackground() {
   );
 }
 
+function TripHeaderCoverLayer({
+  coverSrc,
+  headerColor,
+}: {
+  coverSrc: string | null;
+  headerColor?: string | null;
+}) {
+  return (
+    <>
+      {coverSrc && (
+        <img
+          src={coverSrc}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          aria-hidden="true"
+        />
+      )}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: headerColor ?? DEFAULT_HEADER_BACKGROUND,
+          opacity: coverSrc ? 0.72 : 1,
+        }}
+        aria-hidden="true"
+      />
+    </>
+  );
+}
+
 function TripHeaderTopBar({
   isOwner,
   editor,
@@ -196,12 +235,10 @@ export function TripHeader({
 
   const days = daysUntilDeparture(trip.startDate);
   const tone = getHeaderToneClasses(headerColor);
+  const coverSrc = trip.coverImageUrl ? resolveHeaderCoverSrc(trip.coverImageUrl) : null;
 
   return (
-    <div
-      className="relative overflow-hidden"
-      style={{ background: headerColor ?? DEFAULT_HEADER_BACKGROUND }}
-    >
+    <div className="relative overflow-hidden">
       {colorControls && (
         <TripColorSettings
           open={colorDialogOpen}
@@ -212,6 +249,7 @@ export function TripHeader({
           onReset={colorControls.onReset}
         />
       )}
+      <TripHeaderCoverLayer coverSrc={coverSrc} headerColor={headerColor} />
       <TripHeaderBackground />
       <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-4">
         <TripHeaderTopBar
