@@ -17,8 +17,29 @@ export function useScheduleItems(tripId: string) {
   });
 }
 
+function hasStartTime(item: ScheduleItem): boolean {
+  return typeof item.startTime === "string" && item.startTime.length > 0;
+}
+
+function compareByStartTime(a: ScheduleItem, b: ScheduleItem): number {
+  const aHasTime = hasStartTime(a);
+  const bHasTime = hasStartTime(b);
+
+  // If both have times, compare them
+  if (aHasTime && bHasTime) {
+    return a.startTime.localeCompare(b.startTime);
+  }
+
+  // Items with times come before untimed items
+  if (aHasTime) return -1;
+  if (bHasTime) return 1;
+
+  // Both untimed, preserve original order
+  return 0;
+}
+
 /**
- * Group schedule items by their date, preserving the API ordering.
+ * Group schedule items by their date and sort by start time (earliest first).
  */
 export function groupByDate(items: ScheduleItem[]): Map<string, ScheduleItem[]> {
   const groups = new Map<string, ScheduleItem[]>();
@@ -30,5 +51,11 @@ export function groupByDate(items: ScheduleItem[]): Map<string, ScheduleItem[]> 
       groups.set(item.date, [item]);
     }
   }
+
+  // Sort items within each date by start time (earliest first)
+  for (const bucket of groups.values()) {
+    bucket.sort(compareByStartTime);
+  }
+
   return groups;
 }
