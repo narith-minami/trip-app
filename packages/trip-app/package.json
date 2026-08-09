@@ -6,6 +6,7 @@
     "dev": "vite",
     "dev:api": "wrangler dev --port 8787",
     "dev:db": "wrangler d1 migrations apply trip-app-db --local",
+    "migrate:remote": "wrangler d1 migrations apply trip-app-db --remote",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
