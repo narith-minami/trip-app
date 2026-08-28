@@ -24,7 +24,7 @@ export function RootLayout() {
       <Outlet />
 
       {/* Global toast notifications using sonner */}
-      <Toaster position="top-center" richColors closeButton duration={3000} />
+      <Toaster position="bottom-center" richColors closeButton duration={3000} />
     </QueryClientProvider>
   );
 }

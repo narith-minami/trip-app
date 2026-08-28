@@ -17,8 +17,15 @@ export function useScheduleItems(tripId: string) {
   });
 }
 
+// Sentinel greater than any "HH:MM" value, so untimed items sort after timed ones.
+const UNTIMED_SORT_KEY = "24:00";
+
+function compareByStartTime(a: ScheduleItem, b: ScheduleItem): number {
+  return (a.startTime || UNTIMED_SORT_KEY).localeCompare(b.startTime || UNTIMED_SORT_KEY);
+}
+
 /**
- * Group schedule items by their date, preserving the API ordering.
+ * Group schedule items by their date and sort by start time (earliest first).
  */
 export function groupByDate(items: ScheduleItem[]): Map<string, ScheduleItem[]> {
   const groups = new Map<string, ScheduleItem[]>();
@@ -30,5 +37,11 @@ export function groupByDate(items: ScheduleItem[]): Map<string, ScheduleItem[]> 
       groups.set(item.date, [item]);
     }
   }
+
+  // Sort items within each date by start time (earliest first)
+  for (const bucket of groups.values()) {
+    bucket.sort(compareByStartTime);
+  }
+
   return groups;
 }
